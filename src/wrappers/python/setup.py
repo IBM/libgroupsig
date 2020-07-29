@@ -15,8 +15,8 @@ setup(
     url="https://github.com/IBM/libgroupsig.git",
     classifiers=[
         "Programming Language :: Python :: 3",
-        "License :: Apache-2.0",
-        "Operating System :: OS Independent",
+        "License :: OSI Approved :: Apache Software License",
+	"Operating System :: OS Independent",
     ],
     package_dir={'pygroupsig': 'pygroupsig'},
     packages=['pygroupsig'],
