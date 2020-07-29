@@ -1,0 +1,33 @@
+{
+   "name": "jsgroupsig",
+   "author": "Jesus Diaz Vico",
+   "email": "jdv@zurich.ibm.com",
+   "version": "0.1.3",
+   "description": "Node.js wrapper for libgroupsig, a library for group signatures",
+   "main": "./lib/index.js",
+   "dependencies": {
+      "bindings": "~1.2.1",
+      "cmake-js": "^6.1.0",
+      "install": "^0.13.0",
+      "npm": "^6.14.6"
+   },
+   "scripts": {
+      "install": "cmake-js compile",
+      "test": "./node_modules/.bin/mocha --reporter spec"
+   },
+   "devDependencies": {
+      "chai": "^4.2.0",
+      "mocha": "^8.0.1"
+   },
+   "repository": {
+      "type": "git",
+      "url": "https://github.ibm.com/JDV/libgroupsig.git"
+   },
+   "homepage": "https://github.ibm.com/JDV/libgroupsig.git",
+   "keywords": [
+      "Group signatures",
+      "Cryptography",
+      "Privacy"
+   ],
+   "license": "Apache-2.0"
+}

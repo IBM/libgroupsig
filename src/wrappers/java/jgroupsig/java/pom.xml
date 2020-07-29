@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	 xmlns="http://maven.apache.org/POM/4.0.0"
+	 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  
+  <parent>
+    <groupId>com.ibm.jgroupsig</groupId>
+    <artifactId>jgroupsig</artifactId>
+    <version>0.1.0</version>
+    <relativePath>../pom.xml</relativePath>    
+  </parent>
+
+  <groupId>com.ibm.jgroupsig</groupId>
+  <version>0.1.0</version>  
+  <artifactId>libjgroupsig</artifactId>
+  <packaging>jar</packaging>
+
+  <name>libjgroupsig</name>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>  
+  
+  <dependencies>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-api</artifactId>
+      <version>5.4.2</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-engine</artifactId>
+      <version>5.4.2</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+	<groupId>org.apache.maven.plugins</groupId>
+	<artifactId>maven-jar-plugin</artifactId>
+	<version>2.3.1</version>
+	<configuration>
+          <outputDirectory>${project.build.directory}/main/resources</outputDirectory>
+	</configuration>
+      </plugin>   
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.1</version>
+        <configuration>
+          <source>1.8</source>
+          <target>1.8</target>
+	  <encoding>UTF-8</encoding>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>3.0.0-M5</version>
+        <configuration>
+	  <argLine>-Djava.library.path=${project.build.directory}/main/resources</argLine>	  
+    </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <version>2.10</version>
+        <executions>
+          <execution>
+	    <id>copy</id>
+	    <phase>compile</phase>
+	    <goals>
+	      <goal>copy</goal>
+	    </goals>
+	    <configuration>
+	      <artifactItems>
+                <artifactItem>
+                  <groupId>com.ibm.jgroupsig</groupId>
+                  <artifactId>libjnigroupsig</artifactId>
+                  <version>0.1.0</version>
+                  <type>so</type>
+                  <overWrite>false</overWrite>
+                  <outputDirectory>${project.build.directory}/main/resources</outputDirectory>
+                  <destFileName>libjnigroupsig.so</destFileName>
+                </artifactItem>
+	      </artifactItems>
+	    </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>

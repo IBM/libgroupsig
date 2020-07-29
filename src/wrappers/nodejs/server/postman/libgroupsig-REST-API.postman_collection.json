@@ -1,0 +1,192 @@
+{
+	"info": {
+		"_postman_id": "f72b89f9-4b3e-4095-b5b6-319e1b8bca2b",
+		"name": "libgroupsig REST API",
+		"description": "Collection for querying the REST API of libgroupsig.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Group management",
+			"item": [
+				{
+					"name": "GET all groups",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://{{url}}:{{port}}/{{version}}/group",
+							"protocol": "http",
+							"host": [
+								"{{url}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"{{version}}",
+								"group"
+							]
+						},
+						"description": "Gets all groups in the server."
+					},
+					"response": []
+				},
+				{
+					"name": "GET specific group",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://{{url}}:{{port}}/{{version}}/group/:groupId",
+							"protocol": "http",
+							"host": [
+								"{{url}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"{{version}}",
+								"group",
+								":groupId"
+							],
+							"variable": [
+								{
+									"key": "groupId",
+									"value": "1",
+									"type": "string"
+								}
+							]
+						},
+						"description": "Gets the group identified by the specified path parameter."
+					},
+					"response": []
+				},
+				{
+					"name": "POST new group (generic)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": ""
+						},
+						"description": "Creates a new group"
+					},
+					"response": []
+				},
+				{
+					"name": "POST new group GL19 Init Issuer",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": ""
+						},
+						"description": "Creates a new group"
+					},
+					"response": []
+				},
+				{
+					"name": "POST new group GL19 Converter",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": ""
+						},
+						"description": "Creates a new group"
+					},
+					"response": []
+				},
+				{
+					"name": "POST new group GL19 Finalize Issuer",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"code\": {{GL19_CODE}},\n    \"seq\": 3,\n    \"grpkeytmp\": \"xxx\",\n    \"grpkeyfull\": \"yyy\"\n}"
+						},
+						"url": {
+							"raw": ""
+						},
+						"description": "Creates a new group"
+					},
+					"response": []
+				},
+				{
+					"name": "DELETE group",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": ""
+						},
+						"description": "Deletes an existing group"
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "Member management",
+			"item": [
+				{
+					"name": "GL19 First Join request",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": ""
+						},
+						"description": "Issues the first join request for GL19 groups."
+					},
+					"response": []
+				},
+				{
+					"name": "GL19 Second Join request",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": ""
+						},
+						"description": "Sends the second member join request."
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "Signatures",
+			"item": [
+				{
+					"name": "Verify signature",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": ""
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Convert signatures",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": ""
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		}
+	],
+	"protocolProfileBehavior": {}
+}
