@@ -3,7 +3,7 @@
 Welcome to _libgroupsig_, an extensible library for group signatures. Below,
 you can find basic information about how to build the library. For more detailed
 information on building it (the core and its wrappers), using it, contributing
-and more, please check the [wiki](https://github.ibm.com/JDV/libgroupsig/wiki)
+and more, please check the [wiki](https://github.com/IBM/libgroupsig/wiki)
 out.
 
 ## Build
