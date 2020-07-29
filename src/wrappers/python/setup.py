@@ -12,10 +12,10 @@ setup(
     description="A Python wrapper for libgroupsig",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.ibm.com/JDV/libgroupsig.git",
+    url="https://github.com/IBM/libgroupsig.git",
     classifiers=[
         "Programming Language :: Python :: 3",
-        "License :: Apache-2.0"
+        "License :: Apache-2.0",
         "Operating System :: OS Independent",
     ],
     package_dir={'pygroupsig': 'pygroupsig'},

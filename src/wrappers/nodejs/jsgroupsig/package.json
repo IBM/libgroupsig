@@ -21,9 +21,9 @@
    },
    "repository": {
       "type": "git",
-      "url": "https://github.ibm.com/JDV/libgroupsig.git"
+      "url": "https://github.com/IBM/libgroupsig.git"
    },
-   "homepage": "https://github.ibm.com/JDV/libgroupsig.git",
+   "homepage": "https://github.com/IBM/libgroupsig.git",
    "keywords": [
       "Group signatures",
       "Cryptography",
