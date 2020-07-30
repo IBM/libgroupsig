@@ -18,7 +18,8 @@
     "chai-http": "^4.3.0",
     "mocha": "^8.0.1",
     "nodemon": "^2.0.4",
-    "request": "^2.88.2"
+    "request": "^2.88.2",
+    "jsgroupsig": "^0.1.4"
   },
   "dependencies": {
     "cors": "^2.8.5",
