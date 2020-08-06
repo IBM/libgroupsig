@@ -80,6 +80,8 @@ int gl19_signature_free(groupsig_signature_t *sig) {
     spk_rep_free(gl19_sig->pi); gl19_sig->pi = NULL;
     pbcext_element_G1_free(gl19_sig->nym1); gl19_sig->nym1 = NULL;
     pbcext_element_G1_free(gl19_sig->nym2); gl19_sig->nym2 = NULL;
+    pbcext_element_G1_free(gl19_sig->ehy1); gl19_sig->ehy1 = NULL;
+    pbcext_element_G1_free(gl19_sig->ehy2); gl19_sig->ehy2 = NULL;    
     mem_free(gl19_sig);
     gl19_sig = NULL;
   }
@@ -135,6 +137,16 @@ int gl19_signature_copy(groupsig_signature_t *dst, groupsig_signature_t *src) {
     GOTOENDRC(IERROR, gl19_signature_copy);
   if(pbcext_element_G1_set(gl19_dst->nym2, gl19_src->nym2) == IERROR)
     GOTOENDRC(IERROR, gl19_signature_copy);
+
+  if(!(gl19_dst->ehy1 = pbcext_element_G1_init()))
+    GOTOENDRC(IERROR, gl19_signature_copy);
+  if(pbcext_element_G1_set(gl19_dst->ehy1, gl19_src->ehy1) == IERROR)
+    GOTOENDRC(IERROR, gl19_signature_copy);
+
+  if(!(gl19_dst->ehy2 = pbcext_element_G1_init()))
+    GOTOENDRC(IERROR, gl19_signature_copy);
+  if(pbcext_element_G1_set(gl19_dst->ehy2, gl19_src->ehy2) == IERROR)
+    GOTOENDRC(IERROR, gl19_signature_copy);  
   
  gl19_signature_copy_end:
 
@@ -163,6 +175,14 @@ int gl19_signature_copy(groupsig_signature_t *dst, groupsig_signature_t *src) {
       pbcext_element_G1_free(gl19_dst->nym2);
       gl19_dst->nym2 = NULL;
     }
+    if(gl19_dst->ehy1) {
+      pbcext_element_G1_free(gl19_dst->ehy1);
+      gl19_dst->ehy1 = NULL;
+    }
+    if(gl19_dst->ehy2) {
+      pbcext_element_G1_free(gl19_dst->ehy2);
+      gl19_dst->ehy2 = NULL;
+    }    
     
   }
   
@@ -195,7 +215,7 @@ char* gl19_signature_to_string(groupsig_signature_t *sig) {
 
 int gl19_signature_get_size(groupsig_signature_t *sig) {
 
-  uint64_t sAA, sA_, sd, sc, ss, snym1, snym2;
+  uint64_t sAA, sA_, sd, sc, ss, snym1, snym2, sehy1, sehy2;
   gl19_signature_t *gl19_sig;
   int size, i;
   
@@ -213,9 +233,11 @@ int gl19_signature_get_size(groupsig_signature_t *sig) {
   if(pbcext_element_Fr_byte_size(&sc) == IERROR) return -1;
   if(pbcext_element_G1_byte_size(&snym1) == IERROR) return -1;
   if(pbcext_element_G1_byte_size(&snym2) == IERROR) return -1;
+  if(pbcext_element_G1_byte_size(&sehy1) == IERROR) return -1;
+  if(pbcext_element_G1_byte_size(&sehy2) == IERROR) return -1;  
 
-  if(sAA + sA_ + sd + sc + snym1 + snym2 + sizeof(int)*6+1 > INT_MAX) return -1;
-  size = (int) sAA + sA_ + sd + sc + snym1 + snym2 + sizeof(int)*6+1;
+  if(sAA + sA_ + sd + sc + snym1 + snym2 + sehy1 + sehy2 + sizeof(int)*8+1 > INT_MAX) return -1;
+  size = (int) sAA + sA_ + sd + sc + snym1 + snym2 + sehy1 + sehy2 + sizeof(int)*8+1;
 
   for(i=0; i<gl19_sig->pi->ns; i++) {
     if(pbcext_element_Fr_byte_size(&ss) == IERROR)
@@ -302,6 +324,18 @@ int gl19_signature_export(byte_t **bytes,
   if(pbcext_dump_element_G1_bytes(&__bytes, &len, gl19_sig->nym2) == IERROR)
     GOTOENDRC(IERROR, gl19_signature_export);
   ctr += len;
+
+  /* Dump ehy1 */
+  __bytes = &_bytes[ctr];
+  if(pbcext_dump_element_G1_bytes(&__bytes, &len, gl19_sig->ehy1) == IERROR)
+    GOTOENDRC(IERROR, gl19_signature_export);
+  ctr += len;
+
+  /* Dump ehy2 */
+  __bytes = &_bytes[ctr];
+  if(pbcext_dump_element_G1_bytes(&__bytes, &len, gl19_sig->ehy2) == IERROR)
+    GOTOENDRC(IERROR, gl19_signature_export);
+  ctr += len;  
 
   /* Prepare the return */
   if(!*bytes) {
@@ -392,7 +426,7 @@ groupsig_signature_t* gl19_signature_import(byte_t *source, uint32_t size) {
   }
 
   /* Get spk */
-  if(!(gl19_sig->pi = spk_rep_init(7)))
+  if(!(gl19_sig->pi = spk_rep_init(8)))
     GOTOENDRC(IERROR, gl19_signature_import);
 
   if(!(gl19_sig->pi->c = pbcext_element_Fr_init()))
@@ -432,6 +466,28 @@ groupsig_signature_t* gl19_signature_import(byte_t *source, uint32_t size) {
   if(!(gl19_sig->nym2 = pbcext_element_G1_init()))
     GOTOENDRC(IERROR, gl19_signature_import);
   if(pbcext_get_element_G1_bytes(gl19_sig->nym2, &len, &source[ctr]) == IERROR)
+    GOTOENDRC(IERROR, gl19_signature_import);  
+  if (!len) {
+    ctr += sizeof(int);  // @TODO: this is an artifact of pbcext_get_element_XX_bytes
+  } else {
+    ctr += len;
+  }
+
+  /* Get ehy1 */
+  if(!(gl19_sig->ehy1 = pbcext_element_G1_init()))
+    GOTOENDRC(IERROR, gl19_signature_import);
+  if(pbcext_get_element_G1_bytes(gl19_sig->ehy1, &len, &source[ctr]) == IERROR)
+    GOTOENDRC(IERROR, gl19_signature_import);  
+  if (!len) {
+    ctr += sizeof(int);  // @TODO: this is an artifact of pbcext_get_element_XX_bytes
+  } else {
+    ctr += len;
+  }
+
+  /* Get ehy2 */
+  if(!(gl19_sig->ehy2 = pbcext_element_G1_init()))
+    GOTOENDRC(IERROR, gl19_signature_import);
+  if(pbcext_get_element_G1_bytes(gl19_sig->ehy2, &len, &source[ctr]) == IERROR)
     GOTOENDRC(IERROR, gl19_signature_import);  
   if (!len) {
     ctr += sizeof(int);  // @TODO: this is an artifact of pbcext_get_element_XX_bytes

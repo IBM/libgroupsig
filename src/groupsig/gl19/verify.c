@@ -31,8 +31,8 @@
 static int _gl19_verify_spk(uint8_t *ok, gl19_signature_t *gl19_sig,
 			    message_t *msg, gl19_grp_key_t *gl19_grpkey) {
 
-  pbcext_element_G1_t *A_d, *y[4], *g[7];  
-  uint16_t i[8][2], prods[4];
+  pbcext_element_G1_t *A_d, *y[6], *g[8];  
+  uint16_t i[11][2], prods[6];
   
   /* No input checks, as the parameters have been checked by the caller. */
   
@@ -46,6 +46,8 @@ static int _gl19_verify_spk(uint8_t *ok, gl19_signature_t *gl19_sig,
   y[1] = gl19_sig->nym2;
   y[2] = A_d;
   y[3] = gl19_grpkey->g1;
+  y[4] = gl19_sig->ehy1;
+  y[5] = gl19_sig->ehy2;  
   
   g[0] = gl19_grpkey->g;
   g[1] = gl19_grpkey->cpk;
@@ -54,6 +56,7 @@ static int _gl19_verify_spk(uint8_t *ok, gl19_signature_t *gl19_sig,
   g[4] = gl19_grpkey->h2;
   g[5] = gl19_sig->d;
   g[6] = gl19_grpkey->h1;
+  g[7] = gl19_grpkey->epk;  
 
   i[0][0] = 5; i[0][1] = 0;
   i[1][0] = 5; i[1][1] = 1;
@@ -63,17 +66,22 @@ static int _gl19_verify_spk(uint8_t *ok, gl19_signature_t *gl19_sig,
   i[5][0] = 3; i[5][1] = 5;
   i[6][0] = 4; i[6][1] = 4;
   i[7][0] = 6; i[7][1] = 6;
+  i[8][0] = 7; i[8][1] = 0;
+  i[9][0] = 7; i[9][1] = 7;
+  i[10][0] = 1; i[10][1] = 2;  
 
   prods[0] = 1;
   prods[1] = 2;
   prods[2] = 2;
   prods[3] = 3;
-
+  prods[4] = 1;
+  prods[5] = 2;
+  
   /* Verify the SPK */
   if(spk_rep_verify(ok,
-		    y, 4,
-		    g, 7,
-		    i, 8,
+		    y, 6,
+		    g, 8,
+		    i, 11,
 		    prods,
 		    gl19_sig->pi,
 		    msg->bytes, msg->length) == IERROR) {

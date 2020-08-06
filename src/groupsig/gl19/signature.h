@@ -29,7 +29,6 @@
 /**
  * @struct gl19_signature_t
  * @brief Defines the structure of a GL19 signature.
- * Defineme.
  */
 typedef struct {
   uint8_t scheme; /**< Metainformation: the gs scheme this key belongs to. */
@@ -39,6 +38,8 @@ typedef struct {
   spk_rep_t *pi;
   pbcext_element_G1_t *nym1;
   pbcext_element_G1_t *nym2;
+  pbcext_element_G1_t *ehy1;
+  pbcext_element_G1_t *ehy2;  
 } gl19_signature_t;
 
 /** 

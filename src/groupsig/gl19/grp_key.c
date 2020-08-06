@@ -79,6 +79,7 @@ int gl19_grp_key_free(groupsig_key_t *key) {
     if(gl19_key->h2) { pbcext_element_G1_free(gl19_key->h2); gl19_key->h2 = NULL; }
     if(gl19_key->ipk) { pbcext_element_G2_free(gl19_key->ipk); gl19_key->ipk = NULL; }
     if(gl19_key->cpk) { pbcext_element_G1_free(gl19_key->cpk); gl19_key->cpk = NULL; }
+    if(gl19_key->epk) { pbcext_element_G1_free(gl19_key->epk); gl19_key->epk = NULL; }
     mem_free(key->key); key->key = NULL;
   }
 
@@ -159,6 +160,13 @@ int gl19_grp_key_copy(groupsig_key_t *dst, groupsig_key_t *src) {
     if(pbcext_element_G1_set(gl19_dst->cpk, gl19_src->cpk) == IERROR)
       GOTOENDRC(IERROR, gl19_grp_key_copy);
   }
+
+  if(gl19_dst->epk) {
+    if(!(gl19_dst->epk = pbcext_element_G1_init()))
+      GOTOENDRC(IERROR, gl19_grp_key_copy);
+    if(pbcext_element_G1_set(gl19_dst->epk, gl19_src->epk) == IERROR)
+      GOTOENDRC(IERROR, gl19_grp_key_copy);
+  }  
   
  gl19_grp_key_copy_end:
 
@@ -171,6 +179,7 @@ int gl19_grp_key_copy(groupsig_key_t *dst, groupsig_key_t *src) {
     if(gl19_dst->h2) { pbcext_element_G1_free(gl19_dst->h2); gl19_dst->h2 = NULL; }
     if(gl19_dst->ipk) { pbcext_element_G2_free(gl19_dst->ipk); gl19_dst->ipk = NULL; }
     if(gl19_dst->cpk) { pbcext_element_G1_free(gl19_dst->cpk); gl19_dst->cpk = NULL; }
+    if(gl19_dst->epk) { pbcext_element_G1_free(gl19_dst->epk); gl19_dst->epk = NULL; }
   }
   
   return rc;
@@ -181,7 +190,7 @@ int gl19_grp_key_get_size(groupsig_key_t *key) {
 
   gl19_grp_key_t *gl19_key;
   int size;
-  uint64_t sg1, sg2, sg, sh, sh1, sh2, sipk, scpk;
+  uint64_t sg1, sg2, sg, sh, sh1, sh2, sipk, scpk, sepk;
   
   if(!key || key->scheme != GROUPSIG_GL19_CODE) {
     LOG_EINVAL(&logger, __FILE__, "gl19_grp_key_get_size_in_format",
@@ -190,7 +199,7 @@ int gl19_grp_key_get_size(groupsig_key_t *key) {
   }
   
   gl19_key = key->key;
-  sg1 = sg2 = sg = sh = sh1 = sh2 = sipk = scpk = 0;
+  sg1 = sg2 = sg = sh = sh1 = sh2 = sipk = scpk = sepk = 0;
 
   if(gl19_key->g1) { if(pbcext_element_G1_byte_size(&sg1) == IERROR) return -1; }
   if(gl19_key->g2) { if(pbcext_element_G2_byte_size(&sg2) == IERROR) return -1; }
@@ -200,10 +209,11 @@ int gl19_grp_key_get_size(groupsig_key_t *key) {
   if(gl19_key->h2) { if(pbcext_element_G1_byte_size(&sh2) == IERROR) return -1; }
   if(gl19_key->ipk) { if(pbcext_element_G2_byte_size(&sipk) == IERROR) return -1; }
   if(gl19_key->cpk) { if(pbcext_element_G1_byte_size(&scpk) == IERROR) return -1; }
+  if(gl19_key->epk) { if(pbcext_element_G1_byte_size(&sepk) == IERROR) return -1; }
 
-  if(sg1 + sg2 + sg + sh + sh1 + sh2 + sipk + scpk + sizeof(int)*8+2 > INT_MAX)
+  if(sg1 + sg2 + sg + sh + sh1 + sh2 + sipk + scpk + sepk + sizeof(int)*9+2 > INT_MAX)
     return -1;
-  size = (int) sg1 + sg2 + sg + sh + sh1 + sh2 + sipk + scpk + sizeof(int)*8+2;
+  size = (int) sg1 + sg2 + sg + sh + sh1 + sh2 + sipk + scpk + sepk + sizeof(int)*9+2;
   
   return size;
   
@@ -307,6 +317,14 @@ int gl19_grp_key_export(byte_t **bytes,
   if(gl19_key->cpk) {
     __bytes = &_bytes[ctr];
     if(pbcext_dump_element_G1_bytes(&__bytes, &len, gl19_key->cpk) == IERROR)
+      GOTOENDRC(IERROR, gl19_grp_key_export);
+    ctr += len;
+  } else { ctr += sizeof(int); }
+
+  /* Dump epk */
+  if(gl19_key->epk) {
+    __bytes = &_bytes[ctr];
+    if(pbcext_dump_element_G1_bytes(&__bytes, &len, gl19_key->epk) == IERROR)
       GOTOENDRC(IERROR, gl19_grp_key_export);
     ctr += len;
   } else { ctr += sizeof(int); }
@@ -471,6 +489,18 @@ groupsig_key_t* gl19_grp_key_import(byte_t *source, uint32_t size) {
   } else {
     ctr += len;
   }
+
+  /* Get epk */
+  if(!(gl19_key->epk = pbcext_element_G1_init()))
+    GOTOENDRC(IERROR, gl19_grp_key_import);
+  if(pbcext_get_element_G1_bytes(gl19_key->epk, &len, &source[ctr]) == IERROR)
+    GOTOENDRC(IERROR, gl19_grp_key_import);
+  if(!len) {
+    ctr += sizeof(int); // @TODO: this is an artifact of pbcext_get_element_XX_bytes
+    pbcext_element_G1_free(gl19_key->epk); gl19_key->epk = NULL;
+  } else {
+    ctr += len;
+  }  
   
  gl19_grp_key_import_end:
   

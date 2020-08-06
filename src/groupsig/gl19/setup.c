@@ -153,6 +153,16 @@ int gl19_setup(groupsig_key_t *grpkey,
     if(pbcext_element_G1_mul(gkey->cpk, gkey->g, mkey->csk) == IERROR)
       GOTOENDRC(IERROR, gl19_setup);
 
+    /* Generate the Extractor's private key */
+    if(!(mkey->esk = pbcext_element_Fr_init())) GOTOENDRC(IERROR, gl19_setup);
+    if(pbcext_element_Fr_random(mkey->esk) == IERROR)
+      GOTOENDRC(IERROR, gl19_setup);
+
+    /* Add the Extractor's public key to the group key */
+    if(!(gkey->epk = pbcext_element_G1_init())) GOTOENDRC(IERROR, gl19_setup);
+    if(pbcext_element_G1_mul(gkey->epk, gkey->g, mkey->esk) == IERROR)
+      GOTOENDRC(IERROR, gl19_setup);
+    
   }  
 
  gl19_setup_end:
