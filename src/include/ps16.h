@@ -17,8 +17,8 @@
  * under the License.
  */
 
-#ifndef _BBS04_H
-#define _BBS04_H
+#ifndef _PS16_H
+#define _PS16_H
 
 #include "key.h"
 #include "gml.h"
@@ -28,117 +28,98 @@
 #include "mgr_key.h"
 #include "mem_key.h"
 #include "groupsig.h"
-#include "bigz.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 /**
- * @def GROUPSIG_BBS04_CODE
- * @brief BBS04 scheme code.
+ * @def GROUPSIG_PS16_CODE
+ * @brief PS16 scheme code.
  */
-#define GROUPSIG_BBS04_CODE 1
+#define GROUPSIG_PS16_CODE 4
 
 /**
- * @def GROUPSIG_BBS04_NAME
- * @brief BBS04 scheme name.
+ * @def GROUPSIG_PS16_NAME
+ * @brief PS16 scheme name.
  */
-#define GROUPSIG_BBS04_NAME "BBS04"
+#define GROUPSIG_PS16_NAME "PS16"
 
 /**
- * @var bbs04_description
- * @brief BBS04's description.
+ * @var ps16_description
+ * @brief PS16's description.
  */
-static const groupsig_description_t bbs04_description = {
-  GROUPSIG_BBS04_CODE, /**< BBS04's scheme code. */
-  GROUPSIG_BBS04_NAME /**< BBS04's scheme name. */
+static const groupsig_description_t ps16_description = {
+  GROUPSIG_PS16_CODE, /**< PS16's scheme code. */
+  GROUPSIG_PS16_NAME /**< PS16's scheme name. */
 };
 
 /* Metadata for the join protocol */
 
 /* 0 means the first message is sent by the manager, 1 means the first message
    is sent by the member */
-#define BBS04_JOIN_START 0
+#define PS16_JOIN_START 0
 
 /* Number of exchanged messages */
-#define BBS04_JOIN_SEQ 1
+#define PS16_JOIN_SEQ 3
 
 /*
- * @def BBS04_CONFIG_SET_DEFAULTS
+ * @def PS16_CONFIG_SET_DEFAULTS
  * @brief Sets the configuration structure to the default values for
- *  BBS04.
+ *  PS16.
  */
-#define BBS04_CONFIG_SET_DEFAULTS(cfg) \
-  ((groupsig_config_t *) cfg)->scheme = GROUPSIG_BBS04_CODE; \
+#define PS16_CONFIG_SET_DEFAULTS(cfg) \
+  ((groupsig_config_t *) cfg)->scheme = GROUPSIG_PS16_CODE;  \
   ((groupsig_config_t *) cfg)->has_gml = 1;		     \
-  ((groupsig_config_t *) cfg)->has_crl = 1;		     \
+  ((groupsig_config_t *) cfg)->has_crl = 0;		     \
   ((groupsig_config_t *) cfg)->has_pbc = 1;
   
 /** 
- * @fn groupsig_config_t* bbs04_config_init(void)
- * @brief Allocates memory for a BBS04 config structure.
+ * @fn groupsig_config_t* ps16_config_init(void)
+ * @brief Allocates memory for a PS16 config structure.
  * 
  * @return A pointer to the allocated structure or NULL if error.
  */
-groupsig_config_t* bbs04_config_init(void);
+groupsig_config_t* ps16_config_init(void);
 
 /** 
- * @fn int bbs04_config_free(groupsig_config_t *cfg)
- * @brief Frees the memory of a BBS04 config structure.
+ * @fn int ps16_config_free(groupsig_config_t *cfg)
+ * @brief Frees the memory of a PS16 config structure.
  * 
  * @param cfg The structure to free.
  *
  * @return A pointer to the allocated structure or NULL if error.
  */
-int bbs04_config_free(groupsig_config_t *cfg);
+int ps16_config_free(groupsig_config_t *cfg);
 
 /** 
- * @fn int bbs04_sysenv_update(void *data)
- * @brief Sets the BBS04 internal environment data, i.e., the PBC params and pairings.
- *
- * @param data A bbs04_sysenv_t structure containing the PBC params and pairings.
- * 
- * @return IOK or IERROR.
- */
-int bbs04_sysenv_update(void *data);
-
-/** 
- * @fn int bbs04_sysenv_free(void)
- * @brief Frees the BBS04 internal environment.
- * 
- * @return IOK or IERROR.
- */
-int bbs04_sysenv_free(void);
-
-/** 
- * @fn int bbs04_setup(groupsig_key_t *grpkey, groupsig_key_t *mgrkey, 
+ * @fn int ps16_setup(groupsig_key_t *grpkey, groupsig_key_t *mgrkey, 
  *                     gml_t *gml, groupsig_config_t *config)
- * @brief The setup function for the BBS04 scheme.
+ * @brief The setup function for the PS16 scheme.
  *
  * @param[in,out] grpkey An initialized group key, will be updated with the newly
  *   created group's group key.
  * @param[in,out] mgrkey An initialized manager key, will be updated with the
  *   newly created group's manager key.
  * @param[in,out] gml An initialized GML, will be set to an empty GML.
- * @param[in] config A BBS04 configuration structure.
+ * @param[in] config A PS16 configuration structure.
  * 
  * @return IOK or IERROR.
  */
-int bbs04_setup(groupsig_key_t *grpkey, groupsig_key_t *mgrkey, gml_t *gml, groupsig_config_t *config);
+int ps16_setup(groupsig_key_t *grpkey, groupsig_key_t *mgrkey, gml_t *gml, groupsig_config_t *config);
 
 /**
- * @fn int bbs04_get_joinseq(uint8_t *seq)
+ * @fn int ps16_get_joinseq(uint8_t *seq)
  * @brief Returns the number of messages to be exchanged in the join protocol.
  * 
  * @param seq A pointer to store the number of messages to exchange.
  *
  * @return IOK or IERROR.
  */ 
-int bbs04_get_joinseq(uint8_t *seq);
+int ps16_get_joinseq(uint8_t *seq);
 
 /**
- * @fn int bbs04_get_joinstart(uint8_t *start)
+ * @fn int ps16_get_joinstart(uint8_t *start)
  * @brief Returns who sends the first message in the join protocol.
  * 
  * @param start A pointer to store the who starts the join protocol. 0 means
@@ -146,12 +127,12 @@ int bbs04_get_joinseq(uint8_t *seq);
  *
  * @return IOK or IERROR.
  */ 
-int bbs04_get_joinstart(uint8_t *start);
+int ps16_get_joinstart(uint8_t *start);
 
 /** 
- * @fn int bbs04_join_mem(message_t **mout, groupsig_key_t *memkey,
+ * @fn int ps16_join_mem(message_t **mout, groupsig_key_t *memkey,
  *			  int seq, message_t *min, groupsig_key_t *grpkey)
- * @brief Executes the member-side join of the BBS04 scheme.
+ * @brief Executes the member-side join of the PS16 scheme.
  *
  * @param[in,out] mout Message to be produced by the current step of the
  *  join/issue protocol.
@@ -165,11 +146,11 @@ int bbs04_get_joinstart(uint8_t *start);
  * 
  * @return IOK or IERROR.
  */
-int bbs04_join_mem(message_t **mout, groupsig_key_t *memkey,
+int ps16_join_mem(message_t **mout, groupsig_key_t *memkey,
 		   int seq, message_t *min, groupsig_key_t *grpkey);
 
 /** 
- * @fn int bbs04_join_mgr(message_t **mout, gml_t *gml,
+ * @fn int ps16_join_mgr(message_t **mout, gml_t *gml,
  *                        groupsig_key_t *mgrkey,
  *                        int seq, message_t *min, 
  *			  groupsig_key_t *grpkey)
@@ -189,20 +170,20 @@ int bbs04_join_mem(message_t **mout, groupsig_key_t *memkey,
  * 
  * @return IOK or IERROR.
  */
-int bbs04_join_mgr(message_t **mout, gml_t *gml,
+int ps16_join_mgr(message_t **mout, gml_t *gml,
 		   groupsig_key_t *mgrkey,
 		   int seq, message_t *min,
 		   groupsig_key_t *grpkey);
 
 /** 
- * @fn int bbs04_sign(groupsig_signature_t *sig, message_t *msg, groupsig_key_t *memkey, 
+ * @fn int ps16_sign(groupsig_signature_t *sig, message_t *msg, groupsig_key_t *memkey, 
  *	              groupsig_key_t *grpkey, unsigned int seed)
- * @brief Issues BBS04 group signatures.
+ * @brief Issues PS16 group signatures.
  *
  * Using the specified member and group keys, issues a signature for the specified
  * message.
  *
- * @param[in,out] sig An initialized BBS04 group signature. Will be updated with
+ * @param[in,out] sig An initialized PS16 group signature. Will be updated with
  *  the generated signature data.
  * @param[in] msg The message to sign.
  * @param[in] memkey The member key to use for signing.
@@ -213,13 +194,13 @@ int bbs04_join_mgr(message_t **mout, gml_t *gml,
  * 
  * @return IOK or IERROR.
  */
-int bbs04_sign(groupsig_signature_t *sig, message_t *msg, groupsig_key_t *memkey, 
+int ps16_sign(groupsig_signature_t *sig, message_t *msg, groupsig_key_t *memkey, 
 	       groupsig_key_t *grpkey, unsigned int seed);
 
 /** 
- * @fn int bbs04_verify(uint8_t *ok, groupsig_signature_t *sig, message_t *msg, 
+ * @fn int ps16_verify(uint8_t *ok, groupsig_signature_t *sig, message_t *msg, 
  *		        groupsig_key_t *grpkey);
- * @brief Verifies a BBS04 group signature.
+ * @brief Verifies a PS16 group signature.
  *
  * @param[in,out] ok Will be set to 1 if the verification succeeds, to 0 if
  *  it fails.
@@ -229,20 +210,20 @@ int bbs04_sign(groupsig_signature_t *sig, message_t *msg, groupsig_key_t *memkey
  * 
  * @return IOK or IERROR.
  */
-int bbs04_verify(uint8_t *ok, groupsig_signature_t *sig, message_t *msg, 
+int ps16_verify(uint8_t *ok, groupsig_signature_t *sig, message_t *msg, 
 		 groupsig_key_t *grpkey);
 
 /** 
- * @fn int bbs04_open(identity_t *id, groupsig_proof_t *proof, crl_t *crl, 
+ * @fn int ps16_open(identity_t *id, groupsig_proof_t *proof, crl_t *crl, 
  *                    groupsig_signature_t *sig, groupsig_key_t *grpkey, 
  *	              groupsig_key_t *mgrkey, gml_t *gml)
- * @brief Opens a BBS04 group signature.
+ * @brief Opens a PS16 group signature.
  * 
  * Opens the specified group signature, obtaining the signer's identity.
  *
  * @param[in,out] id An initialized identity. Will be updated with the signer's
  *  real identity.
- * @param[in,out] proof BBS04 ignores this parameter.
+ * @param[in,out] proof PS16 ignores this parameter.
  * @param[in,out] crl Optional. If not NULL, must be an initialized CRL, and will
  *  be updated with a new entry corresponding to the obtained trapdoor.
  * @param[in] sig The signature to open.
@@ -253,29 +234,29 @@ int bbs04_verify(uint8_t *ok, groupsig_signature_t *sig, message_t *msg,
  * @return IOK if it was possible to open the signature. IFAIL if the open
  *  trapdoor was not found, IERROR otherwise.
  */
-int bbs04_open(identity_t *id, groupsig_proof_t *proof, crl_t *crl, groupsig_signature_t *sig, 
+int ps16_open(identity_t *id, groupsig_proof_t *proof, crl_t *crl, groupsig_signature_t *sig,
 	       groupsig_key_t *grpkey, groupsig_key_t *mgrkey, gml_t *gml);
 
 /**
- * @var bbs04_groupsig_bundle
- * @brief The set of functions to manage BBS04 groups.
+ * @var ps16_groupsig_bundle
+ * @brief The set of functions to manage PS16 groups.
  */
-static const groupsig_t bbs04_groupsig_bundle = {
- desc: &bbs04_description, /**< Contains the BBS04 scheme description. */
- config_init: &bbs04_config_init, /**< Initializes a BBS04 config structure. */
- config_free: &bbs04_config_free, /**< Frees a BBS04 config structure. */
- sysenv_update: NULL,//&bbs04_sysenv_update, /**< Sets the PBC params and pairing. */
+static const groupsig_t ps16_groupsig_bundle = {
+ desc: &ps16_description, /**< Contains the PS16 scheme description. */
+ config_init: &ps16_config_init, /**< Initializes a PS16 config structure. */
+ config_free: &ps16_config_free, /**< Frees a PS16 config structure. */
+ sysenv_update: NULL,//&ps16_sysenv_update, /**< Sets the PBC params and pairing. */
  sysenv_get: NULL, 
- sysenv_free: NULL, //&bbs04_sysenv_free, /**<  Frees the PBC params and pairing. */
- setup: &bbs04_setup, /**< Sets up BBS04 groups. */
- get_joinseq: &bbs04_get_joinseq, /**< Returns the number of messages in the join 
+ sysenv_free: NULL, //&ps16_sysenv_free, /**<  Frees the PBC params and pairing. */
+ setup: &ps16_setup, /**< Sets up PS16 groups. */
+ get_joinseq: &ps16_get_joinseq, /**< Returns the number of messages in the join 
 				     protocol. */
- get_joinstart: &bbs04_get_joinstart, /**< Returns who begins the join protocol. */
- join_mem: &bbs04_join_mem, /**< Executes member-side joins. */
- join_mgr: &bbs04_join_mgr, /**< Executes maanger-side joins. */
- sign: &bbs04_sign, /**< Issues BBS04 signatures. */
- verify: &bbs04_verify, /**< Verifies BBS04 signatures. */
- open: &bbs04_open, /**< Opens BBS04 signatures. */
+ get_joinstart: &ps16_get_joinstart, /**< Returns who begins the join protocol. */
+ join_mem: &ps16_join_mem, /**< Executes member-side joins. */
+ join_mgr: &ps16_join_mgr, /**< Executes manager-side joins. */
+ sign: &ps16_sign, /**< Issues PS16 signatures. */
+ verify: &ps16_verify, /**< Verifies PS16 signatures. */
+ open: &ps16_open, /**< Opens PS16 signatures. */
  open_verify: NULL,
  reveal: NULL,
  trace: NULL,
@@ -301,6 +282,6 @@ static const groupsig_t bbs04_groupsig_bundle = {
 /* Write any cplusplus specific code here */
 #endif
 
-#endif /* _BBS04_H */
+#endif /* _PS16_H */
 
-/* bbs04.h ends here */
+/* ps16.h ends here */

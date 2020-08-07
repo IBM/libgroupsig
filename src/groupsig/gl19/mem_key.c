@@ -285,7 +285,14 @@ int gl19_mem_key_export(byte_t **bytes, uint32_t *size, groupsig_key_t *key) {
     if(pbcext_dump_element_G1_bytes(&__bytes, &len, gl19_key->h2s) == IERROR)
       GOTOENDRC(IERROR, gl19_mem_key_export);
     ctr += len;
-  } else { ctr += sizeof(int); }     
+  } else { ctr += sizeof(int); }
+
+  /* Sanity check */
+  if (ctr != _size) {
+    LOG_ERRORCODE_MSG(&logger, __FILE__, "gl19_mem_key_export", __LINE__, 
+		      EDQUOT, "Unexpected key scheme.", LOGERROR);
+    GOTOENDRC(IERROR, gl19_mem_key_export);
+  }  
 
   /* Prepare the return */
   if(!*bytes) {
@@ -293,13 +300,6 @@ int gl19_mem_key_export(byte_t **bytes, uint32_t *size, groupsig_key_t *key) {
   } else {
     memcpy(*bytes, _bytes, ctr);
     mem_free(_bytes); _bytes = NULL;
-  }
-
-  /* Sanity check */
-  if (ctr != _size) {
-    LOG_ERRORCODE_MSG(&logger, __FILE__, "gl19_mem_key_export", __LINE__, 
-		      EDQUOT, "Unexpected key scheme.", LOGERROR);
-    GOTOENDRC(IERROR, gl19_mem_key_export);
   }
 
   *size = ctr;

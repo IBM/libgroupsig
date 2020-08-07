@@ -177,7 +177,7 @@ char* gl19_blindsig_to_string(groupsig_blindsig_t *sig) {
 
   bytes = NULL;
   if(gl19_blindsig_export(&bytes, &size, sig) == IERROR) return NULL;
-  str = base64_encode(bytes, size);
+  str = base64_encode(bytes, size, 1);
   mem_free(bytes); bytes = NULL;  
   
   return str;

@@ -422,7 +422,7 @@ char* bbs04_signature_to_string(groupsig_signature_t *sig) {
 
   bytes = NULL;
   if(bbs04_signature_export(&bytes, &size, sig) == IERROR) return NULL;
-  str = base64_encode(bytes, size);
+  str = base64_encode(bytes, size, 1);
   mem_free(bytes); bytes = NULL;
 
   return str;

@@ -28,13 +28,14 @@
 #include "sys/mem.h"
 #include "registered_groupsigs.h"
 
-#define GROUPSIG_REGISTERED_GROUPSIGS_N 2//4
+#define GROUPSIG_REGISTERED_GROUPSIGS_N 3//4
 static const groupsig_t *GROUPSIG_REGISTERED_GROUPSIGS[GROUPSIG_REGISTERED_GROUPSIGS_N] = {
-  /* &kty04_groupsig_bundle, */
-  &bbs04_groupsig_bundle,
-  /* &cpy06_groupsig_bundle, */
+/* &kty04_groupsig_bundle, */
+&bbs04_groupsig_bundle,
+/* &cpy06_groupsig_bundle, */
   &gl19_groupsig_bundle,
-};
+  &ps16_groupsig_bundle,
+  };
 
 int groupsig_hello_world(void) {
   fprintf(stdout, "Hello, World!\n");
@@ -710,11 +711,11 @@ int groupsig_verify_link(uint8_t *ok,
 }
 
 int groupsig_seqlink(groupsig_proof_t **proof,
-		       groupsig_key_t *grpkey,
-		       groupsig_key_t *memkey,
-		       message_t *msg,
-		       groupsig_signature_t **sigs,
-		       message_t **msgs,
+		     groupsig_key_t *grpkey,
+		     groupsig_key_t *memkey,
+		     message_t *msg,
+		     groupsig_signature_t **sigs,
+		     message_t **msgs,
 		     uint32_t n) {
 
   const groupsig_t *gs;
@@ -736,12 +737,12 @@ int groupsig_seqlink(groupsig_proof_t **proof,
 }
 
 int groupsig_verify_seqlink(uint8_t *ok,
-			      groupsig_key_t *grpkey,
-			      groupsig_proof_t *proof,
-			      message_t *msg,
-			      groupsig_signature_t **sigs,
-			      message_t **msgs,
-			      uint32_t n) {
+			    groupsig_key_t *grpkey,
+			    groupsig_proof_t *proof,
+			    message_t *msg,
+			    groupsig_signature_t **sigs,
+			    message_t **msgs,
+			    uint32_t n) {
 
   const groupsig_t *gs;
 

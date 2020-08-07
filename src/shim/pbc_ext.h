@@ -1206,23 +1206,6 @@ int pbcext_element_G2_from_hash(pbcext_element_G2_t *dst,
 				byte_t *h,
 				uint64_t len);
 
-
-/********** OLD FUNCTIONS BELOW ************/
-
-/* /\**  */
-/*  * @fn byte_t *pbcext_element_export_bytes(byte_t **be, int *n, element_t e) */
-/*  * @brief Converts the given element into a byte string. */
-/*  * */
-/*  * @param[in,out] be Will be set to the byte representation of <i>e</i>. If *be  */
-/*  *  is NULL, memory will be internally allocated. Otherwise, it must be big  */
-/*  *  enough to store the result. */
-/*  * @param[in,out] n Will be set to the number of bytes written into *be. */
-/*  * @param[in] e The element to convert. */
-/*  *  */
-/*  * @return IOK or IERROR. */
-/*  *\/ */
-/* int pbcext_element_export_bytes(byte_t **be, int *n, element_t e); */
-
 /** 
  * @fn char* pbcext_element_Fr_to_b64(pbcext_element_Fr_t e)
  * @brief Converts the given element into a Base64 string.

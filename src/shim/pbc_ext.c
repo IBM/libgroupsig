@@ -1524,69 +1524,6 @@ int pbcext_element_G2_from_hash(pbcext_element_G2_t *dst,
 
 }
 
-/************ OLD FUNCTIONS BELOW ***********/
-
-/* int pbcext_element_export_bytes(byte_t **be, int *n, element_t e) { */
-
-/*   byte_t *_be; */
-/*   int _n; */
-
-/*   if(!be || !n) { */
-/*     LOG_EINVAL(&logger, __FILE__, "pbcext_element_export_bytes", __LINE__, LOGERROR); */
-/*     return IERROR; */
-/*   } */
-
-/*   _n = element_length_in_bytes(e); */
-
-/*   /\* Allocate internal memory when necessary *\/ */
-/*   if(!*be) { */
-/*     if(!(_be = mem_malloc(sizeof(byte_t)*_n))) { */
-/*       return IERROR; */
-/*     } */
-/*   } else { */
-/*     _be = *be; */
-/*   } */
-
-/*   if(element_to_bytes(_be, e) != _n) { */
-/*     LOG_ERRORCODE_MSG(&logger, __FILE__, "pbcext_element_export_bytes", __LINE__, */
-/* 		      EDQUOT, "element_to_bytes: unexpected number of bytes written.",  */
-/* 		      LOGERROR); */
-/*     if(!*be) { mem_free(_be); _be = NULL; } */
-/*     return IERROR; */
-/*   } */
-
-/*   if(!*be) { */
-/*     *be = _be; */
-/*   }   */
-
-/*   *n = _n; */
-
-/*   return IOK; */
-  
-/* } */
-
-
-/* char* pbcext_element_export_b64(element_t e) { */
-
-/*   byte_t *bytes; */
-/*   char *s; */
-/*   int n; */
-
-/*   /\* Get the byte representation *\/ */
-/*   bytes = NULL; */
-/*   if(pbcext_element_export_bytes(&bytes, &n, e) == IERROR) { */
-/*     return NULL; */
-/*   } */
-
-/*   /\* Convert it to Base64 *\/ */
-/*   s = base64_encode(bytes, n); */
-
-/*   return s; */
-
-/* } */
-
-/** Helper functions **/
-
 char* pbcext_element_Fr_to_b64(pbcext_element_Fr_t *e) {
 
   byte_t *bytes;
@@ -1604,7 +1541,7 @@ char* pbcext_element_Fr_to_b64(pbcext_element_Fr_t *e) {
     return NULL;
   }
   
-  s = base64_encode(bytes, len);
+  s = base64_encode(bytes, len, 0);
 
   /* We do not want the trailing '\n' */
   if (s[strlen(s)-1] == '\n') s[strlen(s)-1] = 0;
@@ -1632,7 +1569,7 @@ char* pbcext_element_Fp_to_b64(pbcext_element_Fp_t *e) {
     return NULL;
   }
   
-  s = base64_encode(bytes, len);
+  s = base64_encode(bytes, len, 0);
 
   /* We do not want the trailing '\n' */
   if (s[strlen(s)-1] == '\n') s[strlen(s)-1] = 0;
@@ -1660,7 +1597,7 @@ char* pbcext_element_G1_to_b64(pbcext_element_G1_t *e) {
     return NULL;
   }
   
-  s = base64_encode(bytes, len);
+  s = base64_encode(bytes, len, 0);
 
   /* We do not want the trailing '\n' */
   if (s[strlen(s)-1] == '\n') s[strlen(s)-1] = 0;
@@ -1688,7 +1625,7 @@ char* pbcext_element_G2_to_b64(pbcext_element_G2_t *e) {
     return NULL;
   }
   
-  s = base64_encode(bytes, len);
+  s = base64_encode(bytes, len, 0);
 
   /* We do not want the trailing '\n' */
   if (s[strlen(s)-1] == '\n') s[strlen(s)-1] = 0;
@@ -1716,7 +1653,7 @@ char* pbcext_element_GT_to_b64(pbcext_element_GT_t *e) {
     return NULL;
   }
   
-  s = base64_encode(bytes, len);
+  s = base64_encode(bytes, len, 0);
 
   /* We do not want the trailing '\n' */
   if (s[strlen(s)-1] == '\n') s[strlen(s)-1] = 0;

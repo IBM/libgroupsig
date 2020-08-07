@@ -27,7 +27,6 @@
 #include "groupsig/bbs04/grp_key.h"
 #include "groupsig/bbs04/mgr_key.h"
 #include "groupsig/bbs04/gml.h"
-#include "math/nt.h"
 #include "sys/mem.h"
 #include "shim/pbc_ext.h"
 

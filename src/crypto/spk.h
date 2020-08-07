@@ -81,8 +81,12 @@ int spk_dlog_free(spk_dlog_t *spk);
 int spk_dlog_copy(spk_dlog_t *dst, spk_dlog_t *src);
 
 /**
- * @fn int spk_dlog_sign(bigz_t *pi, bigz_t G, bigz_t g, bigz_t q, bigz_t x, 
- *                       byte_t *msg, uint32_t size)
+ * @fn int spk_dlog_sign(spk_dlog_t_t *pi, 
+ *                       pbcext_element_G1_t *G, 
+ *                       pbcext_element_G1_t *g,
+ *                       pbcext_element_Fr_t *x, 
+ *                       byte_t *msg, 
+ *                       uint32_t size)
  * Computes a conventional discrete log signature proof of knowledge for:
  *   SPK[x: g^x mod p = G](msg).
  *
@@ -104,8 +108,10 @@ int spk_dlog_sign(spk_dlog_t *pi,
 
 /**
  * @fn int spk_dlog_verify(uint8_t *ok,
- *                         bigz_t G, bigz_t g, bigz_t q, bigz_t pi, 
- *                         byte_t *msg, uint32_t size)
+ *                         pbcext_element_G1_t *G, 
+ *                         pbcext_element_G1_t *g,
+ *                         byte_t *msg, 
+ *                         uint32_t size)
  * Verifies a conventional discrete log signature proof of knowledge for:
  *   SPK[x: g^x mod p = G](msg).
  *
