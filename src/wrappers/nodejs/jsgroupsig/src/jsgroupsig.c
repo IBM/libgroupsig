@@ -605,7 +605,7 @@ napi_value gs_join_mem
   napi_value args[4], external;
   groupsig_key_t *memkey, *grpkey;
   message_t *mout, *min;
-  int32_t seq;
+  int32_t step;
   size_t argc;
   bool b;
 
@@ -618,8 +618,8 @@ napi_value gs_join_mem
     return NULL;
   }
 
-  /* Get seq */
-  NAPI_GET_ARG_INT32(env, args[0], seq);
+  /* Get step */
+  NAPI_GET_ARG_INT32(env, args[0], step);
   
   /* Get memkey */
   if (napi_get_value_external(env, args[1], (void **) &memkey) != napi_ok) { 
@@ -651,7 +651,7 @@ napi_value gs_join_mem
     
   /* Run groupsig_join_mem */
   mout = NULL;  
-  status = groupsig_join_mem(&mout, memkey, seq, min, grpkey);  
+  status = groupsig_join_mem(&mout, memkey, step, min, grpkey);  
   assert (status == napi_ok);
 
   status = napi_create_external(env, mout, NULL, NULL, &external);
@@ -672,7 +672,7 @@ napi_value gs_join_mgr
   groupsig_key_t *mgrkey, *grpkey;
   gml_t *gml;
   message_t *mout, *min;
-  int32_t seq;
+  int32_t step;
   size_t argc;
   bool b;
 
@@ -685,8 +685,8 @@ napi_value gs_join_mgr
     return NULL;
   }
 
-  /* Get seq */
-  NAPI_GET_ARG_INT32(env, args[0], seq);
+  /* Get step */
+  NAPI_GET_ARG_INT32(env, args[0], step);
 
   /* Get mgrkey */
   if (napi_get_value_external(env, args[1], (void **) &mgrkey) != napi_ok) { 
@@ -727,7 +727,7 @@ napi_value gs_join_mgr
     
   /* Run groupsig_join_mgr */
   mout = NULL;  
-  status = groupsig_join_mgr(&mout, gml, mgrkey, seq, min, grpkey);  
+  status = groupsig_join_mgr(&mout, gml, mgrkey, step, min, grpkey);  
   assert (status == napi_ok);
 
   status = napi_create_external(env, mout, NULL, NULL, &external);
@@ -1090,7 +1090,8 @@ napi_value gs_convert
 
   status = napi_ok;
   csigs = NULL; bsigs = NULL;
-  
+
+  /* Get the blinded signatures */
   status = napi_get_array_length(env, args[0], &n_bsigs);
   assert (status == napi_ok);
   
@@ -1306,7 +1307,6 @@ napi_value gs_get_code_from_str
     napi_throw_type_error(env, NULL, "Wrong number of arguments");
     return NULL;
   }
-
 
   if (napi_get_value_external(env, args[0], (void **) &code) != napi_ok) { 
     napi_throw_type_error(env, "EINVAL", "Expected external");	       
