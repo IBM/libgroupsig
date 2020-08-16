@@ -1,5 +1,5 @@
 name: CI
-on:  workflow_dispatch:
+on:  workflow_dispatch
 jobs:
   # Regular C build with two compilers, using the environment:
   build_using_compiler_in_environment:
@@ -13,7 +13,7 @@ jobs:
     # regular environment variables, as they are already
     # supported by github actions:
     env:
-      - CC: ${{ matrix.compiler }}
+      CC: ${{ matrix.compiler }}
     steps:
       - uses: actions/checkout@master
       - uses: docker://lpenz/ghaction-cmake:v0.9
