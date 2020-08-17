@@ -31,6 +31,6 @@ jobs:
       - uses: actions/checkout@master
       - uses: docker://lpenz/ghaction-cmake:v0.9
         with:
-          dependencies_debian: libssl-dev
+          dependencies_debian: libssl-dev googletest
           preset: ${{ matrix.preset }}
           cmakeflags: ${{ format('-DUSE_GTEST=ON') }}
