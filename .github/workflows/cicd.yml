@@ -10,7 +10,7 @@ jobs:
             - clang
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@develop
+      - uses: actions/checkout@master
       - uses: docker://lpenz/ghaction-cmake:v0.9
         with:
           dependencies_debian: libssl-dev
