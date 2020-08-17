@@ -17,10 +17,10 @@ jobs:
       - name: Build with Unit Tests
         uses: lukka/run-cmake@v1
         with:
-          cmakeListsOrSettingsJson: CMakeListsTxtBasic
+          cmakeListsOrSettingsJson: CMakeListsTxtAdvanced
           cmakeGenerator: UnixMakefiles
 #          cmakeListsTxtPath: '${{ github.workspace }}/CMakeLists.txt'
-#          cmakeAppendedArgs:  
+          cmakeAppendedArgs:  '-DUSE_GTEST=ON'
 #          buildDirectory: ${{ github.workspace }}/cmakebuild
 #          useVcpkgToolchainFile: false
       - name: Run Unit Tests #Linux
