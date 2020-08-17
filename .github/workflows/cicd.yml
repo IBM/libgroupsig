@@ -9,6 +9,8 @@ jobs:
       matrix:
         os: [ubuntu-latest]
     steps:
+      - name: Checkout
+        uses: actions/checkout@v2
       - name: Install Linux dependencies
         if: "contains( matrix.os, 'ubuntu')"
         run: sudo apt-get install libssl-dev libgtest-dev
