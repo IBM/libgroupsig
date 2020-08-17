@@ -1,37 +1,25 @@
-name: CICD
+name: Application Framework Build with Unit Tests
+
 on: [push, pull_request]
 jobs:
-  # Regular C build with two compilers, using cmakeflags:
-  build_core_using_compiler_in_cmakeflags:
-    strategy:
-        matrix:
-          compiler:
-            - gcc
-            - clang
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@master
-      - uses: docker://lpenz/ghaction-cmake:v0.9
-        with:
-          dependencies_debian: libssl-dev
-          cmakeflags: ${{ format('-DCMAKE_C_COMPILER={0}', matrix.compiler) }}
-  # Tests with various sanitizers and valgrind:
   test:
+    runs-on: ${{ matrix.os }}
     strategy:
-        matrix:
-          test_command: ${{ format('-DExperimentalMemCheck --debug --output-on-failure .') }}
-          preset:
-#            - clang-sanitizer-address
-#            - clang-sanitizer-memory
-#            - clang-sanitizer-undefined
-#            - clang-sanitizer-dataflow
-#            - clang-sanitizer-safe-stack
-            - valgrind
-    runs-on: ubuntu-latest
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
     steps:
-      - uses: actions/checkout@master
-      - uses: docker://lpenz/ghaction-cmake:v0.9
+      - name: Install Linux dependencies
+        if: "contains( matrix.os, 'ubuntu')"
+        run: sudo apt-get install libssl-dev libgtest-dev
+      - name: Build with Unit Tests
+        uses: lukka/run-cmake@v1
         with:
-          dependencies_debian: libssl-dev googletest libgtest-dev
-          preset: ${{ matrix.preset }}
-          cmakeflags: ${{ format('-DUSE_GTEST=ON') }}
+          cmakeAppendedArgs:  
+#          buildDirectory: ${{ github.workspace }}/cmakebuild
+          useVcpkgToolchainFile: false
+      - name: Run Unit Tests Linux
+        if: "contains( matrix.os, 'ubuntu')"
+        shell: bash
+        run: |
+          ctest --output-on-failure .
