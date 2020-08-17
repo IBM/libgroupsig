@@ -12,7 +12,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
       - name: Install Linux dependencies
-        if: "contains( matrix.os, 'ubuntu')"
+#        if: "contains( matrix.os, 'ubuntu')"
         run: sudo apt-get install libssl-dev googletest libgtest-dev
       - name: Build with Unit Tests
         uses: lukka/run-cmake@v1
