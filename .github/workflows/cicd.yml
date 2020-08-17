@@ -12,15 +12,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
       - name: Install Linux dependencies
-#        if: "contains( matrix.os, 'ubuntu')"
-        run: sudo apt-get install libssl-dev googletest libgtest-dev
+        if: "contains( matrix.os, 'ubuntu')"
+        run: |
+          sudo apt-get install libssl-dev googletest libgtest-dev
+          dpkg -L googletest
+          dpkg -L libgtest-dev
       - name: Build with Unit Tests
         uses: lukka/run-cmake@v1
         with:
           cmakeListsOrSettingsJson: CMakeListsTxtAdvanced
           cmakeGenerator: UnixMakefiles
-#          cmakeListsTxtPath: '${{ github.workspace }}/CMakeLists.txt'
-          cmakeAppendedArgs:  '-DUSE_GTEST=ON -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON'
+          cmakeAppendedArgs: '-DUSE_GTEST=ON'
           buildDirectory: ${{ github.workspace }}/build
 #          useVcpkgToolchainFile: false
       - name: Run Unit Tests #Linux
@@ -28,4 +30,4 @@ jobs:
         shell: bash
         run: |
           ctest --output-on-failure .
-          ctest --output-on-failure -T memcheck .
+#          ctest --output-on-failure -T memcheck .
