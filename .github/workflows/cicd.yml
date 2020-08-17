@@ -2,7 +2,7 @@ name: CICD
 on: [push, pull_request]
 jobs:
   # Regular C build with two compilers, using cmakeflags:
-  build_using_compiler_in_cmakeflags:
+  build_core_using_compiler_in_cmakeflags:
     strategy:
         matrix:
           compiler:
@@ -15,3 +15,20 @@ jobs:
         with:
           dependencies_debian: libssl-dev
           cmakeflags: ${{ format('-DCMAKE_C_COMPILER={0}', matrix.compiler) }}
+  # Tests with various sanitizers and valgrind:
+  test:
+    strategy:
+        matrix:
+          preset:
+            - clang-sanitizer-address
+            - clang-sanitizer-memory
+            - clang-sanitizer-undefined
+            - clang-sanitizer-dataflow
+            - clang-sanitizer-safe-stack
+            - valgrind
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - uses: docker://lpenz/ghaction-cmake:v0.9
+        with:
+          preset: ${{ matrix.preset }}
