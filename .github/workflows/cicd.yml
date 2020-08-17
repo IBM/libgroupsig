@@ -1,5 +1,5 @@
-name: CI
-on:  workflow_dispatch
+name: CICD
+on: [push, pull_request]
 jobs:
   # Regular C build with two compilers, using the environment:
   build_using_compiler_in_environment:
