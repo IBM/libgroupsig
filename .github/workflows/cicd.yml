@@ -15,11 +15,11 @@ jobs:
       - name: Build with Unit Tests
         uses: lukka/run-cmake@v1
         with:
-          cmakeListsOrSettingsJson: CMakeListsTxtAdvanced
-          cmakeListsTxtPath: '${{ github.workspace }}/CMakeLists.txt'
-          cmakeAppendedArgs:  
+          cmakeListsOrSettingsJson: CMakeListsTxtBasic
+#          cmakeListsTxtPath: '${{ github.workspace }}/CMakeLists.txt'
+#          cmakeAppendedArgs:  
 #          buildDirectory: ${{ github.workspace }}/cmakebuild
-          useVcpkgToolchainFile: false
+#          useVcpkgToolchainFile: false
       - name: Run Unit Tests Linux
         if: "contains( matrix.os, 'ubuntu')"
         shell: bash
