@@ -19,7 +19,7 @@ jobs:
   test:
     strategy:
         matrix:
-          test_command: ${{ format('ctest -DExperimentalMemCheck --debug --output-on-failure .') }}
+          test_command: ${{ format('-DExperimentalMemCheck --debug --output-on-failure .') }}
           preset:
 #            - clang-sanitizer-address
 #            - clang-sanitizer-memory
