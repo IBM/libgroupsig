@@ -21,11 +21,11 @@ jobs:
           cmakeGenerator: UnixMakefiles
 #          cmakeListsTxtPath: '${{ github.workspace }}/CMakeLists.txt'
           cmakeAppendedArgs:  '-DUSE_GTEST=ON'
-#          buildDirectory: ${{ github.workspace }}/cmakebuild
+          buildDirectory: ${{ github.workspace }}/build
 #          useVcpkgToolchainFile: false
       - name: Run Unit Tests #Linux
 #        if: "contains( matrix.os, 'ubuntu')"
         shell: bash
         run: |
-          ctest --output-on-failure .
+          LD_DEBUG=all ctest --output-on-failure .
           ctest --output-on-failure -T memcheck .
