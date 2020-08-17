@@ -23,8 +23,9 @@ jobs:
 #          cmakeAppendedArgs:  
 #          buildDirectory: ${{ github.workspace }}/cmakebuild
 #          useVcpkgToolchainFile: false
-      - name: Run Unit Tests Linux
-        if: "contains( matrix.os, 'ubuntu')"
+      - name: Run Unit Tests #Linux
+#        if: "contains( matrix.os, 'ubuntu')"
         shell: bash
         run: |
           ctest --output-on-failure .
+          ctest --output-on-failure -T memcheck .
