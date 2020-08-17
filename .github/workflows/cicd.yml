@@ -15,7 +15,7 @@ jobs:
       - name: Build with Unit Tests
         uses: lukka/run-cmake@v1
         with:
-          cmakeListsTxtPath: 'CMakeLists.txt'
+          cmakeListsTxtPath: '${{ github.workspace }}/CMakeLists.txt'
           cmakeAppendedArgs:  
 #          buildDirectory: ${{ github.workspace }}/cmakebuild
           useVcpkgToolchainFile: false
