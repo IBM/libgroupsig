@@ -1,22 +1,6 @@
 name: CICD
 on: [push, pull_request]
 jobs:
-  # Regular C build with two compilers, using the environment:
-  build_using_compiler_in_environment:
-    strategy:
-        matrix:
-          compiler:
-            - gcc
-            - clang
-    runs-on: ubuntu-latest
-    # We can use cmakeflags for this, or we can just use
-    # regular environment variables, as they are already
-    # supported by github actions:
-    env:
-      CC: ${{ matrix.compiler }}
-    steps:
-      - uses: actions/checkout@master
-      - uses: docker://lpenz/ghaction-cmake:v0.9
   # Regular C build with two compilers, using cmakeflags:
   build_using_compiler_in_cmakeflags:
     strategy:
@@ -26,8 +10,7 @@ jobs:
             - clang
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@master
-      # This examples uses the appropriate cmakeflags
+      - uses: actions/checkout@develop
       - uses: docker://lpenz/ghaction-cmake:v0.9
         with:
           dependencies_debian: libssl-dev
