@@ -19,14 +19,14 @@ jobs:
   test:
     strategy:
         matrix:
-          preset:
+#          preset:
 #            - clang-sanitizer-address
 #            - clang-sanitizer-memory
 #            - clang-sanitizer-undefined
 #            - clang-sanitizer-dataflow
 #            - clang-sanitizer-safe-stack
-            - valgrind
-	      test_command: ctest -DExperimentalMemCheck --debug --output-on-failure .
+#            - valgrind
+	  test_command: ctest -DExperimentalMemCheck --debug --output-on-failure .
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@master
