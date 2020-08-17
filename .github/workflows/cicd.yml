@@ -20,11 +20,11 @@ jobs:
     strategy:
         matrix:
           preset:
-            - clang-sanitizer-address
-            - clang-sanitizer-memory
-            - clang-sanitizer-undefined
-            - clang-sanitizer-dataflow
-            - clang-sanitizer-safe-stack
+#            - clang-sanitizer-address
+#            - clang-sanitizer-memory
+#            - clang-sanitizer-undefined
+#            - clang-sanitizer-dataflow
+#            - clang-sanitizer-safe-stack
             - valgrind
     runs-on: ubuntu-latest
     steps:
