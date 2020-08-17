@@ -33,5 +33,4 @@ jobs:
         with:
           dependencies_debian: libssl-dev
           preset: ${{ matrix.preset }}
-      - name: Run Unit Tests
-        run: make test
+          cmakeflags: ${{ format('-DUSE_GTEST=ON') }}
