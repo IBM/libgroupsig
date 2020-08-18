@@ -25,7 +25,8 @@ jobs:
       - name: Run Unit Tests #Linux
 #        if: "contains( matrix.os, 'ubuntu')"
         shell: bash
+        working-directory: ${{ github.workspace }}/build
         run: |
-          make test
           ctest --output-on-failure .
           ctest --output-on-failure -T memcheck .
+          make test
