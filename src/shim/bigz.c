@@ -355,6 +355,8 @@ int bigz_tdiv_ui(bigz_t q, bigz_t r, bigz_t D, unsigned long int d) {
     return IERROR;
   }
 
+  bigz_free(_d); _d = NULL;
+
   return IOK;
 
   

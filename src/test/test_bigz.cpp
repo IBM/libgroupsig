@@ -682,9 +682,6 @@ namespace bigz {
     fd = fopen("test", "r");
     EXPECT_NE(fd, nullptr);
 
-    b2 = bigz_init();
-    EXPECT_NE(b2, nullptr);
-
     b2 = bigz_get_bigz_fd(fd);
     EXPECT_NE(b2, nullptr);
 
@@ -694,9 +691,6 @@ namespace bigz {
     rc = bigz_cmp(b1, b2);
     EXPECT_EQ(rc, 0);
 
-    rc = bigz_free(b2);
-    EXPECT_EQ(rc, IOK);    
-    
     /* Free */
     rc = bigz_free(b1);
     EXPECT_EQ(rc, IOK);
