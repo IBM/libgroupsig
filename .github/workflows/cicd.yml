@@ -11,11 +11,13 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      - name: Install Linux dependencies
+      - name: Install Linux dependencies via apt
         if: "contains( matrix.os, 'ubuntu')"
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libssl-dev googletest libgtest-dev
+        run: | 
+	  sudo apt-get install libssl-dev googletest libgtest-dev
+          # https://askubuntu.com/questions/145887/why-no-library-files-installed-for-google-test
+          echo "/usr/lib" && ls /usr/lib
+          echo "/../x86_64-linux-gnu/" && ls /usr/lib/x86_64-linux-gnu/
       - name: Build with Unit Tests
         uses: lukka/run-cmake@v1
         with:
