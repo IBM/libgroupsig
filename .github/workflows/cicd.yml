@@ -11,9 +11,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      - name: Install Linux dependencies via apt
+      - name: Install Linux dependencies
         if: "contains( matrix.os, 'ubuntu')"
-        run: sudo apt-get install libssl-dev
+        run: sudo apt-get install libssl-dev valgrind
       - name: Build with Unit Tests
         uses: lukka/run-cmake@v1
         with:
@@ -29,4 +29,3 @@ jobs:
         run: |
           ctest --output-on-failure .
           ctest --output-on-failure -T memcheck .
-          make test
