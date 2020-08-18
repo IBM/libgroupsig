@@ -15,8 +15,7 @@ jobs:
         if: "contains( matrix.os, 'ubuntu')"
         run: |
           sudo apt-get install libssl-dev googletest libgtest-dev
-          dpkg -L googletest
-          dpkg -L libgtest-dev
+          ls /usr/lib
       - name: Build with Unit Tests
         uses: lukka/run-cmake@v1
         with:
