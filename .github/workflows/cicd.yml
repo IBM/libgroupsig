@@ -26,5 +26,6 @@ jobs:
 #        if: "contains( matrix.os, 'ubuntu')"
         shell: bash
         run: |
+          make test
           ctest --output-on-failure .
-#          ctest --output-on-failure -T memcheck .
+          ctest --output-on-failure -T memcheck .
