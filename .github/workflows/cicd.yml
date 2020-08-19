@@ -22,7 +22,7 @@ jobs:
           cmakeAppendedArgs: '-DUSE_GTEST=ON'
           buildDirectory: ${{ github.workspace }}/build
 #          useVcpkgToolchainFile: false
-      - name: Run Unit Tests #Linux
+      - name: Run Unit Tests
 #        if: "contains( matrix.os, 'ubuntu')"
         shell: bash
         working-directory: ${{ github.workspace }}/build
@@ -37,6 +37,15 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+      - name: Install Linux dependencies for Core
+        if: "contains( matrix.os, 'ubuntu')"
+        run: sudo apt-get install libssl-dev valgrind
+      - name: Build Core
+        uses: lukka/run-cmake@v1
+        with:
+          cmakeListsOrSettingsJson: CMakeListsTxtAdvanced
+          cmakeGenerator: UnixMakefiles
+          buildDirectory: ${{ github.workspace }}/build
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v1
         with:
