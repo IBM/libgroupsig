@@ -78,5 +78,21 @@ jobs:
 #        uses: codecov/codecov-action@v1
 #
 #
-#  test-jsgroupsig:
+  test-jsgroupsig:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [8.x, 10.x, 12.x]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: Test Node.js wrapper
+        working-directory: ${{ github.workspace }}/src/wrappers/nodejs/jsgroupsig
+        run: |
+          npm install
+          npm test
 #  test-jgroupsig:
