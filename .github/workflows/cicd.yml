@@ -86,6 +86,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+      - name: Install CMake
+        run: sudo apt-get install cmake
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v1
         with:
