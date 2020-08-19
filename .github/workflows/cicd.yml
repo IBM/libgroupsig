@@ -38,8 +38,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
       - name: Install Linux dependencies for Core
-        if: "contains( matrix.os, 'ubuntu')"
-        run: sudo apt-get install libssl-dev valgrind
+        run: sudo apt-get install libssl-dev
       - name: Build Core
         uses: lukka/run-cmake@v1
         with:
@@ -87,7 +86,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
       - name: Install CMake
-        run: sudo apt-get install cmake
+        run: sudo apt-get install libssl-dev cmake
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v1
         with:
