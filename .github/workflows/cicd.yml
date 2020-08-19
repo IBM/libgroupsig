@@ -67,7 +67,10 @@ jobs:
           python -m pip install --upgrade pip
           pip install path.py pytest
           python setup.py install
-          pytest -v
+          pytest -v --cov=./ --cov-report=xml
+      - name: Upload coverage
+        uses: codecov/codecov-action@v1
+#
 #      - name: Install dependencies
 #        working-directory: ${{ github.workspace }}/src/wrappers/python
 #        run: |
