@@ -35,7 +35,9 @@ jobs:
           ctest -V --output-on-failure -T memcheck .
       - name: Process coverage
         working-directory: ${{ github.workspace }}/build
-        run: make coverage
+        run: | 
+          make coverage
+          cp ${{ github.workspace }}/.github/codecov/codecov.yml codecov.yml
       - name: Upload coverage
         uses: codecov/codecov-action@v1
 
