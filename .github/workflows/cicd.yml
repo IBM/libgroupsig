@@ -91,11 +91,10 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node-version }}
-      - name: Test Node.js wrapper
+      - name: Install Node.js wrapper
         working-directory: ${{ github.workspace }}/src/wrappers/nodejs/jsgroupsig
-        run: |
-          cmake --version
-          ls
-          npm install
-          npm test
+        run: npm install
+      - name: Test Node.js wrapper
+	working-directory: ${{ github.workspace }}/src/wrappers/nodejs/jsgroupsig
+        run: npm test
 #  test-jgroupsig:
