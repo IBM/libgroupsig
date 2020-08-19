@@ -29,6 +29,13 @@ jobs:
         run: |
           ctest --output-on-failure .
           ctest -V --output-on-failure -T memcheck .
+      - name: Process coverage
+        working-directory: ${{ github.workspace }}/build
+        run: make coverage
+      - name: Upload coverage
+        working-directory: ${{ github.workspace }}/build
+        uses: codecov/codecov-action@v1
+#
   test-pygroupsig:
     strategy:
       matrix:
