@@ -3,6 +3,7 @@ project (jsgroupsig)
 
 # Add modules
 list (APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake_modules)
+message("CMAKE MODULE PATH: ${CMAKE_MODULE_PATH}")
 
 # Install libgroupsig
 include(libgroupsig)
