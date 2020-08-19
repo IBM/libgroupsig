@@ -22,6 +22,8 @@ add_library(${PROJECT_NAME}
   ${SOURCE_C_FILES}
   ${SOURCE_JS_FILES})
 
+add_dependencies(${PROJECT_NAME} libgroupsig)
+
 set_target_properties(${PROJECT_NAME}
   PROPERTIES PREFIX "" SUFFIX ".node")
 target_include_directories(${PROJECT_NAME}
