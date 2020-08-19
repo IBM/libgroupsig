@@ -94,7 +94,7 @@ jobs:
       - name: Test Node.js wrapper
         working-directory: ${{ github.workspace }}/src/wrappers/nodejs/jsgroupsig
         run: |
-	  cmake --version
+          cmake --version
           ls
           npm install
           npm test
