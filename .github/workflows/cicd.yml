@@ -1,4 +1,4 @@
-name: Application Framework Build with Unit Tests
+name: Build with Unit Tests
 
 on: [push, pull_request]
 jobs:
@@ -27,20 +27,25 @@ jobs:
         shell: bash
         working-directory: ${{ github.workspace }}/build
         run: |
-          ctest --debug --output-on-failure .
-          ctest --debug --output-on-failure -T memcheck .
-#  test-pygroupsig:
-#    strategy:
-#      matrix:
-#        python-version: [2.7, 3.5, 3.6, 3.7, 3.8]
-#    runs-on: ubuntu-latest
-#    steps:
-#      - name: Checkout
-#        uses: actions/checkout@v2
-#      - name: Set up Python ${{ matrix.python-version }}
-#        uses: actions/setup-python@v1
-#        with:
-#          python-version: ${{ matrix.python-version }}
+          ctest --output-on-failure .
+          ctest -V --output-on-failure -T memcheck .
+  test-pygroupsig:
+    strategy:
+      matrix:
+        python-version: [3.5, 3.6, 3.7, 3.8]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Build
+        working-directory: ${{ github.workspace }}/src/wrappers/python
+        run: |
+          python -m pip install --upgrade pip
+          python setup.py test
 #      - name: Install dependencies
 #        working-directory: ${{ github.workspace }}/src/wrappers/python
 #        run: |
