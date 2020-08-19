@@ -81,7 +81,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [8.x, 10.x] #, 12.x]
+        node-version: [8.x, 10.x, 12.x]
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -94,6 +94,8 @@ jobs:
       - name: Test Node.js wrapper
         working-directory: ${{ github.workspace }}/src/wrappers/nodejs/jsgroupsig
         run: |
+	  cmake --version
+          ls
           npm install
           npm test
 #  test-jgroupsig:
