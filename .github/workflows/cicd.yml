@@ -19,7 +19,7 @@ jobs:
         with:
           cmakeListsOrSettingsJson: CMakeListsTxtAdvanced
           cmakeGenerator: UnixMakefiles
-          cmakeAppendedArgs: '-DUSE_GTEST=ON'
+          cmakeAppendedArgs: '-DUSE_GTEST=ON -DUSE_GCOV=ON'
           buildDirectory: ${{ github.workspace }}/build
 #          useVcpkgToolchainFile: false
       - name: Run Unit Tests
