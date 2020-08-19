@@ -95,6 +95,6 @@ jobs:
         working-directory: ${{ github.workspace }}/src/wrappers/nodejs/jsgroupsig
         run: npm install
       - name: Test Node.js wrapper
-	working-directory: ${{ github.workspace }}/src/wrappers/nodejs/jsgroupsig
+        working-directory: ${{ github.workspace }}/src/wrappers/nodejs/jsgroupsig
         run: npm test
 #  test-jgroupsig:
