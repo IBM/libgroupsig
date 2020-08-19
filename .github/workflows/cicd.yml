@@ -103,7 +103,16 @@ jobs:
       matrix:
         java-version: [8 9 10 11]
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Install Linux dependencies
+        run: sudo apt-get install libssl-dev valgrind
+      - name: Build with Unit Tests
+        uses: lukka/run-cmake@v1
+        with:
+          cmakeListsOrSettingsJson: CMakeListsTxtAdvanced
+          cmakeGenerator: UnixMakefiles
+          buildDirectory: ${{ github.workspace }}/build
       - name: Set up JDK ${{ matrix.java-version }}
         uses: actions/setup-java@v1
         with:
