@@ -51,6 +51,7 @@
 typedef struct {
   pbcext_element_Fr_t *isk; /**< Issuer secret key. */
   pbcext_element_Fr_t *csk; /**< Converter secret key. */
+  pbcext_element_Fr_t *esk; /**< Extractor secret key. */
 } gl19_mgr_key_t;
 
 /** 
@@ -98,7 +99,7 @@ int gl19_mgr_key_get_size(groupsig_key_t *key);
  * @brief Writes a bytearray representation of the given manager key to an array
  *  with format:
  *
- *  | GL19_CODE | KEYTYPE | size_isk | isk | size_cpk | cpk |
+ *  | GL19_CODE | KEYTYPE | size_isk | isk | size_cpk | cpk | size_esk | esk |
  *
  * @param[in,out] bytes A pointer to the array that will contain the exported
  *  manager key. If <i>*bytes</i> is NULL, memory will be internally allocated.

@@ -40,14 +40,14 @@ int gl19_sign(groupsig_signature_t *sig, message_t *msg, groupsig_key_t *memkey,
      that are not specified in the paper but helpful or required for its 
      implementation will be named aux[_<name>]. */
 
-  pbcext_element_Fr_t *alpha, *r1, *r2, *r3, *ss, *negy, *aux_Zr, *x[7];
+  pbcext_element_Fr_t *alpha, *alpha2, *r1, *r2, *r3, *ss, *negy, *aux_Zr, *x[8];
   pbcext_element_G1_t *aux, *aux_h2negr2, *A_d;
-  pbcext_element_G1_t *y[4], *g[7];
+  pbcext_element_G1_t *y[6], *g[8];
   gl19_signature_t *gl19_sig;
   gl19_grp_key_t *gl19_grpkey;
   gl19_mem_key_t *gl19_memkey;
   /* gl19_sysenv_t *gl19_sysenv; */
-  uint16_t i[8][2], prods[4];
+  uint16_t i[11][2], prods[6];
   int rc;
 
   if(!sig || !msg || 
@@ -97,6 +97,30 @@ int gl19_sign(groupsig_signature_t *sig, message_t *msg, groupsig_key_t *memkey,
     GOTOENDRC(IERROR, gl19_sign);
   if(pbcext_element_G1_add(gl19_sig->nym2, gl19_sig->nym2, aux) == IERROR)
     GOTOENDRC(IERROR, gl19_sign);
+
+  /* Add extra encryption of h^y with epk */
+  if(!(alpha2 = pbcext_element_Fr_init()))
+    GOTOENDRC(IERROR, gl19_sign);
+  if(pbcext_element_Fr_random(alpha2) == IERROR)
+    GOTOENDRC(IERROR, gl19_sign);
+  
+  /* ehy1 = g1^alpha2 */
+  if(!(gl19_sig->ehy1 = pbcext_element_G1_init()))
+    GOTOENDRC(IERROR, gl19_sign);
+  if(pbcext_element_G1_mul(gl19_sig->ehy1, gl19_grpkey->g, alpha2) == IERROR)
+    GOTOENDRC(IERROR, gl19_sign);  
+
+  /* ehy2 = epk^alpha2*h^y */
+  if(!(gl19_sig->ehy2 = pbcext_element_G1_init()))
+    GOTOENDRC(IERROR, gl19_sign);
+  if(!(aux = pbcext_element_G1_init()))
+    GOTOENDRC(IERROR, gl19_sign);
+  if(pbcext_element_G1_mul(gl19_sig->ehy2, gl19_grpkey->epk, alpha2) == IERROR)
+    GOTOENDRC(IERROR, gl19_sign);
+  if(pbcext_element_G1_mul(aux, gl19_grpkey->h, gl19_memkey->y) == IERROR)
+    GOTOENDRC(IERROR, gl19_sign);
+  if(pbcext_element_G1_add(gl19_sig->ehy2, gl19_sig->ehy2, aux) == IERROR)
+    GOTOENDRC(IERROR, gl19_sign);  
 
   /* AA = A^r1*/
   if(!(gl19_sig->AA = pbcext_element_G1_init()))
@@ -168,6 +192,8 @@ int gl19_sign(groupsig_signature_t *sig, message_t *msg, groupsig_key_t *memkey,
   y[1] = gl19_sig->nym2;
   y[2] = A_d;
   y[3] = gl19_grpkey->g1;
+  y[4] = gl19_sig->ehy1;
+  y[5] = gl19_sig->ehy2;
   
   g[0] = gl19_grpkey->g;
   g[1] = gl19_grpkey->cpk;
@@ -176,6 +202,7 @@ int gl19_sign(groupsig_signature_t *sig, message_t *msg, groupsig_key_t *memkey,
   g[4] = gl19_grpkey->h2;
   g[5] = gl19_sig->d;
   g[6] = gl19_grpkey->h1;
+  g[7] = gl19_grpkey->epk;
 
   x[0] = aux_Zr; // -x
   x[1] = gl19_memkey->y;
@@ -184,28 +211,34 @@ int gl19_sign(groupsig_signature_t *sig, message_t *msg, groupsig_key_t *memkey,
   x[4] = ss;
   x[5] = alpha;
   x[6] = negy;
+  x[7] = alpha2;
 
-  i[0][0] = 5; i[0][1] = 0;
-  i[1][0] = 5; i[1][1] = 1;
-  i[2][0] = 1; i[2][1] = 2;
-  i[3][0] = 0; i[3][1] = 3;
-  i[4][0] = 2; i[4][1] = 4;
-  i[5][0] = 3; i[5][1] = 5;
-  i[6][0] = 4; i[6][1] = 4;
-  i[7][0] = 6; i[7][1] = 6;
-
+  i[0][0] = 5; i[0][1] = 0; // alpha,g
+  i[1][0] = 5; i[1][1] = 1; // alpha,cpk
+  i[2][0] = 1; i[2][1] = 2; // y,h
+  i[3][0] = 0; i[3][1] = 3; // -x,AA
+  i[4][0] = 2; i[4][1] = 4; // r2,h2
+  i[5][0] = 3; i[5][1] = 5; // r3,d
+  i[6][0] = 4; i[6][1] = 4; // ss,h2
+  i[7][0] = 6; i[7][1] = 6; // -y,h1
+  i[8][0] = 7; i[8][1] = 0; // alpha2,g
+  i[9][0] = 7; i[9][1] = 7; // alpha2,epk
+  i[10][0] = 1; i[10][1] = 2; // y,h
+  
   prods[0] = 1;
   prods[1] = 2;
   prods[2] = 2;
   prods[3] = 3;
+  prods[4] = 1;
+  prods[5] = 2;
 
-  if(!(gl19_sig->pi = spk_rep_init(7))) GOTOENDRC(IERROR, gl19_sign);
+  if(!(gl19_sig->pi = spk_rep_init(8))) GOTOENDRC(IERROR, gl19_sign);
   
   if(spk_rep_sign(gl19_sig->pi,
-		  y, 4, // element_t *y, uint16_t ny,
-		  g, 7, // element_t *g, uint16_t ng,
-		  x, 7, // element_t *x, uint16_t nx,
-		  i, 8, // uint16_t **i, uint16_t ni,
+		  y, 6, // element_t *y, uint16_t ny,
+		  g, 8, // element_t *g, uint16_t ng,
+		  x, 8, // element_t *x, uint16_t nx,
+		  i, 11, // uint16_t **i, uint16_t ni,
 		  prods,
 		  msg->bytes, msg->length) == IERROR)
     GOTOENDRC(IERROR, gl19_sign);

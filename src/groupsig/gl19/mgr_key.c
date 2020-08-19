@@ -65,6 +65,7 @@ int gl19_mgr_key_free(groupsig_key_t *key) {
     gl19_key = key->key;
     if(gl19_key->isk) { pbcext_element_Fr_free(gl19_key->isk); gl19_key->isk = NULL; }
     if(gl19_key->csk) { pbcext_element_Fr_free(gl19_key->csk); gl19_key->csk = NULL; }
+    if(gl19_key->esk) { pbcext_element_Fr_free(gl19_key->esk); gl19_key->esk = NULL; }
     mem_free(key->key); key->key = NULL;
   }
   
@@ -77,6 +78,7 @@ int gl19_mgr_key_free(groupsig_key_t *key) {
 int gl19_mgr_key_copy(groupsig_key_t *dst, groupsig_key_t *src) {
 
   gl19_mgr_key_t *gl19_dst, *gl19_src;
+  int rc;
 
   if(!dst || dst->scheme != GROUPSIG_GL19_CODE ||
      !src || src->scheme != GROUPSIG_GL19_CODE) {
@@ -86,37 +88,38 @@ int gl19_mgr_key_copy(groupsig_key_t *dst, groupsig_key_t *src) {
 
   gl19_dst = dst->key;
   gl19_src = src->key;
-
+  rc = IOK;
+  
   /* Copy the elements */
   if(gl19_dst->isk) {
     if(!(gl19_dst->isk = pbcext_element_Fr_init())) return IERROR;
-    if(pbcext_element_Fr_set(gl19_dst->isk, gl19_src->isk) == IERROR) {
-      pbcext_element_Fr_free(gl19_dst->isk); gl19_dst->isk = NULL;
-      return IERROR;
-    }
+    if(pbcext_element_Fr_set(gl19_dst->isk, gl19_src->isk) == IERROR)
+      GOTOENDRC(IERROR, gl19_mgr_key_copy);
   }
 
   if(gl19_dst->csk) {
-    if(!(gl19_dst->csk = pbcext_element_Fr_init())) {
-      pbcext_element_Fr_free(gl19_dst->isk); gl19_dst->isk = NULL;
-      return IERROR;
-    }
-    if(pbcext_element_Fr_set(gl19_dst->csk, gl19_src->csk) == IERROR) {
-      pbcext_element_Fr_free(gl19_dst->isk); gl19_dst->isk = NULL;
-      pbcext_element_Fr_free(gl19_dst->csk); gl19_dst->csk = NULL;
-      return IERROR;
-    }
-
+    if(!(gl19_dst->csk = pbcext_element_Fr_init())) 
+      GOTOENDRC(IERROR, gl19_mgr_key_copy);          
+    if(pbcext_element_Fr_set(gl19_dst->csk, gl19_src->csk) == IERROR)
+      GOTOENDRC(IERROR, gl19_mgr_key_copy);            
   }
 
-  return IOK;
+ gl19_mgr_key_copy_end:
+
+  if (rc == IERROR) {
+    if (gl19_dst->isk) { pbcext_element_Fr_free(gl19_dst->isk); gl19_dst->isk = NULL; }
+    if (gl19_dst->csk) { pbcext_element_Fr_free(gl19_dst->csk); gl19_dst->csk = NULL; }
+    if (gl19_dst->esk) { pbcext_element_Fr_free(gl19_dst->esk); gl19_dst->esk = NULL; }
+  }
+
+  return rc;
 
 }
 
 int gl19_mgr_key_get_size(groupsig_key_t *key) {
 
   gl19_mgr_key_t *gl19_key;
-  uint64_t sisk, scsk;
+  uint64_t sisk, scsk, sesk;
   int size;
   
   if(!key || key->scheme != GROUPSIG_GL19_CODE) {
@@ -126,13 +129,14 @@ int gl19_mgr_key_get_size(groupsig_key_t *key) {
   }
 
   gl19_key = key->key;
-  sisk = scsk = 0;
+  sisk = scsk = sesk = 0;
   
   if(gl19_key->isk) { if(pbcext_element_Fr_byte_size(&sisk) == IERROR) return -1; }
   if(gl19_key->csk) { if(pbcext_element_Fr_byte_size(&scsk) == IERROR) return -1; }
+  if(gl19_key->esk) { if(pbcext_element_Fr_byte_size(&sesk) == IERROR) return -1; }
 
-  if(sisk + scsk + sizeof(int)*2+2 > INT_MAX) return -1;
-  size = (int) (sisk + scsk + sizeof(int)*2+2);
+  if(sisk + scsk + sesk + sizeof(int)*3+2 > INT_MAX) return -1;
+  size = (int) (sisk + scsk + sesk + sizeof(int)*3+2);
 
   return size;
 
@@ -193,6 +197,16 @@ int gl19_mgr_key_export(byte_t **bytes, uint32_t *size, groupsig_key_t *key) {
   } else {
     ctr += sizeof(int);
   }
+
+  /* Dump esk, if present (Extractor's key) */
+  if(gl19_key->esk) {
+    __bytes = &_bytes[ctr];
+    if(pbcext_dump_element_Fr_bytes(&__bytes, &len, gl19_key->esk) == IERROR)
+      GOTOENDRC(IERROR, gl19_mgr_key_export);
+    ctr += len;
+  } else {
+    ctr += sizeof(int);
+  }  
 
   /* Prepare the return */
   if(!*bytes) {
@@ -280,7 +294,20 @@ groupsig_key_t* gl19_mgr_key_import(byte_t *source, uint32_t size) {
     pbcext_element_Fr_free(gl19_key->csk); gl19_key->csk = NULL;
   } else {
     ctr += len;
-  }    
+  }
+
+  /* Get esk */
+  if(!(gl19_key->esk = pbcext_element_Fr_init()))
+    GOTOENDRC(IERROR, gl19_mgr_key_import);
+  if(pbcext_get_element_Fr_bytes(gl19_key->esk, &len, &source[ctr]) == IERROR)
+    GOTOENDRC(IERROR, gl19_mgr_key_import);
+
+  if(!len) {
+    ctr += sizeof(int); // @TODO: this is an artifact of pbcext_get_element_XX_bytes
+    pbcext_element_Fr_free(gl19_key->esk); gl19_key->esk = NULL;
+  } else {
+    ctr += len;
+  }  
 
  gl19_mgr_key_import_end:
   
