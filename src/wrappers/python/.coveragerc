@@ -1,0 +1,2 @@
+[run]
+omit = pygroupsig/*_build.py,setup.py

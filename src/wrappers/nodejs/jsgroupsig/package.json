@@ -13,11 +13,12 @@
    },
    "scripts": {
       "install": "cmake-js compile",
-      "test": "./node_modules/.bin/mocha --reporter spec"
+      "test": "nyc --reporter=lcov --reporter=clover ./node_modules/.bin/mocha --reporter spec"
    },
    "devDependencies": {
       "chai": "^4.2.0",
-      "mocha": "^8.0.1"
+      "mocha": "^8.0.1",
+      "nyc": "^15.1.0"
    },
    "repository": {
       "type": "git",
