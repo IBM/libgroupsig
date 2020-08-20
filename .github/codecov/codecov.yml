@@ -1,4 +1,2 @@
-#fixes:
-#   - "/home/runner/work/libgroupsig/libgroupsig/::"
-codecov:
-  disable_default_path_fixes: false
+fixes:
+   - "/pygroupsig/::/src/wrappers/python/pygroupsig/"
