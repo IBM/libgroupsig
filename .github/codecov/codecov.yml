@@ -1,2 +1,2 @@
 fixes:
-   - "/pygroupsig/::/libgroupsig/src/wrappers/python/pygroupsig/"
+   - "pygroupsig/::/libgroupsig/src/wrappers/python/pygroupsig/"
