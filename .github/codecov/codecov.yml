@@ -1,4 +1,4 @@
 fixes:
-   - "pygroupsig/::/libgroupsig/src/wrappers/python/pygroupsig/"
+   - "*.py::/libgroupsig/src/wrappers/python/pygroupsig/"
 codecov:
   disable_default_path_fixes: false
