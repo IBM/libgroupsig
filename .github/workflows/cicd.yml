@@ -74,7 +74,6 @@ jobs:
           pip install path.py pytest pytest-cov
           python setup.py install
           pytest -v --cov-report xml --cov-report annotate --cov-report term --cov=pygroupsig
-          cat coverage.xml
       - name: Upload coverage
         uses: codecov/codecov-action@v1
 #
