@@ -1,3 +1,6 @@
+
+![Build](https://github.com/IBM/libgroupsig/workflows/Build%20with%20Unit%20Tests/badge.svg)
+
 # libgroupsig
 
 Welcome to _libgroupsig_, an extensible library for group signatures. Below,
