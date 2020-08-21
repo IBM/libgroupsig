@@ -1,6 +1,3 @@
-
-![Build](https://github.com/IBM/libgroupsig/workflows/Build/badge.svg)
-
 # libgroupsig
 
 Welcome to _libgroupsig_, an extensible library for group signatures. Below,
