@@ -1,3 +1,5 @@
 coverage:
   fixes:
     - "pygroupsig/::src/groupsig/wrappers/python/pygroupsig/"
+codecov:
+  disable_default_path_fixes: false
