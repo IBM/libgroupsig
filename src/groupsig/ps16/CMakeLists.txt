@@ -12,7 +12,8 @@ add_library (ps16
 		verify.c 
 		open.c 
 		gml.c gml.h
-		identity.c identity.h)
+		identity.c identity.h
+		proof.c proof.h)
 
 target_include_directories (ps16 PRIVATE ${OPENSSL_INCLUDE_DIR})
 target_link_libraries (ps16 PRIVATE ${OPENSSL_LIBRARIES})

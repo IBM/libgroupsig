@@ -81,14 +81,15 @@ int spk_dlog_free(spk_dlog_t *spk);
 int spk_dlog_copy(spk_dlog_t *dst, spk_dlog_t *src);
 
 /**
- * @fn int spk_dlog_sign(spk_dlog_t_t *pi, 
- *                       pbcext_element_G1_t *G, 
- *                       pbcext_element_G1_t *g,
- *                       pbcext_element_Fr_t *x, 
- *                       byte_t *msg, 
- *                       uint32_t size)
+ * @fn int spk_dlog_G1_sign(spk_dlog_t_t *pi, 
+ *                          pbcext_element_G1_t *G, 
+ *                          pbcext_element_G1_t *g,
+ *                          pbcext_element_Fr_t *x, 
+ *                          byte_t *msg, 
+ *                          uint32_t size)
  * Computes a conventional discrete log signature proof of knowledge for:
  *   SPK[x: g^x mod p = G](msg).
+ * Where g and G are elements of G1 in a bilinear pairing.
  *
  * @param[in,out] pi An initialized spk_dlog_t structure.
  * @param[in] G The result of g^x mod p.
@@ -99,21 +100,22 @@ int spk_dlog_copy(spk_dlog_t *dst, spk_dlog_t *src);
  *
  * @return IOR or IERROR.
  */
-int spk_dlog_sign(spk_dlog_t *pi,
-		  pbcext_element_G1_t *G,
-		  pbcext_element_G1_t *g,
-		  pbcext_element_Fr_t *x,
-		  byte_t *msg,
-		  uint32_t size);
+int spk_dlog_G1_sign(spk_dlog_t *pi,
+		     pbcext_element_G1_t *G,
+		     pbcext_element_G1_t *g,
+		     pbcext_element_Fr_t *x,
+		     byte_t *msg,
+		     uint32_t size);
 
 /**
- * @fn int spk_dlog_verify(uint8_t *ok,
- *                         pbcext_element_G1_t *G, 
- *                         pbcext_element_G1_t *g,
- *                         byte_t *msg, 
- *                         uint32_t size)
+ * @fn int spk_dlog_G1_verify(uint8_t *ok,
+ *                            pbcext_element_G1_t *G, 
+ *                            pbcext_element_G1_t *g,
+ *                            byte_t *msg, 
+ *                            uint32_t size)
  * Verifies a conventional discrete log signature proof of knowledge for:
  *   SPK[x: g^x mod p = G](msg).
+ * Where g and G are elements of G1 in a bilinear pairing.
  *
  * @param[in,out] ok 1 if the proof verifies, 0 if not.
  * @param[in] G The result of g^x mod p.
@@ -125,21 +127,74 @@ int spk_dlog_sign(spk_dlog_t *pi,
  *
  * @return IOR or IERROR.
  */
-int spk_dlog_verify(uint8_t *ok,
-		    pbcext_element_G1_t *G,
-		    pbcext_element_G1_t *g,
-		    spk_dlog_t *pi,
-		    byte_t *msg, uint32_t size);
+int spk_dlog_G1_verify(uint8_t *ok,
+		       pbcext_element_G1_t *G,
+		       pbcext_element_G1_t *g,
+		       spk_dlog_t *pi,
+		       byte_t *msg, uint32_t size);
 
 /**
- * @fn int spk_dlog_getsize_bytearray_null(spk_dlog_t *proof)
+ * @fn int spk_dlog_GT_sign(spk_dlog_t_t *pi, 
+ *                          pbcext_element_GT_t *G, 
+ *                          pbcext_element_GT_t *g,
+ *                          pbcext_element_Fr_t *x, 
+ *                          byte_t *msg, 
+ *                          uint32_t size)
+ * Computes a conventional discrete log signature proof of knowledge for:
+ *   SPK[x: g^x mod p = G](msg).
+ * Where g and G are elements of GT in a bilinear pairing.
+ *
+ * @param[in,out] pi An initialized spk_dlog_t structure.
+ * @param[in] G The result of g^x mod p.
+ * @param[in] g The modular exponentiation base.
+ * @param[in] x The (secret) exponent.
+ * @param[in] msg The message to sign.
+ * @param[in] size The size, in bytes, of the message. 
+ *
+ * @return IOR or IERROR.
+ */
+int spk_dlog_GT_sign(spk_dlog_t *pi,
+		     pbcext_element_GT_t *G,
+		     pbcext_element_GT_t *g,
+		     pbcext_element_Fr_t *x,
+		     byte_t *msg,
+		     uint32_t size);
+
+/**
+ * @fn int spk_dlog_GT_verify(uint8_t *ok,
+ *                            pbcext_element_GT_t *G, 
+ *                            pbcext_element_GT_t *g,
+ *                            byte_t *msg, 
+ *                            uint32_t size)
+ * Verifies a conventional discrete log signature proof of knowledge for:
+ *   SPK[x: g^x mod p = G](msg).
+ * Where g and G are elements of GT in a bilinear pairing.
+ *
+ * @param[in,out] ok 1 if the proof verifies, 0 if not.
+ * @param[in] G The result of g^x mod p.
+ * @param[in] g The modular exponentiation base.
+ * @param[in] q The working modulo.
+ * @param[in] pi The proof.
+ * @param[in] msg The signed message.
+ * @param[in] size The size, in bytes, of the message.
+ *
+ * @return IOR or IERROR.
+ */
+int spk_dlog_GT_verify(uint8_t *ok,
+		       pbcext_element_GT_t *G,
+		       pbcext_element_GT_t *g,
+		       spk_dlog_t *pi,
+		       byte_t *msg, uint32_t size);  
+
+/**
+ * @fn int spk_dlog_get_size(spk_dlog_t *proof)
  * Returns the number of bytes needed to represent the proof (in raw format.)
  *
  * @param[in] proof The proof.
  * 
  * @return The size in bytes required to represent the proof. -1 if error.
  */
-int spk_dlog_getsize_bytearray_null(spk_dlog_t *proof);
+int spk_dlog_get_size(spk_dlog_t *proof);
 
 /**
  * @fn int spk_dlog_export_fd(spk_dlog_t *proof, FILE *fd)
@@ -161,7 +216,7 @@ int spk_dlog_getsize_bytearray_null(spk_dlog_t *proof);
 int spk_dlog_export_fd(spk_dlog_t *proof, FILE *fd);
 
 /**
- * @fn int spk_dlog_export_fd(byte_t **bytes, uint64_t *len, spk_dlog_t *proof)
+ * @fn int spk_dlog_export(byte_t **bytes, uint64_t *len, spk_dlog_t *proof)
  * @brief Exports a CPY06 proof to a bytearray,
  *
  * The format of the produced bytearray will be:
@@ -178,9 +233,9 @@ int spk_dlog_export_fd(spk_dlog_t *proof, FILE *fd);
  *
  * @return IOK or IERROR.
  */
-int spk_dlog_export_bytearray_null(byte_t **bytes,
-				   uint64_t *len,
-				   spk_dlog_t *proof);
+int spk_dlog_export(byte_t **bytes,
+		    uint64_t *len,
+		    spk_dlog_t *proof);
 
 /**
  * @fn spk_dlog_t* spk_dlog_import_fd(FILE *fd)
@@ -194,7 +249,7 @@ int spk_dlog_export_bytearray_null(byte_t **bytes,
 spk_dlog_t* spk_dlog_import_fd(FILE *fd);
 
 /**
- * @fn int spk_dlog_export_fd(byte_t *bytes, uint64_t *len, spk_dlog_t *proof)
+ * @fn spk_dlog_t* spk_dlog_import(byte_t *bytes, uint64_t *len)
  * @brief Exports a CPY06 proof to a bytearray,
  *
  * The format of the received bytearray must be:
@@ -209,8 +264,7 @@ spk_dlog_t* spk_dlog_import_fd(FILE *fd);
  *
  * @return A pointer to the allocated structure or NULL if error.
  */
-spk_dlog_t* spk_dlog_import_bytearray_null(byte_t *bytes,
-					   uint64_t *len);
+spk_dlog_t* spk_dlog_import(byte_t *bytes, uint64_t *len);
   
 /**
  * @fn spk_rep_t* spk_rep_init(uint16_t ns)

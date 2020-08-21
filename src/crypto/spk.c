@@ -54,13 +54,13 @@ int spk_dlog_free(spk_dlog_t *spk) {
   
 }
 
-int spk_dlog_sign(spk_dlog_t *pi,
-		  pbcext_element_G1_t *G,
-		  pbcext_element_G1_t *g,
-		  pbcext_element_Fr_t *x,
-		  byte_t *msg,
-		  uint32_t size) {
-
+int spk_dlog_G1_sign(spk_dlog_t *pi,
+		     pbcext_element_G1_t *G,
+		     pbcext_element_G1_t *g,
+		     pbcext_element_Fr_t *x,
+		     byte_t *msg,
+		     uint32_t size) {
+  
   pbcext_element_Fr_t *c, *s, *r, *cx;
   pbcext_element_G1_t *gr;
   byte_t *bG, *bg, *bgr;
@@ -69,7 +69,7 @@ int spk_dlog_sign(spk_dlog_t *pi,
   int rc;
   
   if (!pi || !G || !g || !x || !msg || !size) {
-    LOG_EINVAL(&logger, __FILE__, "spk_dlog_sign", __LINE__, LOGERROR);
+    LOG_EINVAL(&logger, __FILE__, "spk_dlog_G1_sign", __LINE__, LOGERROR);
     return IERROR;
   }
 
@@ -84,15 +84,15 @@ int spk_dlog_sign(spk_dlog_t *pi,
   pbcext_element_G1_mul(gr, g, r);
   
   /* Make hc = Hash(msg||G||g||g^r) */
-  if(!(hc = hash_init(HASH_SHA1))) GOTOENDRC(IERROR, spk_dlog_sign);
-  if(hash_update(hc, msg, size) == IERROR) GOTOENDRC(IERROR, spk_dlog_sign);
-  if(pbcext_element_G1_to_bytes(&bG, &len, G) == IERROR) GOTOENDRC(IERROR, spk_dlog_sign);
-  if(hash_update(hc, bG, len) == IERROR) GOTOENDRC(IERROR, spk_dlog_sign);
-  if(pbcext_element_G1_to_bytes(&bg, &len, g) == IERROR) GOTOENDRC(IERROR, spk_dlog_sign);
-  if(hash_update(hc, bg, len) == IERROR) GOTOENDRC(IERROR, spk_dlog_sign);
-  if(pbcext_element_G1_to_bytes(&bgr, &len, gr) == IERROR) GOTOENDRC(IERROR, spk_dlog_sign);
-  if(hash_update(hc, bgr, len) == IERROR) GOTOENDRC(IERROR, spk_dlog_sign);
-  if(hash_finalize(hc) == IERROR) GOTOENDRC(IERROR, spk_dlog_sign);
+  if(!(hc = hash_init(HASH_SHA1))) GOTOENDRC(IERROR, spk_dlog_G1_sign);
+  if(hash_update(hc, msg, size) == IERROR) GOTOENDRC(IERROR, spk_dlog_G1_sign);
+  if(pbcext_element_G1_to_bytes(&bG, &len, G) == IERROR) GOTOENDRC(IERROR, spk_dlog_G1_sign);
+  if(hash_update(hc, bG, len) == IERROR) GOTOENDRC(IERROR, spk_dlog_G1_sign);
+  if(pbcext_element_G1_to_bytes(&bg, &len, g) == IERROR) GOTOENDRC(IERROR, spk_dlog_G1_sign);
+  if(hash_update(hc, bg, len) == IERROR) GOTOENDRC(IERROR, spk_dlog_G1_sign);
+  if(pbcext_element_G1_to_bytes(&bgr, &len, gr) == IERROR) GOTOENDRC(IERROR, spk_dlog_G1_sign);
+  if(hash_update(hc, bgr, len) == IERROR) GOTOENDRC(IERROR, spk_dlog_G1_sign);
+  if(hash_finalize(hc) == IERROR) GOTOENDRC(IERROR, spk_dlog_G1_sign);
 			       
   /* Convert the hash to an integer */
   c = pbcext_element_Fr_init();
@@ -110,7 +110,7 @@ int spk_dlog_sign(spk_dlog_t *pi,
   pi->c = pbcext_element_Fr_init();
   pbcext_element_Fr_set(pi->c, c);
   
- spk_dlog_sign_end:
+ spk_dlog_G1_sign_end:
 
   pbcext_element_Fr_free(c);
   pbcext_element_Fr_free(cx);
@@ -126,12 +126,12 @@ int spk_dlog_sign(spk_dlog_t *pi,
   
 }
 
-int spk_dlog_verify(uint8_t *ok,
-		    pbcext_element_G1_t *G,
-		    pbcext_element_G1_t *g,
-		    spk_dlog_t *pi,
-		    byte_t *msg,
-		    uint32_t size) {
+int spk_dlog_G1_verify(uint8_t *ok,
+		       pbcext_element_G1_t *G,
+		       pbcext_element_G1_t *g,
+		       spk_dlog_t *pi,
+		       byte_t *msg,
+		       uint32_t size) {
 
   pbcext_element_G1_t *gs, *Gc, *gsGc;
   pbcext_element_Fr_t *c;
@@ -141,7 +141,7 @@ int spk_dlog_verify(uint8_t *ok,
   int rc;
 
   if (!ok || !G || !g || !pi || !msg || !size) {
-    LOG_EINVAL(&logger, __FILE__, "spk_dlog_sign", __LINE__, LOGERROR);
+    LOG_EINVAL(&logger, __FILE__, "spk_dlog_G1_verify", __LINE__, LOGERROR);
     return IERROR;
   }
 
@@ -159,18 +159,18 @@ int spk_dlog_verify(uint8_t *ok,
   pbcext_element_G1_add(gsGc, gs, Gc);
   
   /* Compute the hash */
-  if(!(hc = hash_init(HASH_SHA1))) GOTOENDRC(IERROR, spk_dlog_verify);
-  if(hash_update(hc, msg, size) == IERROR) GOTOENDRC(IERROR, spk_dlog_verify);
+  if(!(hc = hash_init(HASH_SHA1))) GOTOENDRC(IERROR, spk_dlog_G1_verify);
+  if(hash_update(hc, msg, size) == IERROR) GOTOENDRC(IERROR, spk_dlog_G1_verify);
   if(pbcext_element_G1_to_bytes(&bG, &len, G) == IERROR)
-    GOTOENDRC(IERROR, spk_dlog_verify);
-  if(hash_update(hc, bG, len) == IERROR) GOTOENDRC(IERROR, spk_dlog_verify);
+    GOTOENDRC(IERROR, spk_dlog_G1_verify);
+  if(hash_update(hc, bG, len) == IERROR) GOTOENDRC(IERROR, spk_dlog_G1_verify);
   if(pbcext_element_G1_to_bytes(&bg, &len, g) == IERROR)
-    GOTOENDRC(IERROR, spk_dlog_verify);
-  if(hash_update(hc, bg, len) == IERROR) GOTOENDRC(IERROR, spk_dlog_verify);
+    GOTOENDRC(IERROR, spk_dlog_G1_verify);
+  if(hash_update(hc, bg, len) == IERROR) GOTOENDRC(IERROR, spk_dlog_G1_verify);
   if(pbcext_element_G1_to_bytes(&bgsGc, &len, gsGc) == IERROR)
-    GOTOENDRC(IERROR, spk_dlog_verify);
-  if(hash_update(hc, bgsGc, len) == IERROR) GOTOENDRC(IERROR, spk_dlog_verify);
-  if(hash_finalize(hc) == IERROR) GOTOENDRC(IERROR, spk_dlog_verify);
+    GOTOENDRC(IERROR, spk_dlog_G1_verify);
+  if(hash_update(hc, bgsGc, len) == IERROR) GOTOENDRC(IERROR, spk_dlog_G1_verify);
+  if(hash_finalize(hc) == IERROR) GOTOENDRC(IERROR, spk_dlog_G1_verify);
 
   /* Compare the result with c */
   c = pbcext_element_Fr_init();
@@ -182,7 +182,7 @@ int spk_dlog_verify(uint8_t *ok,
     *ok = 1;
   }
     
- spk_dlog_verify_end:
+ spk_dlog_G1_verify_end:
   pbcext_element_Fr_free(c);  
   pbcext_element_G1_free(gs);
   pbcext_element_G1_free(Gc);
@@ -196,13 +196,154 @@ int spk_dlog_verify(uint8_t *ok,
   
 }
 
-int spk_dlog_getsize_bytearray_null(spk_dlog_t *proof) {
+int spk_dlog_GT_sign(spk_dlog_t *pi,
+		     pbcext_element_GT_t *G,
+		     pbcext_element_GT_t *g,
+		     pbcext_element_Fr_t *x,
+		     byte_t *msg,
+		     uint32_t size) {
+  
+  pbcext_element_Fr_t *c, *s, *r, *cx;
+  pbcext_element_GT_t *gr;
+  byte_t *bG, *bg, *bgr;
+  hash_t *hc;
+  uint64_t len;
+  int rc;
+  
+  if (!pi || !G || !g || !x || !msg || !size) {
+    LOG_EINVAL(&logger, __FILE__, "spk_dlog_GT_sign", __LINE__, LOGERROR);
+    return IERROR;
+  }
 
-  uint64_t ss, sc;
-  int size;
+  bG = NULL; bg = NULL; bgr = NULL;
+  hc = NULL;
+  rc = IOK;
+
+  /* Pick random r and compute g^r mod q */
+  r = pbcext_element_Fr_init();
+  pbcext_element_Fr_random(r);
+  gr = pbcext_element_GT_init();
+  pbcext_element_GT_pow(gr, g, r);
+  
+  /* Make hc = Hash(msg||G||g||g^r) */
+  if(!(hc = hash_init(HASH_SHA1))) GOTOENDRC(IERROR, spk_dlog_GT_sign);
+  if(hash_update(hc, msg, size) == IERROR) GOTOENDRC(IERROR, spk_dlog_GT_sign);
+  if(pbcext_element_GT_to_bytes(&bG, &len, G) == IERROR) GOTOENDRC(IERROR, spk_dlog_GT_sign);
+  if(hash_update(hc, bG, len) == IERROR) GOTOENDRC(IERROR, spk_dlog_GT_sign);
+  if(pbcext_element_GT_to_bytes(&bg, &len, g) == IERROR) GOTOENDRC(IERROR, spk_dlog_GT_sign);
+  if(hash_update(hc, bg, len) == IERROR) GOTOENDRC(IERROR, spk_dlog_GT_sign);
+  if(pbcext_element_GT_to_bytes(&bgr, &len, gr) == IERROR) GOTOENDRC(IERROR, spk_dlog_GT_sign);
+  if(hash_update(hc, bgr, len) == IERROR) GOTOENDRC(IERROR, spk_dlog_GT_sign);
+  if(hash_finalize(hc) == IERROR) GOTOENDRC(IERROR, spk_dlog_GT_sign);
+			       
+  /* Convert the hash to an integer */
+  c = pbcext_element_Fr_init();
+  pbcext_element_Fr_from_hash(c, hc->hash, hc->length);
+  
+  /* s = r - cx */
+  cx = pbcext_element_Fr_init();
+  pbcext_element_Fr_mul(cx, c, x);
+  s = pbcext_element_Fr_init();
+  pbcext_element_Fr_sub(s, r, cx);
+  
+  /* pi = (s,c) */
+  pi->s = pbcext_element_Fr_init();
+  pbcext_element_Fr_set(pi->s, s);
+  pi->c = pbcext_element_Fr_init();
+  pbcext_element_Fr_set(pi->c, c);
+  
+ spk_dlog_GT_sign_end:
+
+  pbcext_element_Fr_free(c);
+  pbcext_element_Fr_free(cx);
+  pbcext_element_Fr_free(s);
+  pbcext_element_Fr_free(r);
+  pbcext_element_GT_free(gr);
+  if(bG) mem_free(bG);
+  if(bg) mem_free(bg);
+  if(bgr) mem_free(bgr);
+  if(hc) { hash_free(hc); hc = NULL; }
+  
+  return rc;
+  
+}
+
+int spk_dlog_GT_verify(uint8_t *ok,
+		       pbcext_element_GT_t *G,
+		       pbcext_element_GT_t *g,
+		       spk_dlog_t *pi,
+		       byte_t *msg,
+		       uint32_t size) {
+
+  pbcext_element_GT_t *gs, *Gc, *gsGc;
+  pbcext_element_Fr_t *c;
+  byte_t *bG, *bg, *bgsGc;
+  hash_t *hc;
+  uint64_t len;
+  int rc;
+
+  if (!ok || !G || !g || !pi || !msg || !size) {
+    LOG_EINVAL(&logger, __FILE__, "spk_dlog_GT_verify", __LINE__, LOGERROR);
+    return IERROR;
+  }
+
+  bG = NULL; bg = NULL; bgsGc = NULL;
+  rc = IOK;
+  
+  /* If pi is correct, then pi->c must equal Hash(msg||G||g||g^pi->s*g^pi->c) */
+
+  /* Compute g^pi->s * g^pi->c */
+  gs = pbcext_element_GT_init();
+  pbcext_element_GT_pow(gs, g, pi->s);
+  Gc = pbcext_element_GT_init();
+  pbcext_element_GT_pow(Gc, G, pi->c);
+  gsGc = pbcext_element_GT_init();
+  pbcext_element_GT_mul(gsGc, gs, Gc);
+  
+  /* Compute the hash */
+  if(!(hc = hash_init(HASH_SHA1))) GOTOENDRC(IERROR, spk_dlog_GT_verify);
+  if(hash_update(hc, msg, size) == IERROR) GOTOENDRC(IERROR, spk_dlog_GT_verify);
+  if(pbcext_element_GT_to_bytes(&bG, &len, G) == IERROR)
+    GOTOENDRC(IERROR, spk_dlog_GT_verify);
+  if(hash_update(hc, bG, len) == IERROR) GOTOENDRC(IERROR, spk_dlog_GT_verify);
+  if(pbcext_element_GT_to_bytes(&bg, &len, g) == IERROR)
+    GOTOENDRC(IERROR, spk_dlog_GT_verify);
+  if(hash_update(hc, bg, len) == IERROR) GOTOENDRC(IERROR, spk_dlog_GT_verify);
+  if(pbcext_element_GT_to_bytes(&bgsGc, &len, gsGc) == IERROR)
+    GOTOENDRC(IERROR, spk_dlog_GT_verify);
+  if(hash_update(hc, bgsGc, len) == IERROR) GOTOENDRC(IERROR, spk_dlog_GT_verify);
+  if(hash_finalize(hc) == IERROR) GOTOENDRC(IERROR, spk_dlog_GT_verify);
+
+  /* Compare the result with c */
+  c = pbcext_element_Fr_init();
+  pbcext_element_Fr_from_hash(c, hc->hash, hc->length);
+
+  if(pbcext_element_Fr_cmp(c, pi->c)) {
+    *ok = 0;
+  } else {
+    *ok = 1;
+  }
+    
+ spk_dlog_GT_verify_end:
+  pbcext_element_Fr_free(c);  
+  pbcext_element_GT_free(gs);
+  pbcext_element_GT_free(Gc);
+  pbcext_element_GT_free(gsGc);
+  if(bG) { mem_free(bG); bG = NULL; }
+  if(bg) { mem_free(bg); bg = NULL; }
+  if(bgsGc) { mem_free(bgsGc); bgsGc = NULL; }
+  if(hc) { hash_free(hc); hc = NULL; }
+  
+  return rc;
+  
+}
+
+int spk_dlog_get_size(spk_dlog_t *proof) {
+
+  uint64_t ss, sc, size;
 
   if(!proof) {
-    LOG_EINVAL(&logger, __FILE__, "spk_dlog_getsize_bytearray_null", __LINE__,
+    LOG_EINVAL(&logger, __FILE__, "spk_dlog_get_size", __LINE__,
            LOGERROR);
     return -1;
   }
@@ -213,8 +354,9 @@ int spk_dlog_getsize_bytearray_null(spk_dlog_t *proof) {
   
   // I do not like this uncontrolled cast...
   size = (int) 2*sizeof(int) + ss + sc;
+  if (size > INT_MAX) return -1;
 
-  return size;
+  return (int) size;
   
 }
 
@@ -244,15 +386,15 @@ int spk_dlog_export_fd(spk_dlog_t *proof, FILE *fd) {
   
 }
 
-int spk_dlog_export_bytearray_null(byte_t **bytes,
-				   uint64_t *len,
-				   spk_dlog_t *proof) {
+int spk_dlog_export(byte_t **bytes,
+		    uint64_t *len,
+		    spk_dlog_t *proof) {
 
   byte_t *bs, *bc, *_bytes;
   uint64_t slen, clen, _len;
 
   if (!bytes || !len || !proof) {
-    LOG_EINVAL(&logger, __FILE__, "spk_dlog_export_bytearray_null", __LINE__, LOGERROR);
+    LOG_EINVAL(&logger, __FILE__, "spk_dlog_export", __LINE__, LOGERROR);
     return IERROR;
   }
 
@@ -324,15 +466,14 @@ spk_dlog_t* spk_dlog_import_fd(FILE *fd) {
 
 }
 
-spk_dlog_t* spk_dlog_import_bytearray_null(byte_t *bytes,
-					   uint64_t *len) {
+spk_dlog_t* spk_dlog_import(byte_t *bytes, uint64_t *len) {
 
   spk_dlog_t *proof;
   uint64_t _len;
   int rc;
 
   if(!bytes || !len) {
-    LOG_EINVAL(&logger, __FILE__, "spk_dlog_import_bytearray_null", __LINE__,
+    LOG_EINVAL(&logger, __FILE__, "spk_dlog_import", __LINE__,
            LOGERROR);
     return NULL;
   }
@@ -345,19 +486,19 @@ spk_dlog_t* spk_dlog_import_bytearray_null(byte_t *bytes,
 
   /* Get s */
   if(!(proof->s = pbcext_element_Fr_init()))
-    GOTOENDRC(IERROR, spk_dlog_import_bytearray_null);
+    GOTOENDRC(IERROR, spk_dlog_import);
   if(pbcext_get_element_Fr_bytes(proof->s, &_len, bytes) == IERROR)
-    GOTOENDRC(IERROR, spk_dlog_import_bytearray_null);
+    GOTOENDRC(IERROR, spk_dlog_import);
   *len = _len;
 
   /* Get c */
   if(!(proof->c = pbcext_element_Fr_init()))
-    GOTOENDRC(IERROR, spk_dlog_import_bytearray_null);
+    GOTOENDRC(IERROR, spk_dlog_import);
   if(pbcext_get_element_Fr_bytes(proof->c, &_len, &bytes[*len]) == IERROR)
-    GOTOENDRC(IERROR, spk_dlog_import_bytearray_null);
+    GOTOENDRC(IERROR, spk_dlog_import);
   *len += _len;
 
- spk_dlog_import_bytearray_null_end:
+ spk_dlog_import_end:
 
   if(rc == IERROR && proof) { spk_dlog_free(proof); proof = NULL; }
   

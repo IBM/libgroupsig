@@ -101,10 +101,10 @@ int ps16_join_mem(message_t **mout, groupsig_key_t *memkey,
 
     /* Compute the SPK for sk */
     if(!(pi = spk_dlog_init())) GOTOENDRC(IERROR, ps16_join_mem);
-    if(spk_dlog_sign(pi, tau,
-		     ps16_grpkey->g, ps16_memkey->sk, bn, nlen) == IERROR)
+    if(spk_dlog_G1_sign(pi, tau,
+			ps16_grpkey->g, ps16_memkey->sk, bn, nlen) == IERROR)
       GOTOENDRC(IERROR, ps16_join_mem);
-
+    
     /* Need to send (n, tau, ttau, pi): prepare ad hoc message */
     mem_free(bn); bn = NULL;
     if (pbcext_dump_element_G1_bytes(&bn, &nlen, n) == IERROR)
@@ -123,9 +123,7 @@ int ps16_join_mem(message_t **mout, groupsig_key_t *memkey,
       GOTOENDRC(IERROR, ps16_join_mem);
     len += ttaulen;
    
-    if(spk_dlog_export_bytearray_null(&bpi,
-				      &pilen,
-				      pi) == IERROR)
+    if(spk_dlog_export(&bpi, &pilen, pi) == IERROR)
       GOTOENDRC(IERROR, ps16_join_mem);
     len += pilen;
 

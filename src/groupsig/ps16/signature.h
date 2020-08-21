@@ -113,9 +113,9 @@ int ps16_signature_export(byte_t **bytes,
  * Imports a PS16 signature from the specified array of bytes.
  * 
  * @param[in] source The array of bytes containing the signature to import.
- * @param[in] source The number of bytes in the passed array.
+ * @param[in] size The number of bytes in <i>source</i>.
  * 
- * @return A pointer to the imported key, or NULL if error.
+ * @return A pointer to the imported signature, or NULL if error.
  */
 groupsig_signature_t* ps16_signature_import(byte_t *source, uint32_t size);
 
@@ -129,7 +129,7 @@ static const groupsig_signature_handle_t ps16_signature_handle = {
   .free = &ps16_signature_free, /**< Frees signatures. */
   .copy = &ps16_signature_copy, /**< Copies signatures. */
   .get_size = &ps16_signature_get_size, /**< Gets the size in bytes of a 
-					   signature in a specific format. */
+					   signature. */
   .gexport = &ps16_signature_export, /**< Exports signatures. */
   .gimport = &ps16_signature_import, /**< Imports signatures. */
   .to_string = &ps16_signature_to_string, /**< Converts signatures to 

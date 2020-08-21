@@ -132,14 +132,14 @@ int ps16_join_mgr(message_t **mout, gml_t *gml,
     if (!(ttau = pbcext_element_G2_init())) GOTOENDRC(IERROR, ps16_join_mgr);
     if (pbcext_get_element_G2_bytes(ttau, &ttaulen, min->bytes + nlen + taulen) == IERROR)
       GOTOENDRC(IERROR, ps16_join_mgr);
-    if (!(pi = spk_dlog_import_bytearray_null(min->bytes + nlen + taulen + ttaulen, &pilen)))
+    if (!(pi = spk_dlog_import(min->bytes + nlen + taulen + ttaulen, &pilen)))
       GOTOENDRC(IERROR, ps16_join_mgr);
     if (pbcext_element_G1_to_bytes(&bn, &nlen, n) == IERROR)
       GOTOENDRC(IERROR, ps16_join_mgr);
 
     /* Check the SPK and the pairings */
-    if (spk_dlog_verify(&ok, tau, ps16_grpkey->g,
-		       pi, bn, nlen) == IERROR) {
+    if (spk_dlog_G1_verify(&ok, tau, ps16_grpkey->g,
+			   pi, bn, nlen) == IERROR) {
       GOTOENDRC(IERROR, ps16_join_mgr);
     }
     if (!ok) GOTOENDRC(IERROR, ps16_join_mgr);

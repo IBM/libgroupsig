@@ -24,6 +24,8 @@
 #include "types.h"
 #include "sysenv.h"
 #include "ps16.h"
+#include "sys/mem.h"
+#include "crypto/spk.h"
 #include "groupsig/ps16/grp_key.h"
 #include "groupsig/ps16/mgr_key.h"
 #include "groupsig/ps16/signature.h"
@@ -31,16 +33,20 @@
 #include "groupsig/ps16/identity.h"
 
 int ps16_open(identity_t *id, groupsig_proof_t *proof, 
-	       crl_t *crl, groupsig_signature_t *sig, 
-	       groupsig_key_t *grpkey, groupsig_key_t *mgrkey,
-	       gml_t *gml) {
+	      crl_t *crl, groupsig_signature_t *sig, 
+	      groupsig_key_t *grpkey, groupsig_key_t *mgrkey,
+	      gml_t *gml) {
 
   pbcext_element_GT_t *e1, *e2, *e3;
+  pbcext_element_G2_t *ggsk;
+  pbcext_element_Fr_t *yinv;
   ps16_signature_t *ps16_sig;
   ps16_grp_key_t *ps16_grpkey;
   ps16_mgr_key_t *ps16_mgrkey;
   ps16_gml_entry_t *ps16_entry;
+  byte_t *bsig;
   uint64_t i;
+  uint32_t slen;
   uint8_t match;
   int rc;
 
@@ -93,12 +99,58 @@ int ps16_open(identity_t *id, groupsig_proof_t *proof,
   /* No match: FAIL */
   if(!match) GOTOENDRC(IFAIL, ps16_open);
 
+  /* Create the proof: we make it a SPK (over the sig) of y */
+
+  /* 
+     The paper states very genericly that a PK is needed for ttau satisfying the
+     above equation, i.e.:
+
+     e(sig2, gg) / e(sig1, X) = e(sig1, ttau)
+
+     If I am not mistaken, this is equivalent to a PK of y for:
+
+     e(sig2, gg) / e(sig1, X) = e(sig1, gg^ski)^y
+
+     where ski is the secret key of the signer, and gg^ski = Y^{y^-1}.
+
+     @TODO: CHECK THIS.
+
+  */
+  
+  if (!(ggsk = pbcext_element_G2_init()))
+    GOTOENDRC(IERROR, ps16_open);
+  if (!(yinv = pbcext_element_Fr_init()))
+    GOTOENDRC(IERROR, ps16_open);  
+
+  if (pbcext_element_Fr_inv(yinv, ps16_mgrkey->y) == IERROR)
+    GOTOENDRC(IERROR, ps16_open);  
+  if (pbcext_element_G2_mul(ggsk, ps16_grpkey->Y, yinv) == IERROR)
+    GOTOENDRC(IERROR, ps16_open);
+  if (pbcext_pairing(e3, ps16_sig->sigma1, ggsk) == IERROR)
+    GOTOENDRC(IERROR, ps16_open);
+
+  /* Export the signature as an array of bytes */
+  bsig = NULL;
+  if (ps16_signature_export(&bsig, &slen, sig) == IERROR)
+    GOTOENDRC(IERROR, ps16_open);
+
+  if (spk_dlog_GT_sign(proof->proof,
+		       e1,
+		       e3,
+		       ps16_mgrkey->y,
+		       bsig,
+		       slen) == IERROR)
+    GOTOENDRC(IERROR, ps16_open);
+
  ps16_open_end:
 
-  if(e1) { pbcext_element_GT_clear(e1); e1 = NULL; }
-  if(e2) { pbcext_element_GT_clear(e2); e2 = NULL; }
-  if(e3) { pbcext_element_GT_clear(e3); e3 = NULL; }
-
+  if (e1) { pbcext_element_GT_clear(e1); e1 = NULL; }
+  if (e2) { pbcext_element_GT_clear(e2); e2 = NULL; }
+  if (e3) { pbcext_element_GT_clear(e3); e3 = NULL; }
+  if (yinv) { pbcext_element_Fr_clear(yinv); yinv = NULL; }
+  if (ggsk) { pbcext_element_G2_clear(ggsk); ggsk = NULL; }
+  if (bsig) { mem_free(bsig); bsig = NULL; }
+  
   return rc;
   
 }

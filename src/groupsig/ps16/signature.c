@@ -35,7 +35,6 @@
 #include "ps16.h"
 #include "groupsig/ps16/signature.h"
 
-/* Public functions */
 groupsig_signature_t* ps16_signature_init() {
 
   groupsig_signature_t *sig;
@@ -184,8 +183,8 @@ int ps16_signature_get_size(groupsig_signature_t *sig) {
 }
 
 int ps16_signature_export(byte_t **bytes,
-			   uint32_t *size,
-			   groupsig_signature_t *sig) {
+			  uint32_t *size,
+			  groupsig_signature_t *sig) {
 
   ps16_signature_t *ps16_sig;
   byte_t *_bytes, *__bytes;

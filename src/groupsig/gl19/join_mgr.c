@@ -114,12 +114,12 @@ int gl19_join_mgr(message_t **mout, gml_t *gml, groupsig_key_t *mgrkey,
     if(!(H = pbcext_element_G1_init())) GOTOENDRC(IERROR, gl19_join_mgr);
     if(pbcext_get_element_G1_bytes(H, &_len, min->bytes + len) == IERROR)
       GOTOENDRC(IERROR, gl19_join_mgr);
-    if(!(spk = spk_dlog_import_bytearray_null(min->bytes + len + _len, &len)))
+    if(!(spk = spk_dlog_import(min->bytes + len + _len, &len)))
       GOTOENDRC(IERROR, gl19_join_mgr);
     if(pbcext_element_G1_to_bytes(&bn, &len, n) == IERROR)
       GOTOENDRC(IERROR, gl19_join_mgr);
-    if(spk_dlog_verify(&ok, H, gl19_grpkey->h1,
-		       spk, bn, len) == IERROR) {
+    if(spk_dlog_G1_verify(&ok, H, gl19_grpkey->h1,
+			  spk, bn, len) == IERROR) {
       GOTOENDRC(IERROR, gl19_join_mgr);
     }
 
