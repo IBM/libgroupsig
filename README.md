@@ -1,5 +1,5 @@
 
-![Build](https://github.com/IBM/libgroupsig/workflows/Build%20with%20Unit%20Tests/badge.svg)
+![Build](https://github.com/IBM/libgroupsig/workflows/Build/badge.svg)
 
 # libgroupsig
 
