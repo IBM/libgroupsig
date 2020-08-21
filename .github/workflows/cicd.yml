@@ -145,3 +145,5 @@ jobs:
       - name: Build with Maven
         working-directory: ${{ github.workspace }}/src/wrappers/java/jgroupsig
         run: mvn clean package
+      - name: Upload coverage
+        uses: codecov/codecov-action@v1

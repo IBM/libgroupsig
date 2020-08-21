@@ -35,6 +35,11 @@
       <version>5.4.2</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+	<groupId>org.jacoco</groupId>
+	<artifactId>jacoco-maven-plugin</artifactId>
+	<version>0.8.3</version>
+    </dependency>
   </dependencies>
 
   <build>
@@ -62,7 +67,7 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <version>3.0.0-M5</version>
         <configuration>
-	  <argLine>-Djava.library.path=${project.build.directory}/main/resources</argLine>	  
+	  <argLine>${argLine} -Djava.library.path=${project.build.directory}/main/resources</argLine>	  
     </configuration>
       </plugin>
       <plugin>
@@ -92,6 +97,27 @@
           </execution>
         </executions>
       </plugin>
+
+      <plugin>
+	    <groupId>org.jacoco</groupId>
+	    <artifactId>jacoco-maven-plugin</artifactId>
+	    <version>0.8.3</version>
+	    <executions>
+	        <execution>
+	            <goals>
+	                <goal>prepare-agent</goal>
+	            </goals>
+	        </execution>
+	        <execution>
+	            <id>report</id>
+	            <phase>test</phase>
+	            <goals>
+	                <goal>report</goal>
+	            </goals>
+	        </execution>
+	    </executions>
+	</plugin>
+
     </plugins>
   </build>
 </project>
