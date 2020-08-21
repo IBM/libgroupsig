@@ -43,7 +43,7 @@ jobs:
         working-directory: ${{ github.workspace }}/build
         run: | 
           make coverage
-          cp ${{ github.workspace }}/.github/codecov/codecov.yml codecov.yml
+          cp ${{ github.workspace }}/.github/codecov.yml codecov.yml
       - name: Upload coverage
         uses: codecov/codecov-action@v1
 
