@@ -10,7 +10,8 @@ add_library (ps16
 		join_mem.c join_mgr.c 
 		sign.c 
 		verify.c 
-		open.c 
+		open.c
+		open_verify.c
 		gml.c gml.h
 		identity.c identity.h
 		proof.c proof.h)

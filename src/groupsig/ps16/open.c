@@ -26,6 +26,7 @@
 #include "ps16.h"
 #include "sys/mem.h"
 #include "crypto/spk.h"
+#include "groupsig/ps16/proof.h"
 #include "groupsig/ps16/grp_key.h"
 #include "groupsig/ps16/mgr_key.h"
 #include "groupsig/ps16/signature.h"
@@ -41,6 +42,7 @@ int ps16_open(identity_t *id, groupsig_proof_t *proof,
   pbcext_element_G2_t *ggsk;
   pbcext_element_Fr_t *yinv;
   ps16_signature_t *ps16_sig;
+  ps16_proof_t *ps16_proof;
   ps16_grp_key_t *ps16_grpkey;
   ps16_mgr_key_t *ps16_mgrkey;
   ps16_gml_entry_t *ps16_entry;
@@ -59,6 +61,7 @@ int ps16_open(identity_t *id, groupsig_proof_t *proof,
   }
 
   ps16_sig = sig->sig;
+  ps16_proof = proof->proof;
   ps16_grpkey = grpkey->key;
   ps16_mgrkey = mgrkey->key;
   rc = IOK;
@@ -70,10 +73,17 @@ int ps16_open(identity_t *id, groupsig_proof_t *proof,
   if (!(e2 = pbcext_element_GT_init())) GOTOENDRC(IERROR, ps16_open);
   if (pbcext_pairing(e2, ps16_sig->sigma1, ps16_grpkey->X) == IERROR)
     GOTOENDRC(IERROR, ps16_open);
-  if (pbcext_element_GT_inv(e2, e2) == IERROR) GOTOENDRC(IERROR, ps16_open);
-  if (pbcext_element_GT_mul(e1, e1, e2) == IERROR) GOTOENDRC(IERROR, ps16_open);
+  if (pbcext_element_GT_div(e1, e1, e2) == IERROR) GOTOENDRC(IERROR, ps16_open);
 
   if (!(e3 = pbcext_element_GT_init())) GOTOENDRC(IERROR, ps16_open);
+
+  if (!(ggsk = pbcext_element_G2_init()))
+    GOTOENDRC(IERROR, ps16_open);
+  if (!(yinv = pbcext_element_Fr_init()))
+    GOTOENDRC(IERROR, ps16_open);
+
+  if (pbcext_element_Fr_inv(yinv, ps16_mgrkey->y) == IERROR)
+    GOTOENDRC(IERROR, ps16_open);    
   
   /* Look up the recovered e1 in the GML */
   match = 0;
@@ -89,6 +99,11 @@ int ps16_open(identity_t *id, groupsig_proof_t *proof,
       /* Get the identity from the matched entry. */
       if (ps16_identity_copy(id, ps16_entry->id) == IERROR)
 	GOTOENDRC(IERROR, ps16_open);
+
+      /* Compute the aux element for the open proof */
+      if (pbcext_element_G2_mul(ggsk, ps16_entry->ttau, yinv) == IERROR)
+	GOTOENDRC(IERROR, ps16_open);
+
       match = 1;
       break;
 
@@ -113,20 +128,19 @@ int ps16_open(identity_t *id, groupsig_proof_t *proof,
 
      where ski is the secret key of the signer, and gg^ski = Y^{y^-1}.
 
+     In the produced proof, we store B = e(sig1, gg/ski), and thus the SPK is:
+     
+     pi = SPK[(y): A = B^y ](sig)
+
+     (Note: A = e(sig2,gg)/e(sig1,X) can be recomputed completely from the sig
+      and the group key.)
+
      @TODO: CHECK THIS.
 
   */
-  
-  if (!(ggsk = pbcext_element_G2_init()))
-    GOTOENDRC(IERROR, ps16_open);
-  if (!(yinv = pbcext_element_Fr_init()))
-    GOTOENDRC(IERROR, ps16_open);  
 
-  if (pbcext_element_Fr_inv(yinv, ps16_mgrkey->y) == IERROR)
-    GOTOENDRC(IERROR, ps16_open);  
-  if (pbcext_element_G2_mul(ggsk, ps16_grpkey->Y, yinv) == IERROR)
-    GOTOENDRC(IERROR, ps16_open);
-  if (pbcext_pairing(e3, ps16_sig->sigma1, ggsk) == IERROR)
+  if(!(ps16_proof->B = pbcext_element_GT_init())) GOTOENDRC(IERROR, ps16_open);
+  if (pbcext_pairing(ps16_proof->B, ps16_sig->sigma1, ggsk) == IERROR)
     GOTOENDRC(IERROR, ps16_open);
 
   /* Export the signature as an array of bytes */
@@ -134,9 +148,11 @@ int ps16_open(identity_t *id, groupsig_proof_t *proof,
   if (ps16_signature_export(&bsig, &slen, sig) == IERROR)
     GOTOENDRC(IERROR, ps16_open);
 
-  if (spk_dlog_GT_sign(proof->proof,
+  if (!(ps16_proof->pi = spk_dlog_init())) GOTOENDRC(IERROR, ps16_open);
+  
+  if (spk_dlog_GT_sign(ps16_proof->pi,
 		       e1,
-		       e3,
+		       ps16_proof->B,
 		       ps16_mgrkey->y,
 		       bsig,
 		       slen) == IERROR)
@@ -150,6 +166,11 @@ int ps16_open(identity_t *id, groupsig_proof_t *proof,
   if (yinv) { pbcext_element_Fr_clear(yinv); yinv = NULL; }
   if (ggsk) { pbcext_element_G2_clear(ggsk); ggsk = NULL; }
   if (bsig) { mem_free(bsig); bsig = NULL; }
+  
+  if (rc == IERROR) {
+    if (ps16_proof->pi) { spk_dlog_free(ps16_proof->pi); ps16_proof = NULL; }
+    if (ps16_proof->B) { pbcext_element_GT_clear(ps16_proof->B); ps16_proof->B = NULL; }
+  }
   
   return rc;
   

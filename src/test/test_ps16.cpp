@@ -309,14 +309,16 @@ namespace groupsig {
     
   }
 
-  /* Opens a signature */
-  TEST_F(PS16Test, OpenSignature) {
+  /* Opens a signature and produces a valid open proof */
+  TEST_F(PS16Test, OpenSignatureValidProof) {
 
     groupsig_signature_t *sig;
+    groupsig_proof_t *proof;
     message_t *msg;
     identity_t *id;
     char *str;
     int rc;
+    uint8_t b;
 
     rc = groupsig_setup(GROUPSIG_PS16_CODE, grpkey, mgrkey, gml, cfg);
     EXPECT_EQ(rc, IOK);
@@ -326,29 +328,37 @@ namespace groupsig {
     EXPECT_NE(sig, nullptr);
 
     /* Add one member */
-    addMembers(1);
+    addMembers(2);
 
     /* Import the message from the external file into the initialized message object */
     msg = message_from_string((char *) "Hello, World!");
     EXPECT_NE(msg, nullptr);
 
     /* Sign */
-    rc = groupsig_sign(sig, msg, memkey[0], grpkey, UINT_MAX);
+    rc = groupsig_sign(sig, msg, memkey[1], grpkey, UINT_MAX);
     EXPECT_EQ(rc, IOK);
 
     /* Open */
     id = identity_init(GROUPSIG_PS16_CODE);
     EXPECT_NE(id, nullptr);
+
+    proof = groupsig_proof_init(GROUPSIG_PS16_CODE);
+    EXPECT_NE(proof, nullptr);
     
-    rc = groupsig_open(id, nullptr, nullptr, sig, grpkey, mgrkey, gml);
+    rc = groupsig_open(id, proof, nullptr, sig, grpkey, mgrkey, gml);
     EXPECT_EQ(rc, IOK);
 
-    /* id must be 0 */
+    /* id must be 1 */
     str = identity_to_string(id);
     EXPECT_NE(str, nullptr);
 
-    rc = strcmp(str, "0");
+    rc = strcmp(str, "1");
     EXPECT_EQ(rc, 0);
+
+    /* Verify the open proof. */
+    rc = groupsig_open_verify(&b, nullptr, proof, sig, grpkey);
+    EXPECT_EQ(rc, IOK);
+    EXPECT_EQ(b, 1);
 
     /* Free stuff */
     rc = message_free(msg);
@@ -358,6 +368,84 @@ namespace groupsig {
     EXPECT_EQ(rc, IOK);
 
     rc = identity_free(id);
+    EXPECT_EQ(rc, IOK);
+
+    rc = groupsig_proof_free(proof);
+    EXPECT_EQ(rc, IOK);
+    
+  }
+
+  /* Opens a signature but produces a wrong open proof */
+  TEST_F(PS16Test, OpenSignatureWrongProof) {
+
+    groupsig_signature_t *sig0, *sig1;
+    groupsig_proof_t *proof;
+    message_t *msg;
+    identity_t *id;
+    char *str;
+    int rc;
+    uint8_t b;
+
+    rc = groupsig_setup(GROUPSIG_PS16_CODE, grpkey, mgrkey, gml, cfg);
+    EXPECT_EQ(rc, IOK);
+
+    /* Initialize the group signature object */
+    sig0 = groupsig_signature_init(grpkey->scheme);
+    EXPECT_NE(sig0, nullptr);
+
+    sig1 = groupsig_signature_init(grpkey->scheme);
+    EXPECT_NE(sig1, nullptr);    
+
+    /* Add one member */
+    addMembers(2);
+
+    /* Import the message from the external file into the initialized message object */
+    msg = message_from_string((char *) "Hello, World!");
+    EXPECT_NE(msg, nullptr);
+
+    /* Sign */
+    rc = groupsig_sign(sig0, msg, memkey[0], grpkey, UINT_MAX);
+    EXPECT_EQ(rc, IOK);
+    
+    rc = groupsig_sign(sig1, msg, memkey[1], grpkey, UINT_MAX);
+    EXPECT_EQ(rc, IOK);
+
+    /* Open */
+    id = identity_init(GROUPSIG_PS16_CODE);
+    EXPECT_NE(id, nullptr);
+
+    proof = groupsig_proof_init(GROUPSIG_PS16_CODE);
+    EXPECT_NE(proof, nullptr);
+    
+    rc = groupsig_open(id, proof, nullptr, sig0, grpkey, mgrkey, gml);
+    EXPECT_EQ(rc, IOK);
+
+    /* id must be 0 */
+    str = identity_to_string(id);
+    EXPECT_NE(str, nullptr);
+
+    rc = strcmp(str, "0");
+    EXPECT_EQ(rc, 0);
+
+    /* Verify the open proof. */
+    rc = groupsig_open_verify(&b, nullptr, proof, sig1, grpkey);
+    EXPECT_EQ(rc, IOK);
+    EXPECT_EQ(b, 0);
+
+    /* Free stuff */
+    rc = message_free(msg);
+    EXPECT_EQ(rc, IOK);
+    
+    rc = groupsig_signature_free(sig0);
+    EXPECT_EQ(rc, IOK);
+
+    rc = groupsig_signature_free(sig1);
+    EXPECT_EQ(rc, IOK);    
+
+    rc = identity_free(id);
+    EXPECT_EQ(rc, IOK);
+
+    rc = groupsig_proof_free(proof);
     EXPECT_EQ(rc, IOK);
     
   }  

@@ -408,7 +408,7 @@ int groupsig_open_verify(uint8_t *ok, identity_t *id,
   const groupsig_t *gs;
   
   /* All the parameters are mandatory. */
-  if(!id || !proof || !sig || !grpkey || sig->scheme != grpkey->scheme ||
+  if(!proof || !sig || !grpkey || sig->scheme != grpkey->scheme ||
      proof->scheme != sig->scheme) {
     LOG_EINVAL(&logger, __FILE__, "groupsig_open_verify", __LINE__, LOGERROR);
     return IERROR;

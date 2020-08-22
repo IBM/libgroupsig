@@ -237,6 +237,23 @@ int ps16_verify(uint8_t *ok, groupsig_signature_t *sig, message_t *msg,
 int ps16_open(identity_t *id, groupsig_proof_t *proof, crl_t *crl, groupsig_signature_t *sig,
 	       groupsig_key_t *grpkey, groupsig_key_t *mgrkey, gml_t *gml);
 
+/** 
+ * @fn int ps16_open_verify(uint8_t *ok, identity_t *id,
+ *                          groupsig_proof_t *proof, 
+ *                          groupsig_signature_t *sig, groupsig_key_t *grpkey)
+ * 
+ * @param[in,out] ok Will be set to 1 if the proof is correct, to 0 otherwise.
+ *  signature.
+ * @param[in] id The identity produced by the open algorithm. Unused. Can be NULL.
+ * @param[in] proof The proof of opening.
+ * @param[in] sig The group signature associated to the proof.
+ * @param[in] grpkey The group key.
+ * 
+ * @return IOK or IERROR
+ */
+int ps16_open_verify(uint8_t *ok, identity_t *id, groupsig_proof_t *proof, 
+		     groupsig_signature_t *sig, groupsig_key_t *grpkey);
+  
 /**
  * @var ps16_groupsig_bundle
  * @brief The set of functions to manage PS16 groups.
@@ -257,7 +274,7 @@ static const groupsig_t ps16_groupsig_bundle = {
  sign: &ps16_sign, /**< Issues PS16 signatures. */
  verify: &ps16_verify, /**< Verifies PS16 signatures. */
  open: &ps16_open, /**< Opens PS16 signatures. */
- open_verify: NULL,
+ open_verify: &ps16_open_verify, /**< Verifies proofs of opening. */
  reveal: NULL,
  trace: NULL,
  claim: NULL,
