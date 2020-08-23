@@ -119,14 +119,30 @@ def verify(sig, msg, grpkey):
         if _b[0] == 0:
             return False
 
-def open(sig, mgrkey, grpkey, gml=ffi.NULL, crl=ffi.NULL, proof=ffi.NULL):
+def open(sig, mgrkey, grpkey, gml=ffi.NULL, crl=ffi.NULL):
 
     identity = lib.identity_init(sig.scheme)
+    proof = lib.groupsig_proof_init(sig.scheme)
 
     if lib.groupsig_open(identity, proof, crl, sig, grpkey, mgrkey, gml) == lib.IERROR:
         raise Exception('Error opening signature')
 
-    return identity
+    return  {
+        'identity': identity,
+        'proof': proof
+    }
+
+def open_verify(proof, sig, grpkey, identity=ffi.NULL):
+
+    _b = ffi.new("uint8_t *")
+    
+    if lib.groupsig_open_verify(_b, identity, proof, sig, grpkey) == lib.IERROR:
+        raise Exception('Error verifying open proof')
+    else:
+        if _b[0] == 1:
+            return True
+        if _b[0] == 0:
+            return False
 
 def blind(grpkey, sig, msg, bldkey=ffi.NULL):
 

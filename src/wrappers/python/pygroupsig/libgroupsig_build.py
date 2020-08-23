@@ -21,6 +21,7 @@ import pygroupsig.groupsig_build
 # Schemes
 import pygroupsig.gl19_build
 import pygroupsig.bbs04_build
+import pygroupsig.ps16_build
 
 groupsigcdef = r"""
 int groupsig_hello_world(void);
@@ -65,6 +66,11 @@ int groupsig_open(identity_t *id, groupsig_proof_t *proof, crl_t *crl,
 groupsig_signature_t *sig, groupsig_key_t *grpkey, 
 groupsig_key_t *mgrkey, gml_t *gml);
 
+int groupsig_open_verify(uint8_t *ok, identity_t *id,
+groupsig_proof_t *proof, 
+groupsig_signature_t *sig, 
+groupsig_key_t *grpkey);
+
 int groupsig_blind(groupsig_blindsig_t *bsig, groupsig_key_t **bldkey,
 groupsig_key_t *grpkey, groupsig_signature_t *sig,
 message_t *msg);
@@ -93,6 +99,7 @@ c_include_path = path.Path("../../../src/include").abspath()
 c_lib_path =  path.Path("../../../build/lib/libgroupsig-static.a").abspath()
 c_gl19_path =  path.Path("../../../build/lib/libgl19.a").abspath()
 c_bbs04_path =  path.Path("../../../build/lib/libbbs04.a").abspath()
+c_ps16_path =  path.Path("../../../build/lib/libps16.a").abspath()
 c_logger_path =  path.Path("../../../build/lib/liblogger.a").abspath()
 c_msg_path =  path.Path("../../../build/lib/libmsg.a").abspath()
 c_base64_path =  path.Path("../../../build/lib/libbase64.a").abspath()
@@ -105,7 +112,6 @@ c_sys_path =  path.Path("../../../build/lib/libsys.a").abspath()
 c_misc_path =  path.Path("../../../build/lib/libmisc.a").abspath()
 c_mcl_path =  path.Path("../../../build/external/lib/libmcl.a").abspath()
 c_mcl384_256_path = path.Path("../../../build/external/lib/libmclbn384_256.so").abspath()
-#c_mcl384_256_path = path.Path("../../../build/external/lib/libmclbn384_256.a").abspath()
 c_include_mcl_path = path.Path("../../../build/external/include/mcl").abspath()
 c_extlibs_path = path.Path("../../../build/external/lib").abspath()
 
@@ -126,6 +132,7 @@ ffibuilder.set_source("_groupsig",
                           c_lib_path,
                           c_gl19_path,
                           c_bbs04_path,
+                          c_ps16_path,                          
                           c_logger_path,
                           c_msg_path,                          
                           c_base64_path,

@@ -20,12 +20,15 @@ class TestGroupOps(unittest.TestCase):
         msg1 = groupsig.join_mgr(0, self.mgrkey, self.grpkey, gml = self.gml)
         msg2 = groupsig.join_mem(1, self.grpkey, msgin = msg1)
         usk = msg2['memkey']
+        msg3 = groupsig.join_mgr(2, self.mgrkey, self.grpkey, msg2['msgout'], gml = self.gml)
+        msg4 = groupsig.join_mem(3, self.grpkey, msgin = msg3, memkey = usk)
+        usk = msg4['memkey']
         self.memkeys.append(usk)
 
     def setUp(self):
-        groupsig.init(constants.BBS04_CODE, 0)
-        group = groupsig.setup(constants.BBS04_CODE)
-        self.code = constants.BBS04_CODE
+        groupsig.init(constants.PS16_CODE, 0)
+        group = groupsig.setup(constants.PS16_CODE)
+        self.code = constants.PS16_CODE
         self.config = group['config']
         self.mgrkey = group['mgrkey']
         self.grpkey = group['grpkey']
@@ -84,22 +87,28 @@ class TestGroupOps(unittest.TestCase):
         gsopen = groupsig.open(sig, self.mgrkey, self.grpkey, gml = self.gml)
         idStr = identity.identity_to_string(gsopen['identity'])
         self.assertEqual(idStr, "1")
+        proof = gsopen['proof']
+        b = groupsig.open_verify(proof, sig, self.grpkey)
+        self.assertTrue(b)
         
 # Tests for signature operations
 class TestSignatureOps(unittest.TestCase):
 
     # Non-test functions
     def addMember(self):
-        msg1 = groupsig.join_mgr(0, self. mgrkey, self.grpkey, gml = self.gml)
+        msg1 = groupsig.join_mgr(0, self.mgrkey, self.grpkey, gml = self.gml)
         msg2 = groupsig.join_mem(1, self.grpkey, msgin = msg1)
         usk = msg2['memkey']
+        msg3 = groupsig.join_mgr(2, self.mgrkey, self.grpkey, msg2['msgout'], gml = self.gml)
+        msg4 = groupsig.join_mem(3, self.grpkey, msgin = msg3, memkey = usk)
+        usk = msg4['memkey']
         self.memkeys.append(usk)
-
+        
     # Creates a group, adds a member and generates a signature
     def setUp(self):
-        groupsig.init(constants.BBS04_CODE, 0)
-        group = groupsig.setup(constants.BBS04_CODE)
-        self.code = constants.BBS04_CODE
+        groupsig.init(constants.PS16_CODE, 0)
+        group = groupsig.setup(constants.PS16_CODE)
+        self.code = constants.PS16_CODE
         self.config = group['config']
         self.mgrkey = group['mgrkey']
         self.grpkey = group['grpkey']
@@ -129,9 +138,9 @@ class TestGrpkeyOps(unittest.TestCase):
 
     # Creates a group, adds a member and generates a signature
     def setUp(self):
-        groupsig.init(constants.BBS04_CODE, 0)
-        group = groupsig.setup(constants.BBS04_CODE)
-        self.code = constants.BBS04_CODE
+        groupsig.init(constants.PS16_CODE, 0)
+        group = groupsig.setup(constants.PS16_CODE)
+        self.code = constants.PS16_CODE
         self.config = group['config']
         self.mgrkey = group['mgrkey']
         self.grpkey = group['grpkey']
@@ -154,9 +163,9 @@ class TestManagerkeyOps(unittest.TestCase):
 
     # Creates a group, adds a member and generates a signature
     def setUp(self):
-        groupsig.init(constants.BBS04_CODE, 0)
-        group = groupsig.setup(constants.BBS04_CODE)
-        self.code = constants.BBS04_CODE
+        groupsig.init(constants.PS16_CODE, 0)
+        group = groupsig.setup(constants.PS16_CODE)
+        self.code = constants.PS16_CODE
         self.config = group['config']
         self.mgrkey = group['mgrkey']
         self.grpkey = group['grpkey']
@@ -182,13 +191,16 @@ class TestMemkeyOps(unittest.TestCase):
         msg1 = groupsig.join_mgr(0, self.mgrkey, self.grpkey, gml = self.gml)
         msg2 = groupsig.join_mem(1, self.grpkey, msgin = msg1)
         usk = msg2['memkey']
+        msg3 = groupsig.join_mgr(2, self.mgrkey, self.grpkey, msg2['msgout'], gml = self.gml)
+        msg4 = groupsig.join_mem(3, self.grpkey, msgin = msg3, memkey = usk)
+        usk = msg4['memkey']
         self.memkey = usk
         
     # Creates a group, adds a member and generates a signature
     def setUp(self):
-        groupsig.init(constants.BBS04_CODE, 0)
-        group = groupsig.setup(constants.BBS04_CODE)
-        self.code = constants.BBS04_CODE
+        groupsig.init(constants.PS16_CODE, 0)
+        group = groupsig.setup(constants.PS16_CODE)
+        self.code = constants.PS16_CODE
         self.config = group['config']
         self.mgrkey = group['mgrkey']
         self.grpkey = group['grpkey']
