@@ -8,6 +8,7 @@ const jsgroupsig = require("../build/Release/jsgroupsig")
 const BBS04 = 1;
 //const CPY06 = 2;
 const GL19 = 3;
+const PS16 = 4;
 
 module.exports = {
 
@@ -18,6 +19,7 @@ module.exports = {
     BBS04: BBS04,
     //CPY06: CPY06,
     GL19: GL19,
+    PS16: PS16,
 
     /** Functions **/
     
@@ -39,7 +41,22 @@ module.exports = {
     sign: jsgroupsig.gs_sign,
     verify: jsgroupsig.gs_verify,
     blind: jsgroupsig.gs_blind,
-    open: jsgroupsig.gs_open,
+    open: function (sig, grpkey, mgrkey, gml = null, crl = null) {
+	let id = null;
+	let proof = null;
+	console.log("WOLOLOOOO 0");	
+	let code = jsgroupsig.gs_signature_get_code(sig);
+	console.log("WOLOLOOOO 1");
+	/** XXX @TODO What if scheme has no proof? **/
+	if (jsgroupsig.gs_has_open_proof() == 1) {
+	    let proof = jsgroupsig.gs_proof_init(code);
+	}
+	console.log("WOLOLOOOO 2");	
+	id = jsgroupsig.gs_open(sig, grpkey, mgrkey, gml, proof);
+	console.log("WOLOLOOOO 3");	
+	return { "id": id, "proof": proof }; 
+    },
+    open_verify: jsgroupsig.gs_open_verify,
     convert: jsgroupsig.gs_convert,
     unblind: function (bsig, bldkey, sig = null, grpkey = null) {
 	let nym = null;
@@ -105,10 +122,6 @@ module.exports = {
     signature_get_size: jsgroupsig.gs_signature_get_size,
     signature_export: jsgroupsig.gs_signature_export,
     signature_import: jsgroupsig.gs_signature_import,
-/*    signature_import = function() {
-	return new Promise(jsgroupsig.gs_signature_import)
-	    .catch(err) => { console.log(err); }
-    },*/
     signature_to_string: jsgroupsig.gs_signature_to_string,
 
     /* blindsig.h */
@@ -120,6 +133,16 @@ module.exports = {
     blindsig_export: jsgroupsig.gs_blindsig_export,
     blindsig_import: jsgroupsig.gs_blindsig_import,
     blindsig_to_string: jsgroupsig.gs_blindsig_to_string,
+
+    /* proof.h */
+    proof_handle_from_code: jsgroupsig.gs_proof_handle_from_code,
+    proof_init: jsgroupsig.gs_proof_init,
+    proof_free: jsgroupsig.gs_proof_free,
+    proof_copy: jsgroupsig.gs_proof_copy,
+    proof_get_size: jsgroupsig.gs_proof_get_size,
+    proof_export: jsgroupsig.gs_proof_export,
+    proof_import: jsgroupsig.gs_proof_import,
+    proof_to_string: jsgroupsig.gs_proof_to_string,    
 
     /* identity.h */
     identity_handle_from_code: jsgroupsig.gs_identity_handle_from_code,

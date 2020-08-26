@@ -39,7 +39,6 @@ int main(int argc, char *argv[]) {
 
   int argnum = 1; // Next argument to process
   char *s_sig, *s_grpkey, *s_mgrkey, *s_gml, *s_crl;
-  groupsig_config_t *cfg;  
   groupsig_key_t *grpkey, *mgrkey;
   gml_t *gml;
   crl_t *crl;
@@ -72,7 +71,7 @@ int main(int argc, char *argv[]) {
   }
   argnum++;
 
-  if(!(cfg = groupsig_init(scheme, time(NULL)))) {
+  if(groupsig_init(scheme, time(NULL)) == IERROR) {
     return IERROR;
   }
 
@@ -233,7 +232,7 @@ int main(int argc, char *argv[]) {
   if(sig) { groupsig_signature_free(sig); sig = NULL; }
   identity_free(id); id = NULL;
 
-  groupsig_clear(scheme, cfg); cfg = NULL;
+  groupsig_clear(scheme);
   groupsig_mgr_key_free(mgrkey); mgrkey = NULL;
   groupsig_grp_key_free(grpkey); grpkey = NULL;
   gml_free(gml); gml = NULL;

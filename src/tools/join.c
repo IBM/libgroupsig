@@ -79,7 +79,7 @@ int main(int argc, char **argv) {
   message_t *mout, *min;
   char *dir_mem, *keyfile, *s_grpkey, *s_mgrkey, *s_gml;
   groupsig_key_t *grpkey, *mgrkey, *memkey;
-  groupsig_config_t *cfg;  
+  const groupsig_t *gs;  
   gml_t *gml;
   byte_t *b_grpkey, *b_mgrkey, *b_memkey;
   uint64_t i, n, b_len;
@@ -105,8 +105,12 @@ int main(int argc, char **argv) {
   }
   argnum++;
 
+  if(!(gs = groupsig_get_groupsig_from_code(scheme))) {
+    return IERROR;
+  }
+
   /* Initialize the group signature environment */
-  if(!(cfg = groupsig_init(scheme, time(NULL)))) {
+  if(groupsig_init(scheme, time(NULL)) == IERROR) {
     return IERROR;
   }
 
@@ -116,7 +120,7 @@ int main(int argc, char **argv) {
   s_mgrkey = argv[argnum];
   argnum++;
   
-  if(cfg->has_gml) {
+  if(gs->desc->has_gml) {
     s_gml = argv[argnum];
     argnum++;
   }
@@ -156,7 +160,7 @@ int main(int argc, char **argv) {
 
   /* GML */
   gml = NULL;
-  if(cfg->has_gml) {
+  if(gs->desc->has_gml) {
     if(!(gml = gml_import(scheme, GML_FILE, s_gml))) {
       fprintf(stderr, "Error: invalid GML %s.\n", s_gml);
       return IERROR;
@@ -279,7 +283,7 @@ int main(int argc, char **argv) {
 
   }
 
-  if(cfg->has_gml) {
+  if(gs->desc->has_gml) {
     if(gml_export(gml, s_gml, GML_FILE) == IERROR) {
       return IERROR;
     }
@@ -289,11 +293,11 @@ int main(int argc, char **argv) {
   groupsig_mgr_key_free(mgrkey); mgrkey = NULL;
   groupsig_grp_key_free(grpkey); grpkey = NULL;
 
-  if(cfg->has_gml) {
+  if(gs->desc->has_gml) {
     gml_free(gml); gml = NULL;
   }
 
-  groupsig_clear(scheme, cfg); cfg = NULL;
+  groupsig_clear(scheme);
   
 #ifdef PROFILE
   profile_free(prof); prof = NULL;

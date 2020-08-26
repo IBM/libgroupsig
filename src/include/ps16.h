@@ -51,7 +51,11 @@ extern "C" {
  */
 static const groupsig_description_t ps16_description = {
   GROUPSIG_PS16_CODE, /**< PS16's scheme code. */
-  GROUPSIG_PS16_NAME /**< PS16's scheme name. */
+  GROUPSIG_PS16_NAME, /**< PS16's scheme name. */
+  1, /**< PS16 has a GML. */
+  0, /**< PS16 does not have a CRL. */
+  1, /**< PS16 uses PBC. */
+  1 /**< PS16 has verifiable openings. */
 };
 
 /* Metadata for the join protocol */
@@ -63,38 +67,56 @@ static const groupsig_description_t ps16_description = {
 /* Number of exchanged messages */
 #define PS16_JOIN_SEQ 3
 
-/*
- * @def PS16_CONFIG_SET_DEFAULTS
- * @brief Sets the configuration structure to the default values for
- *  PS16.
- */
-#define PS16_CONFIG_SET_DEFAULTS(cfg) \
-  ((groupsig_config_t *) cfg)->scheme = GROUPSIG_PS16_CODE;  \
-  ((groupsig_config_t *) cfg)->has_gml = 1;		     \
-  ((groupsig_config_t *) cfg)->has_crl = 0;		     \
-  ((groupsig_config_t *) cfg)->has_pbc = 1;
+/* /\* */
+/*  * @def PS16_CONFIG_SET_DEFAULTS */
+/*  * @brief Sets the configuration structure to the default values for */
+/*  *  PS16. */
+/*  *\/ */
+/* #define PS16_CONFIG_SET_DEFAULTS(cfg) \ */
+/*   ((groupsig_config_t *) cfg)->scheme = GROUPSIG_PS16_CODE;  \ */
+/*   ((groupsig_config_t *) cfg)->has_gml = 1;		     \ */
+/*   ((groupsig_config_t *) cfg)->has_crl = 0;		     \ */
+/*   ((groupsig_config_t *) cfg)->has_pbc = 1;		     \ */
+/*   ((groupsig_config_t *) cfg)->has_open_proof = 1; */
   
-/** 
- * @fn groupsig_config_t* ps16_config_init(void)
- * @brief Allocates memory for a PS16 config structure.
- * 
- * @return A pointer to the allocated structure or NULL if error.
- */
-groupsig_config_t* ps16_config_init(void);
+/* /\**  */
+/*  * @fn groupsig_config_t* ps16_config_init(void) */
+/*  * @brief Allocates memory for a PS16 config structure. */
+/*  *  */
+/*  * @return A pointer to the allocated structure or NULL if error. */
+/*  *\/ */
+/* groupsig_config_t* ps16_config_init(void); */
+
+/* /\**  */
+/*  * @fn int ps16_config_free(groupsig_config_t *cfg) */
+/*  * @brief Frees the memory of a PS16 config structure. */
+/*  *  */
+/*  * @param cfg The structure to free. */
+/*  * */
+/*  * @return A pointer to the allocated structure or NULL if error. */
+/*  *\/ */
+/* int ps16_config_free(groupsig_config_t *cfg); */
 
 /** 
- * @fn int ps16_config_free(groupsig_config_t *cfg)
- * @brief Frees the memory of a PS16 config structure.
- * 
- * @param cfg The structure to free.
+ * @fn int ps16_init()
+ * @brief Initializes the internal variables needed by PS16. In this case,
+ *  it only sets up the pairing module.
  *
- * @return A pointer to the allocated structure or NULL if error.
- */
-int ps16_config_free(groupsig_config_t *cfg);
+ * @return IOK or IERROR.
+ */  
+int ps16_init();
+
+/** 
+ * @fn int ps16_clear()
+ * @brief Frees the memory initialized by ps16_init.
+ *
+ * @return IOK or IERROR.
+ */   
+int ps16_clear();
 
 /** 
  * @fn int ps16_setup(groupsig_key_t *grpkey, groupsig_key_t *mgrkey, 
- *                     gml_t *gml, groupsig_config_t *config)
+ *                     gml_t *gml)
  * @brief The setup function for the PS16 scheme.
  *
  * @param[in,out] grpkey An initialized group key, will be updated with the newly
@@ -102,11 +124,10 @@ int ps16_config_free(groupsig_config_t *cfg);
  * @param[in,out] mgrkey An initialized manager key, will be updated with the
  *   newly created group's manager key.
  * @param[in,out] gml An initialized GML, will be set to an empty GML.
- * @param[in] config A PS16 configuration structure.
  * 
  * @return IOK or IERROR.
  */
-int ps16_setup(groupsig_key_t *grpkey, groupsig_key_t *mgrkey, gml_t *gml, groupsig_config_t *config);
+int ps16_setup(groupsig_key_t *grpkey, groupsig_key_t *mgrkey, gml_t *gml);
 
 /**
  * @fn int ps16_get_joinseq(uint8_t *seq)
@@ -260,11 +281,11 @@ int ps16_open_verify(uint8_t *ok, identity_t *id, groupsig_proof_t *proof,
  */
 static const groupsig_t ps16_groupsig_bundle = {
  desc: &ps16_description, /**< Contains the PS16 scheme description. */
- config_init: &ps16_config_init, /**< Initializes a PS16 config structure. */
- config_free: &ps16_config_free, /**< Frees a PS16 config structure. */
- sysenv_update: NULL,//&ps16_sysenv_update, /**< Sets the PBC params and pairing. */
- sysenv_get: NULL, 
- sysenv_free: NULL, //&ps16_sysenv_free, /**<  Frees the PBC params and pairing. */
+ init: &ps16_init, /**< Initializes the variables needed by PS16. */
+ clear: &ps16_clear, /**< Frees the varaibles needed by PS16. */
+ /* sysenv_update: NULL,//&ps16_sysenv_update, /\**< Sets the PBC params and pairing. *\/ */
+ /* sysenv_get: NULL,  */
+ /* sysenv_free: NULL, //&ps16_sysenv_free, /\**<  Frees the PBC params and pairing. *\/ */
  setup: &ps16_setup, /**< Sets up PS16 groups. */
  get_joinseq: &ps16_get_joinseq, /**< Returns the number of messages in the join 
 				     protocol. */

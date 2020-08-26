@@ -30,41 +30,23 @@
 #include "sys/mem.h"
 
 
-groupsig_config_t* gl19_config_init() {
-
-  groupsig_config_t *cfg;
-
-  if(!(cfg = (groupsig_config_t *) mem_malloc(sizeof(groupsig_config_t)))) {
-    return NULL;
-  }
-
-  GL19_CONFIG_SET_DEFAULTS(cfg);
+int gl19_init() {
 
   if(pbcext_init(BLS12_381) == IERROR) {
-    mem_free(cfg); cfg = NULL;
-    return NULL;
+    return IERROR;
   }
   
-  return cfg;
+  return IOK;
 
 }
 
-int gl19_config_free(groupsig_config_t *cfg) {
-
-  if(!cfg) {
-    return IOK;
-  }
-
-  mem_free(cfg);
-  
-  return IOK;
-  
+int gl19_clear() {
+  return IOK;  
 }
 
 int gl19_setup(groupsig_key_t *grpkey,
 	       groupsig_key_t *mgrkey,
-	       gml_t *gml,
-	       groupsig_config_t *config) {
+	       gml_t *gml) {
 
   gl19_grp_key_t *gkey;
   gl19_mgr_key_t *mkey;

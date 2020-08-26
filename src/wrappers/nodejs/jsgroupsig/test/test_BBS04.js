@@ -115,7 +115,7 @@ describe('BBS04 Identity operations', function() {
 	let bbs04 = setupFull();
 	let memkey = addMember(bbs04.mgrkey, bbs04.grpkey, bbs04.gml);
 	let sig = jsgroupsig.sign("Hello, World!", memkey, bbs04.grpkey);
-	let id = jsgroupsig.open(sig, bbs04.grpkey, bbs04.mgrkey, bbs04.gml);
+	let { id, proof } = jsgroupsig.open(sig, bbs04.grpkey, bbs04.mgrkey, bbs04.gml);
 	let idstr = jsgroupsig.identity_to_string(id);
 	expect(idstr).to.be.a('string');
     });
@@ -168,7 +168,7 @@ describe('BBS04 Group operations', function() {
 	let memkey = addMember(bbs04.mgrkey, bbs04.grpkey, bbs04.gml);
 	let memkey2 = addMember(bbs04.mgrkey, bbs04.grpkey, bbs04.gml);
 	let sig = jsgroupsig.sign("Hello, World!", memkey2, bbs04.grpkey);
-	let id = jsgroupsig.open(sig, bbs04.grpkey, bbs04.mgrkey, bbs04.gml);
+	let { id, proof } = jsgroupsig.open(sig, bbs04.grpkey, bbs04.mgrkey, bbs04.gml);
 	let idstr = jsgroupsig.identity_to_string(id);
 	assert.equal(idstr, "1");
     });

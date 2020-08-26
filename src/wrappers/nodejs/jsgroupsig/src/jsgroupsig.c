@@ -84,7 +84,7 @@
   }									\
 
 #define NAPI_IS_NULL(env, arg, bp) {		\
-  napi_value jsnull; \ 
+  napi_value jsnull; \
 if(napi_get_null(env, &jsnull) != napi_ok) {			       \
   napi_throw_type_error(env, "EINVAL", "Could not get NULL.");	       \
   return NULL;							       \
@@ -314,6 +314,95 @@ napi_value gs_clear
   assert (status == napi_ok);
 
   return NULL;
+  
+}
+
+/* has_gml = 1;		     \ */
+/* ((groupsig_config_t *) cfg)->has_crl = 0;		     \ */
+/* ((groupsig_config_t *) cfg)->has_pbc = 1;		     \ */
+/* ((groupsig_config_t *) cfg)->has_open_proof; */
+
+napi_value gs_has_gml
+(
+ napi_env env,
+ napi_callback_info info
+ ) {
+
+  groupsig_t *gs;
+  napi_status status;
+  napi_value args[1], has_gml;
+  uint32_t code;
+  size_t argc;
+
+  argc = 1;
+  status = napi_get_cb_info(env, info, &argc, args, NULL, NULL);
+  assert(status == napi_ok);
+
+  if (argc != 1) {
+    napi_throw_type_error(env, NULL, "Wrong number of arguments");
+    return NULL;
+  }
+
+  NAPI_GET_ARG_UINT32(env, args[0], code);
+
+  /* groupsig_is_supported_scheme actually expects an uint8_t */
+  if (code > UINT8_MAX) {
+    napi_throw_type_error(env, NULL, "Wrong arguments (overflow)");
+    return NULL;
+  }  
+
+  if(!(gs = (groupsig_t *) groupsig_get_groupsig_from_code((uint8_t) code))) {
+    napi_throw_type_error(env, NULL, "Wrong arguments (overflow)");
+    return NULL;    
+  }
+
+  status = napi_create_uint32(env, (uint32_t) gs->desc->has_gml, &has_gml);
+  assert (status == napi_ok);
+
+  return has_gml;
+  
+}
+
+napi_value gs_has_open_proof
+(
+ napi_env env,
+ napi_callback_info info
+ ) {
+
+  groupsig_t *gs;
+  napi_status status;
+  napi_value args[1], has_open_proof;
+  uint32_t code;
+  size_t argc;
+
+  argc = 1;
+  status = napi_get_cb_info(env, info, &argc, args, NULL, NULL);
+  assert(status == napi_ok);
+
+  if (argc != 1) {
+    napi_throw_type_error(env, NULL, "Wrong number of arguments");
+    return NULL;
+  }
+
+  NAPI_GET_ARG_UINT32(env, args[0], code);
+
+  /* groupsig_is_supported_scheme actually expects an uint8_t */
+  if (code > UINT8_MAX) {
+    napi_throw_type_error(env, NULL, "Wrong arguments (overflow)");
+    return NULL;
+  }  
+
+  if(!(gs = (groupsig_t *) groupsig_get_groupsig_from_code((uint8_t) code))) {
+    napi_throw_type_error(env, NULL, "Wrong arguments (overflow)");
+    return NULL;    
+  }
+
+  status = napi_create_uint32(env,
+			      (uint32_t) gs->desc->has_open_proof,
+			      &has_open_proof);
+  assert (status == napi_ok);
+
+  return has_open_proof;
   
 }
 
@@ -981,6 +1070,78 @@ napi_value gs_open
   assert (status == napi_ok);
   
   return external;
+    
+}
+
+napi_value gs_open_verify
+(
+ napi_env env,
+ napi_callback_info info
+ ) {
+  
+  napi_status status;
+  napi_value args[4], nb;
+  groupsig_signature_t *sig;
+  groupsig_key_t *grpkey;
+  groupsig_proof_t *proof;
+  identity_t *id;
+  size_t argc, result;
+  uint8_t ok;
+  bool b;
+
+  argc = 4;
+  status = napi_get_cb_info(env, info, &argc, args, NULL, NULL);
+  assert(status == napi_ok);
+  id = NULL; proof = NULL; sig = NULL; grpkey = NULL;
+  
+  if (argc < 3 || argc > 4) {
+    napi_throw_type_error(env, NULL, "Wrong number of arguments");
+    return NULL;
+  }
+
+  /* Get proof */
+  if (napi_get_value_external(env, args[0], (void **) &proof) != napi_ok) { 
+    napi_throw_type_error(env, "EINVAL", "Expected external");
+    return NULL;
+  }
+
+  /* Get signature */
+  if (napi_get_value_external(env, args[1], (void **) &sig) != napi_ok) { 
+    napi_throw_type_error(env, "EINVAL", "Expected external");
+    return NULL;
+  }  
+
+  /* Get grpkey */
+  if (napi_get_value_external(env, args[2], (void **) &grpkey) != napi_ok) { 
+    napi_throw_type_error(env, "EINVAL", "Expected external");
+    return NULL;
+  }
+
+  /* Get identity */
+  if (argc > 3) {
+    
+    NAPI_IS_NULL(env, args[3], &b);
+
+    if (!b) {
+      if (napi_get_value_external(env, args[3], (void **) &id) != napi_ok) { 
+	napi_throw_type_error(env, "EINVAL", "Expected external");
+	return NULL;
+      }
+    }
+    
+  }
+    
+  /* Run groupsig_open_verify */
+  status = groupsig_open_verify(&ok, id, proof, sig, grpkey);
+  if (status != napi_ok) return NULL;
+
+  if (!ok) { b = false; }
+  else { b = true; }
+
+  status = napi_get_boolean(env, b, &nb);
+  if (status != napi_ok) return NULL;
+
+  return nb;
     
 }
 
@@ -2884,6 +3045,38 @@ napi_value gs_signature_free
   
 }
 
+napi_value gs_signature_get_code
+(
+ napi_env env,
+ napi_callback_info info
+ ) {
+
+  napi_status status;
+  napi_value args[1], scheme;
+  groupsig_signature_t *sig;
+  size_t argc;
+
+  argc = 1;
+  status = napi_get_cb_info(env, info, &argc, args, NULL, NULL);
+  assert(status == napi_ok);
+
+  if (argc != 1) {
+    napi_throw_type_error(env, NULL, "Wrong number of arguments");
+    return NULL;
+  }
+ 
+  if (napi_get_value_external(env, args[0], (void **) &sig) != napi_ok) { 
+    napi_throw_type_error(env, "EINVAL", "Expected external");	       
+    return NULL;
+  }
+
+  status = napi_create_uint32(env, (uint32_t) sig->scheme, &scheme);
+  assert (status == napi_ok);
+
+  return scheme;
+
+}
+
 napi_value gs_signature_copy
 (
  napi_env env,
@@ -3087,6 +3280,344 @@ napi_value gs_signature_to_string
   }
   
   str = groupsig_signature_to_string(sig);
+
+  if (!str) {
+    napi_throw_error(env, NULL, "Error getting string.");
+    return NULL;
+  }
+
+  status = napi_create_string_utf8(env, str, strlen(str), &result);
+  assert (status == napi_ok);
+
+  return result;  
+  
+}
+
+/****** proof.h ******/
+
+napi_value gs_proof_handle_from_code
+(
+ napi_env env,
+ napi_callback_info info
+ ) {
+  
+  napi_status status;
+  napi_value args[1], external;
+  groupsig_proof_handle_t *gsh;
+  uint32_t code;
+  size_t argc;
+
+  argc = 1;
+  status = napi_get_cb_info(env, info, &argc, args, NULL, NULL);
+  assert(status == napi_ok);
+
+  if (argc != 1) {
+    napi_throw_type_error(env, NULL, "Wrong number of arguments");
+    return NULL;
+  }
+  
+  NAPI_GET_ARG_UINT32(env, args[0], code);
+
+  /* groupsig_is_supported_scheme actually expects an uint8_t */
+  if (code > UINT8_MAX) {
+    napi_throw_type_error(env, NULL, "Wrong arguments (overflow)");
+    return NULL;
+  }
+    
+  /* Run groupsig_proof_handle_from_code */
+  gsh = (groupsig_proof_handle_t *) groupsig_proof_handle_from_code((uint8_t) code);
+  
+  if (!gsh) {
+    napi_throw_error(env, NULL, "Error getting group proof handle.");
+    return NULL;
+  }
+
+  status = napi_create_external(env, gsh, NULL, NULL, &external);
+  assert (status == napi_ok);
+
+  return external;
+  
+}
+
+napi_value gs_proof_init
+(
+ napi_env env,
+ napi_callback_info info
+ ) {
+  
+  napi_status status;
+  napi_value args[1], external;
+  groupsig_proof_t *proof;
+  uint32_t code;
+  size_t argc;
+
+  argc = 1;
+  status = napi_get_cb_info(env, info, &argc, args, NULL, NULL);
+  assert(status == napi_ok);
+
+  if (argc != 1) {
+    napi_throw_type_error(env, NULL, "Wrong number of arguments");
+    return NULL;
+  }
+  
+  NAPI_GET_ARG_UINT32(env, args[0], code);
+
+  /* groupsig_is_supported_scheme actually expects an uint8_t */
+  if (code > UINT8_MAX) {
+    napi_throw_type_error(env, NULL, "Wrong arguments (overflow)");
+    return NULL;
+  }
+    
+  /* Run groupsig_proof_init */
+  proof = groupsig_proof_init((uint8_t) code);
+  
+  if (!proof) {
+    napi_throw_error(env, NULL, "Error initializing group proof.");
+    return NULL;
+  }
+
+  status = napi_create_external(env, proof, NULL, NULL, &external);
+  assert (status == napi_ok);
+  return external;
+  
+}
+
+napi_value gs_proof_free
+(
+ napi_env env,
+ napi_callback_info info
+ ) {
+  
+  napi_status status;
+  napi_value args[1];
+  groupsig_proof_t *sig;
+  size_t argc;
+
+  argc = 1;
+  status = napi_get_cb_info(env, info, &argc, args, NULL, NULL);
+  assert(status == napi_ok);
+
+  if (argc != 1) {
+    napi_throw_type_error(env, NULL, "Wrong number of arguments");
+    return NULL;
+  }
+  
+  if (napi_get_value_external(env, args[0], (void **) &sig) != napi_ok) { 
+    napi_throw_type_error(env, "EINVAL", "Expected external");	       
+    return NULL;
+  }
+  
+  /* Run groupsig_proof_free */
+  status = groupsig_proof_free(sig);
+  assert (status == napi_ok);
+  
+  return NULL;
+  
+}
+
+/* napi_value gs_proof_copy */
+/* ( */
+/*  napi_env env, */
+/*  napi_callback_info info */
+/*  ) { */
+
+/*   napi_status status; */
+/*   napi_value args[2]; */
+/*   groupsig_proof_t *src, *dst; */
+/*   size_t argc; */
+
+/*   argc = 2; */
+/*   status = napi_get_cb_info(env, info, &argc, args, NULL, NULL); */
+/*   assert(status == napi_ok); */
+
+/*   if (argc != 2) { */
+/*     napi_throw_type_error(env, NULL, "Wrong number of arguments"); */
+/*     return NULL; */
+/*   } */
+ 
+/*   if (napi_get_value_external(env, args[0], (void **) &dst) != napi_ok) {  */
+/*     napi_throw_type_error(env, "EINVAL", "Expected external");	        */
+/*     return NULL; */
+/*   } */
+
+/*   if (napi_get_value_external(env, args[1], (void **) &src) != napi_ok) {  */
+/*     napi_throw_type_error(env, "EINVAL", "Expected external");	        */
+/*     return NULL; */
+/*   } */
+
+/*   status = groupsig_proof_copy(dst, src); */
+/*   assert (status == napi_ok); */
+
+/*   return NULL; */
+  
+/* } */
+
+napi_value gs_proof_get_size
+(
+ napi_env env,
+ napi_callback_info info
+ ) {
+
+  napi_status status;
+  napi_value args[1], nsize;
+  groupsig_proof_t *sig;
+  size_t argc;
+  int size;
+
+  argc = 1;
+  status = napi_get_cb_info(env, info, &argc, args, NULL, NULL);
+  assert(status == napi_ok);
+
+  if (argc != 1) {
+    napi_throw_type_error(env, NULL, "Wrong number of arguments");
+    return NULL;
+  }
+ 
+  if (napi_get_value_external(env, args[0], (void **) &sig) != napi_ok) { 
+    napi_throw_type_error(env, "EINVAL", "Expected external");	       
+    return NULL;
+  }
+
+  errno = 0;
+  size = groupsig_proof_get_size(sig);
+  assert (!errno);
+
+  /* Convert the size to NAPI format */
+  status = napi_create_int32(env, (int32_t) size, &nsize);
+  assert(status == napi_ok);
+
+  return nsize;  
+  
+}
+
+
+napi_value gs_proof_export
+(
+ napi_env env,
+ napi_callback_info info
+ ) {
+  
+  napi_status status;
+  napi_value args[1], result;
+  groupsig_proof_t *sig;
+  byte_t *bytes;
+  char *str;
+  uint64_t size;  
+  size_t argc;
+
+  argc = 1;
+  status = napi_get_cb_info(env, info, &argc, args, NULL, NULL);
+  assert(status == napi_ok);
+
+  if (argc != 1) {
+    napi_throw_type_error(env, NULL, "Wrong number of arguments");
+    return NULL;
+  }
+ 
+  if (napi_get_value_external(env, args[0], (void **) &sig) != napi_ok) { 
+    napi_throw_type_error(env, "EINVAL", "Expected external");	       
+    return NULL;
+  }
+
+  bytes = NULL; size = 0;
+  status = groupsig_proof_export(&bytes, (uint32_t *) &size, sig);
+  assert (status == napi_ok);   
+
+  if(!(str = base64_encode(bytes, size))) {
+    napi_throw_type_error(env, NULL, "Internal error");	       
+    return NULL;
+  }
+
+  free(bytes); bytes = NULL;  
+
+  status = napi_create_string_utf8(env, str, strlen(str), &result);
+  assert (status == napi_ok);
+
+  return result;
+  
+}
+
+napi_value gs_proof_import
+(
+ napi_env env,
+ napi_callback_info info
+ ) {
+
+  napi_status status;
+  napi_value args[2], external;
+  char *src;
+  byte_t *bytes;
+  groupsig_proof_t *sig;
+  uint64_t size;
+  uint32_t code;
+  size_t argc;
+
+  argc = 2;
+  status = napi_get_cb_info(env, info, &argc, args, NULL, NULL);
+  assert(status == napi_ok);
+
+  if (argc != 2) {
+    napi_throw_type_error(env, NULL, "Wrong number of arguments");
+    return NULL;
+  }
+
+  NAPI_GET_ARG_UINT32(env, args[0], code);
+
+  /* groupsig_is_supported_scheme actually expects an uint8_t */
+  if (code > UINT8_MAX) {
+    napi_throw_type_error(env, NULL, "Wrong arguments (overflow)");
+    return NULL;
+  }
+
+  NAPI_GET_STRING_UTF8(env, args[1], src);
+
+  if(!(bytes = base64_decode(src, &size))) {
+    napi_throw_type_error(env, NULL, "Internal error.");
+    return NULL;
+  } 
+    
+  sig = groupsig_proof_import((uint8_t ) code, bytes, (uint32_t) size);
+  if (!sig) {
+    napi_throw_error(env, NULL, "Error importing sig.");
+    return NULL;
+  }
+
+  free(bytes); bytes = NULL;  
+
+  status = napi_create_external(env, sig, NULL, NULL, &external);
+  assert (status == napi_ok);
+  
+  return external;  
+  
+}
+
+napi_value gs_proof_to_string
+(
+ napi_env env,
+ napi_callback_info info
+ ) {
+
+  napi_status status;
+  napi_value args[1], result;
+  groupsig_proof_t *sig;
+  char *str;
+  size_t argc;
+
+  argc = 1;
+  status = napi_get_cb_info(env, info, &argc, args, NULL, NULL);
+  assert(status == napi_ok);
+
+  if (argc != 1) {
+    napi_throw_type_error(env, NULL, "Wrong number of arguments");
+    return NULL;
+  }
+ 
+  if (napi_get_value_external(env, args[0], (void **) &sig) != napi_ok) { 
+    napi_throw_type_error(env, "EINVAL", "Expected external");	       
+    return NULL;
+  }
+  
+  str = groupsig_proof_to_string(sig);
 
   if (!str) {
     napi_throw_error(env, NULL, "Error getting string.");
@@ -4558,7 +5089,13 @@ napi_value Init
   napi_property_descriptor desc_gs_signature_free =
     DECLARE_NAPI_METHOD("gs_signature_free", gs_signature_free);
   status = napi_define_properties(env, exports, 1, &desc_gs_signature_free);
-  assert(status == napi_ok);  
+  assert(status == napi_ok);
+
+  /* Helper function to retrieve the scheme code from a signature */
+  napi_property_descriptor desc_gs_signature_get_code =
+    DECLARE_NAPI_METHOD("gs_signature_get_code", gs_signature_get_code);
+  status = napi_define_properties(env, exports, 1, &desc_gs_signature_get_code);
+  assert(status == napi_ok);
   
   /* int groupsig_signature_copy(groupsig_signature_t *dst, groupsig_signature_t *src); */
   napi_property_descriptor desc_gs_signature_copy =
@@ -4638,7 +5175,57 @@ napi_value Init
   napi_property_descriptor desc_gs_blindsig_to_string =
     DECLARE_NAPI_METHOD("gs_blindsig_to_string", gs_blindsig_to_string);
   status = napi_define_properties(env, exports, 1, &desc_gs_blindsig_to_string);
+  assert(status == napi_ok);
+
+  /****** proof.h functions ******/
+
+  /* const groupsig_proof_handle_t* groupsig_proof_handle_from_code(uint8_t code); */
+  napi_property_descriptor desc_gs_proof_handle_from_code =
+    DECLARE_NAPI_METHOD("gs_proof_handle_from_code", gs_proof_handle_from_code);
+  status = napi_define_properties(env, exports, 1, &desc_gs_proof_handle_from_code);
+  assert(status == napi_ok);
+
+  /* groupsig_proof_t* groupsig_proof_init(uint8_t code); */
+  napi_property_descriptor desc_gs_proof_init =
+    DECLARE_NAPI_METHOD("gs_proof_init", gs_proof_init);
+  status = napi_define_properties(env, exports, 1, &desc_gs_proof_init);
+  assert(status == napi_ok);
+
+  /* int groupsig_proof_free(groupsig_proof_t *sig); */
+  napi_property_descriptor desc_gs_proof_free =
+    DECLARE_NAPI_METHOD("gs_proof_free", gs_proof_free);
+  status = napi_define_properties(env, exports, 1, &desc_gs_proof_free);
+  assert(status == napi_ok);
+  
+  /* /\* int groupsig_proof_copy(groupsig_proof_t *dst, groupsig_proof_t *src); *\/ */
+  /* napi_property_descriptor desc_gs_proof_copy = */
+  /*   DECLARE_NAPI_METHOD("gs_proof_copy", gs_proof_copy); */
+  /* status = napi_define_properties(env, exports, 1, &desc_gs_proof_copy); */
+  /* assert(status == napi_ok);    */
+
+  /* int groupsig_proof_get_size(groupsig_proof_t *sig); */
+  napi_property_descriptor desc_gs_proof_get_size =
+    DECLARE_NAPI_METHOD("gs_proof_get_size", gs_proof_get_size);
+  status = napi_define_properties(env, exports, 1, &desc_gs_proof_get_size);
+  assert(status == napi_ok);     
+
+  /* int groupsig_proof_export(byte_t **bytes, uint32_t *size, groupsig_key_t *key); */
+  napi_property_descriptor desc_gs_proof_export =
+    DECLARE_NAPI_METHOD("gs_proof_export", gs_proof_export);
+  status = napi_define_properties(env, exports, 1, &desc_gs_proof_export);
   assert(status == napi_ok);  
+
+  /* groupsig_proof_t* groupsig_proof_import(uint8_t code, byte_t *bytes, uint32_t size); */
+  napi_property_descriptor desc_gs_proof_import =
+    DECLARE_NAPI_METHOD("gs_proof_import", gs_proof_import);
+  status = napi_define_properties(env, exports, 1, &desc_gs_proof_import);
+  assert(status == napi_ok);
+
+  /* char* groupsig_proof_to_string(groupsig_proof_t *sig);   */
+  napi_property_descriptor desc_gs_proof_to_string =
+    DECLARE_NAPI_METHOD("gs_proof_to_string", gs_proof_to_string);
+  status = napi_define_properties(env, exports, 1, &desc_gs_proof_to_string);
+  assert(status == napi_ok);
 
   /****** identity.h functions ******/
 

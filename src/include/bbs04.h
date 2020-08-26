@@ -52,7 +52,11 @@ extern "C" {
  */
 static const groupsig_description_t bbs04_description = {
   GROUPSIG_BBS04_CODE, /**< BBS04's scheme code. */
-  GROUPSIG_BBS04_NAME /**< BBS04's scheme name. */
+  GROUPSIG_BBS04_NAME, /**< BBS04's scheme name. */
+  1, /**< BBS04 has a GML. */
+  0, /**< BBS04 does not have a CRL. */
+  1, /**< BBS04 uses PBC. */
+  0 /**< BBS04 does not have verifiable openings. */
 };
 
 /* Metadata for the join protocol */
@@ -64,56 +68,74 @@ static const groupsig_description_t bbs04_description = {
 /* Number of exchanged messages */
 #define BBS04_JOIN_SEQ 1
 
-/*
- * @def BBS04_CONFIG_SET_DEFAULTS
- * @brief Sets the configuration structure to the default values for
- *  BBS04.
- */
-#define BBS04_CONFIG_SET_DEFAULTS(cfg) \
-  ((groupsig_config_t *) cfg)->scheme = GROUPSIG_BBS04_CODE; \
-  ((groupsig_config_t *) cfg)->has_gml = 1;		     \
-  ((groupsig_config_t *) cfg)->has_crl = 1;		     \
-  ((groupsig_config_t *) cfg)->has_pbc = 1;
+/* /\* */
+/*  * @def BBS04_CONFIG_SET_DEFAULTS */
+/*  * @brief Sets the configuration structure to the default values for */
+/*  *  BBS04. */
+/*  *\/ */
+/* #define BBS04_CONFIG_SET_DEFAULTS(cfg) \ */
+/*   ((groupsig_config_t *) cfg)->scheme = GROUPSIG_BBS04_CODE; \ */
+/*   ((groupsig_config_t *) cfg)->has_gml = 1;		     \ */
+/*   ((groupsig_config_t *) cfg)->has_crl = 1;		     \ */
+/*   ((groupsig_config_t *) cfg)->has_pbc = 1;		     \ */
+/*   ((groupsig_config_t *) cfg)->has_open_proof = 0;   */
+  
+/* /\**  */
+/*  * @fn groupsig_config_t* bbs04_config_init(void) */
+/*  * @brief Allocates memory for a BBS04 config structure. */
+/*  *  */
+/*  * @return A pointer to the allocated structure or NULL if error. */
+/*  *\/ */
+/* groupsig_config_t* bbs04_config_init(void); */
+
+/* /\**  */
+/*  * @fn int bbs04_config_free(groupsig_config_t *cfg) */
+/*  * @brief Frees the memory of a BBS04 config structure. */
+/*  *  */
+/*  * @param cfg The structure to free. */
+/*  * */
+/*  * @return A pointer to the allocated structure or NULL if error. */
+/*  *\/ */
+/* int bbs04_config_free(groupsig_config_t *cfg); */
+
+/* /\**  */
+/*  * @fn int bbs04_sysenv_update(void *data) */
+/*  * @brief Sets the BBS04 internal environment data, i.e., the PBC params and pairings. */
+/*  * */
+/*  * @param data A bbs04_sysenv_t structure containing the PBC params and pairings. */
+/*  *  */
+/*  * @return IOK or IERROR. */
+/*  *\/ */
+/* int bbs04_sysenv_update(void *data); */
+
+/* /\**  */
+/*  * @fn int bbs04_sysenv_free(void) */
+/*  * @brief Frees the BBS04 internal environment. */
+/*  *  */
+/*  * @return IOK or IERROR. */
+/*  *\/ */
+/* int bbs04_sysenv_free(void); */
+
+/** 
+ * @fn int bbs04_init()
+ * @brief Initializes the internal variables needed by BBS04. In this case,
+ *  it only sets up the pairing module.
+ *
+ * @return IOK or IERROR.
+ */  
+int bbs04_init();
+
+/** 
+ * @fn int bbs04_clear()
+ * @brief Frees the memory initialized by bbs04_init.
+ *
+ * @return IOK or IERROR.
+ */   
+int bbs04_clear();
   
 /** 
- * @fn groupsig_config_t* bbs04_config_init(void)
- * @brief Allocates memory for a BBS04 config structure.
- * 
- * @return A pointer to the allocated structure or NULL if error.
- */
-groupsig_config_t* bbs04_config_init(void);
-
-/** 
- * @fn int bbs04_config_free(groupsig_config_t *cfg)
- * @brief Frees the memory of a BBS04 config structure.
- * 
- * @param cfg The structure to free.
- *
- * @return A pointer to the allocated structure or NULL if error.
- */
-int bbs04_config_free(groupsig_config_t *cfg);
-
-/** 
- * @fn int bbs04_sysenv_update(void *data)
- * @brief Sets the BBS04 internal environment data, i.e., the PBC params and pairings.
- *
- * @param data A bbs04_sysenv_t structure containing the PBC params and pairings.
- * 
- * @return IOK or IERROR.
- */
-int bbs04_sysenv_update(void *data);
-
-/** 
- * @fn int bbs04_sysenv_free(void)
- * @brief Frees the BBS04 internal environment.
- * 
- * @return IOK or IERROR.
- */
-int bbs04_sysenv_free(void);
-
-/** 
  * @fn int bbs04_setup(groupsig_key_t *grpkey, groupsig_key_t *mgrkey, 
- *                     gml_t *gml, groupsig_config_t *config)
+ *                     gml_t *gml)
  * @brief The setup function for the BBS04 scheme.
  *
  * @param[in,out] grpkey An initialized group key, will be updated with the newly
@@ -121,11 +143,10 @@ int bbs04_sysenv_free(void);
  * @param[in,out] mgrkey An initialized manager key, will be updated with the
  *   newly created group's manager key.
  * @param[in,out] gml An initialized GML, will be set to an empty GML.
- * @param[in] config A BBS04 configuration structure.
  * 
  * @return IOK or IERROR.
  */
-int bbs04_setup(groupsig_key_t *grpkey, groupsig_key_t *mgrkey, gml_t *gml, groupsig_config_t *config);
+int bbs04_setup(groupsig_key_t *grpkey, groupsig_key_t *mgrkey, gml_t *gml);
 
 /**
  * @fn int bbs04_get_joinseq(uint8_t *seq)
@@ -262,11 +283,13 @@ int bbs04_open(identity_t *id, groupsig_proof_t *proof, crl_t *crl, groupsig_sig
  */
 static const groupsig_t bbs04_groupsig_bundle = {
  desc: &bbs04_description, /**< Contains the BBS04 scheme description. */
- config_init: &bbs04_config_init, /**< Initializes a BBS04 config structure. */
- config_free: &bbs04_config_free, /**< Frees a BBS04 config structure. */
- sysenv_update: NULL,//&bbs04_sysenv_update, /**< Sets the PBC params and pairing. */
- sysenv_get: NULL, 
- sysenv_free: NULL, //&bbs04_sysenv_free, /**<  Frees the PBC params and pairing. */
+ init: &bbs04_init, /**< Initializes the variables needed by BBS04. */
+ clear: &bbs04_clear, /**< Frees the varaibles needed by BBS04. */ 
+ /* config_init: &bbs04_config_init, /\**< Initializes a BBS04 config structure. *\/ */
+ /* config_free: &bbs04_config_free, /\**< Frees a BBS04 config structure. *\/ */
+ /* sysenv_update: NULL,//&bbs04_sysenv_update, /\**< Sets the PBC params and pairing. *\/ */
+ /* sysenv_get: NULL,  */
+ /* sysenv_free: NULL, //&bbs04_sysenv_free, /\**<  Frees the PBC params and pairing. *\/ */
  setup: &bbs04_setup, /**< Sets up BBS04 groups. */
  get_joinseq: &bbs04_get_joinseq, /**< Returns the number of messages in the join 
 				     protocol. */

@@ -52,78 +52,98 @@ extern "C" {
 		     corresponding unique codes are defined in the therein
 		     included files. */
     char name[10]; /**< The scheme's name. */
-  } groupsig_description_t;
-
-  /**
-   * @struct groupsig_config_t
-   * @brief Stores the basic information necessary to "instantiate" a group
-   *  signature scheme (e.g. security parameters, limitations, etc.)
-   * 
-   *  All schemes must initialize these variables upon setup, depending on their 
-   *  needs.
-   */
-  typedef struct {
-    uint8_t scheme; /**< The group signature scheme's code. */
     uint8_t has_gml; /**< Whether the scheme requires a GML (1) or not (0). */
     uint8_t has_crl; /**< Whether the scheme requires a CRL (1) or not (0). */
     uint8_t has_pbc; /**< Whether the scheme requires PBC (1) or not (0). */
-    /* void *config; /\**< An opaque pointer to the scheme's specific configuration. *\/ */
-  } groupsig_config_t;
+    uint8_t has_open_proof; /**< Whether the scheme supports verifiable openings. */    
+  } groupsig_description_t;
 
-  /** 
-   * @typedef groupsig_config_t* (*config_init_f)(void);
-   * @brief Functions for initializing config structures.
-   *
-   * @return An allocated config structure or NULL if error.
-   */
-  typedef groupsig_config_t* (*config_init_f)(void);
+  /* /\** */
+  /*  * @struct groupsig_config_t */
+  /*  * @brief Stores the basic information necessary to "instantiate" a group */
+  /*  *  signature scheme (e.g. security parameters, limitations, etc.) */
+  /*  *  */
+  /*  *  All schemes must initialize these variables upon setup, depending on their  */
+  /*  *  needs. */
+  /*  *\/ */
+  /* typedef struct { */
+  /*   uint8_t scheme; /\**< The group signature scheme's code. *\/ */
+  /*   uint8_t has_gml; /\**< Whether the scheme requires a GML (1) or not (0). *\/ */
+  /*   uint8_t has_crl; /\**< Whether the scheme requires a CRL (1) or not (0). *\/ */
+  /*   uint8_t has_pbc; /\**< Whether the scheme requires PBC (1) or not (0). *\/ */
+  /*   uint8_t has_open_proof; /\**< Whether the scheme supports verifiable openings. *\/ */
+  /*   /\* void *config; /\\**< An opaque pointer to the scheme's specific configuration. *\\/ *\/ */
+  /* } groupsig_config_t; */
 
-  /** 
-   * @typedef int (*config_free_f)(groupsig_config_t *cfg);
-   * @brief Functions for freeing config structures.
-   *
-   * @param cfg The config structure to free.
-   *
-   * @return IOK or IERROR.
-   */
-  typedef int (*config_free_f)(groupsig_config_t *cfg);
+  /* /\**  */
+  /*  * @typedef groupsig_config_t* (*config_init_f)(void); */
+  /*  * @brief Functions for initializing config structures. */
+  /*  * */
+  /*  * @return An allocated config structure or NULL if error. */
+  /*  *\/ */
+  /* typedef groupsig_config_t* (*config_init_f)(void); */
 
-  /** 
-   * @typedef int (*sysenv_update_f)(void *data);
-   * @brief Sets the environment of the specific scheme to the received data.
-   *
-   *  Sets the <i>data</i> field of the global sysenv structure. This function is
-   *  useful for setting information that saves computation and/or communication
-   *  costs, but is specific to each scheme.
-   *
-   * @return IOK or IERROR.
-   */
-  typedef int (*sysenv_update_f)(void * data);
+  /* /\**  */
+  /*  * @typedef int (*config_free_f)(groupsig_config_t *cfg); */
+  /*  * @brief Functions for freeing config structures. */
+  /*  * */
+  /*  * @param cfg The config structure to free. */
+  /*  * */
+  /*  * @return IOK or IERROR. */
+  /*  *\/ */
+  /* typedef int (*config_free_f)(groupsig_config_t *cfg); */
 
-  /** 
-   * @typedef (void *) (*sysenv_get_f)(void);
-   * @brief Returns the current environment data.
-   *
-   * @return A pointer to the current environment data or NULL if error.
-   */
-  typedef void* (*sysenv_get_f)(void);
+  /* /\**  */
+  /*  * @typedef int (*sysenv_update_f)(void *data); */
+  /*  * @brief Sets the environment of the specific scheme to the received data. */
+  /*  * */
+  /*  *  Sets the <i>data</i> field of the global sysenv structure. This function is */
+  /*  *  useful for setting information that saves computation and/or communication */
+  /*  *  costs, but is specific to each scheme. */
+  /*  * */
+  /*  * @return IOK or IERROR. */
+  /*  *\/ */
+  /* typedef int (*sysenv_update_f)(void * data); */
+
+  /* /\**  */
+  /*  * @typedef (void *) (*sysenv_get_f)(void); */
+  /*  * @brief Returns the current environment data. */
+  /*  * */
+  /*  * @return A pointer to the current environment data or NULL if error. */
+  /*  *\/ */
+  /* typedef void* (*sysenv_get_f)(void); */
+
+  /* /\** */
+  /*  * @typedef int (*sysenv_free_f)(void); */
+  /*  * @brief Frees the scheme specific environment information. */
+  /*  * */
+  /*  * @return IOK or IERROR. */
+  /*  *\/ */
+  /* typedef int (*sysenv_free_f)(void); */
 
   /**
-   * @typedef int (*sysenv_free_f)(void);
-   * @brief Frees the scheme specific environment information.
+   * @typedef int (*init_f)(void);
+   * @brief Initializes internal data structures used by the schemes.
    *
    * @return IOK or IERROR.
    */
-  typedef int (*sysenv_free_f)(void);
+  typedef int (*init_f)(void);
+  
+  /**
+   * @typedef int (*clear_f)(void);
+   * @brief Clears the internal data structures initialized by init_f functions.
+   *
+   * @return IOK or IERROR.
+   */
+  typedef int (*clear_f)(void);  
 
   /**
-   * @typedef int (*setup_f)(groupsig_key_t *grpkey, groupsig_key_t *mgrkey, gml_t *gml, 
-   *		       groupsig_config_t *config)
+   * @typedef int (*setup_f)(groupsig_key_t *grpkey, groupsig_key_t *mgrkey, gml_t *gml)
    * @brief Type for setup functions.
    *
-   * All schemes' setup functions must follow this scheme. By using the specified
-   * configuration information, functions following this prototype will create
-   * a specific scheme instance, setting the group and manager keys, and the GML.
+   * All schemes' setup functions must follow this scheme. Functions following 
+   * this prototype will create a specific scheme instance, setting the group 
+   * and manager keys, and the GML.
    *
    * @param[in,out] grpkey An initialized group key, will be updated with the
    *  generated group key.
@@ -131,12 +151,9 @@ extern "C" {
    *  generated manager key.
    * @param[in,out] gml An initialized GML, will be updated with the generated
    *  GML.
-   * @param[in] config The scheme's specific configuration information.
-   *
    * @return IOK or IERROR.
    */
-  typedef int (*setup_f)(groupsig_key_t *grpkey, groupsig_key_t *mgrkey, gml_t *gml, 
-			 groupsig_config_t *config);
+  typedef int (*setup_f)(groupsig_key_t *grpkey, groupsig_key_t *mgrkey, gml_t *gml);
 
   /**
    * @typedef int (*get_joinseq_f)(uint8_t *seq)
@@ -635,12 +652,14 @@ extern "C" {
    */
   typedef struct {
     const groupsig_description_t *desc; /**< The scheme's description. */
-    config_init_f config_init; /**< The config struct initialization function.  */
-    config_free_f config_free; /**< The config struct free function.  */
-    sysenv_update_f sysenv_update; /**< Function for initializing scheme specific
-				      environment information. */
-    sysenv_get_f sysenv_get; /**< Gets the current environment specific data. */
-    sysenv_free_f sysenv_free; /**< Frees the scheme specific environment info. */
+    init_f init; /**< Initializes internal data structures used by the schemes. */
+    clear_f clear; /**< Frees the internal data structures used by the schemes. */
+    /* config_init_f config_init; /\**< The config struct initialization function.  *\/ */
+    /* config_free_f config_free; /\**< The config struct free function.  *\/ */
+    /* sysenv_update_f sysenv_update; /\**< Function for initializing scheme specific */
+    /* 				      environment information. *\/ */
+    /* sysenv_get_f sysenv_get; /\**< Gets the current environment specific data. *\/ */
+    /* sysenv_free_f sysenv_free; /\**< Frees the scheme specific environment info. *\/ */
     setup_f setup; /**< The schemes setup function. */
     get_joinseq_f get_joinseq; /**< Returns the number of messages in the 
 				  join protocol. */
@@ -726,19 +745,18 @@ extern "C" {
    * 
    * @return IOK or IERROR.
    */
-  groupsig_config_t* groupsig_init(uint8_t code, unsigned int seed);
+  int groupsig_init(uint8_t code, unsigned int seed);
 
 
   /** 
-   * @fn groupsig_clear(uint8_t code, groupsig_config_t *cfg)
+   * @fn groupsig_clear(uint8_t code)
    * @brief Frees all the memory allocated for a group signature scheme environment.
    * 
    * @param[in] code The groupsig code.
-   * @param[in] cfg A groupsig config structure to free.
    *
    * @return IOK or IERROR.
    */
-  int groupsig_clear(uint8_t code, groupsig_config_t *cfg);
+  int groupsig_clear(uint8_t code);
 
   /* /\**  */
   /*  * @fn groupsig_config_t* groupsig_config_init(uint8_t code) */
@@ -760,43 +778,42 @@ extern "C" {
   /*  *\/ */
   /* int groupsig_config_free(groupsig_config_t *cfg); */
 
-  /** 
-   * @fn int groupsig_sysenv_update(uint8_t code, void *data)
-   * @brief Updates the scheme's specific environment data. 
-   *
-   * @param[in] code The scheme's code.
-   * @param[in] data The scheme's specific environment data.
-   * 
-   * @return IOK or IERROR.
-   */
-  int groupsig_sysenv_update(uint8_t code, void *data);
+  /* /\**  */
+  /*  * @fn int groupsig_sysenv_update(uint8_t code, void *data) */
+  /*  * @brief Updates the scheme's specific environment data.  */
+  /*  * */
+  /*  * @param[in] code The scheme's code. */
+  /*  * @param[in] data The scheme's specific environment data. */
+  /*  *  */
+  /*  * @return IOK or IERROR. */
+  /*  *\/ */
+  /* int groupsig_sysenv_update(uint8_t code, void *data); */
 
-  /** 
-   * @fn void* groupsig_sysenv_get()
-   * @brief Returns the current sysenv data.
-   * 
-   * @return A pointer to the current sysenv data or NULL if error.
-   */
-  void* groupsig_sysenv_get(uint8_t code);
+  /* /\**  */
+  /*  * @fn void* groupsig_sysenv_get() */
+  /*  * @brief Returns the current sysenv data. */
+  /*  *  */
+  /*  * @return A pointer to the current sysenv data or NULL if error. */
+  /*  *\/ */
+  /* void* groupsig_sysenv_get(uint8_t code); */
 
-  /** 
-   * @fn int groupsig_sysenv_free(uint8_t code)
-   * @brief  Frees the specific scheme environment data.
-   *
-   * @param[in] code The scheme's code.
-   * 
-   * @return IOK or IERROR.
-   */
-  int groupsig_sysenv_free(uint8_t code);
+  /* /\**  */
+  /*  * @fn int groupsig_sysenv_free(uint8_t code) */
+  /*  * @brief  Frees the specific scheme environment data. */
+  /*  * */
+  /*  * @param[in] code The scheme's code. */
+  /*  *  */
+  /*  * @return IOK or IERROR. */
+  /*  *\/ */
+  /* int groupsig_sysenv_free(uint8_t code); */
 
   /** 
    * @fn int groupsig_setup(uint8_t code, groupsig_key_t *grpkey, groupsig_key_t *mgrkey, 
-   *		          gml_t *gml, groupsig_config_t *config)
+   *		          gml_t *gml)
    * @brief Executes the setup function of the scheme with the specified code. 
    *
    *  Executes the setup function of the scheme with the specified code, filling
-   *  the group key, manager key and GML. Uses the input parameters contained in the
-   *  specified config structure.
+   *  the group key, manager key and GML.
    *
    * @param[in] code The group signature scheme code.
    * @param[in,out] grpkey An initialized group key. Will be set to the final group
@@ -804,14 +821,12 @@ extern "C" {
    * @param[in,out] mgrkey An initialized group manager key. Will be set to the final
    *  group manager key.
    * @param[in,out] gml An initialized GML. Will be set to the created GML.
-   * @param[in] config The configuration strcture with the input parameters of the
-   *  scheme. For details, see the main header file of the given scheme.
    * 
    * @return IOK or IERROR.
    * 
    */
   int groupsig_setup(uint8_t code, groupsig_key_t *grpkey, groupsig_key_t *mgrkey, 
-		     gml_t *gml, groupsig_config_t *config);
+		     gml_t *gml);
 
   /**
    * @fn int groupsig_get_joinseq(uint8_t code, uint8_t *seq)
