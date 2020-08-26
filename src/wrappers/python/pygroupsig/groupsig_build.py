@@ -12,41 +12,22 @@ ffibuilder.cdef("""
 typedef struct {
 uint8_t code; 
 char name[10];
+uint8_t has_gml;
+uint8_t has_crl;
+uint8_t has_pbc;
 } groupsig_description_t;
 """)
 
 ffibuilder.cdef("""
-typedef struct {
-uint8_t scheme;
-uint8_t has_gml;
-uint8_t has_crl;
-uint8_t has_pbc;
-} groupsig_config_t;
+typedef int (*init_f)(void);
 """)
 
 ffibuilder.cdef("""
-typedef groupsig_config_t* (*config_init_f)(void);
+typedef int (*clear_f)(void);  
 """)
 
 ffibuilder.cdef("""
-typedef int (*config_free_f)(groupsig_config_t *cfg);
-""")
-
-ffibuilder.cdef("""
-typedef int (*sysenv_update_f)(void * data);
-""")
-
-ffibuilder.cdef("""
-typedef void* (*sysenv_get_f)(void);
-""")
-
-ffibuilder.cdef("""
-typedef int (*sysenv_free_f)(void);
-""")
-
-ffibuilder.cdef("""
-typedef int (*setup_f)(groupsig_key_t *grpkey, groupsig_key_t *mgrkey, gml_t *gml,
-groupsig_config_t *config);
+typedef int (*setup_f)(groupsig_key_t *grpkey, groupsig_key_t *mgrkey, gml_t *gml);
 """)
 
 ffibuilder.cdef("""
@@ -230,11 +211,8 @@ uint32_t n);
 ffibuilder.cdef("""
   typedef struct {
     const groupsig_description_t *desc; 
-    config_init_f config_init; 
-    config_free_f config_free; 
-    sysenv_update_f sysenv_update; 
-    sysenv_get_f sysenv_get; 
-    sysenv_free_f sysenv_free;
+    init_f init; 
+    clear_f clear;
     setup_f setup; 
     get_joinseq_f get_joinseq; 
     get_joinstart_f get_joinstart; 

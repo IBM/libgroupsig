@@ -14,9 +14,9 @@ def init(scheme, seed):
 
     return
 
-def clear(scheme, config):
+def clear(scheme):
 
-    if lib.groupsig_clear(scheme, config) == lib.IERROR:
+    if lib.groupsig_clear(scheme) == lib.IERROR:
         raise Exception('Error clearing groupsig environment.')
 
     return
@@ -29,16 +29,16 @@ def setup(scheme, grpkey=ffi.NULL, seed=0):
         _grpkey = grpkey
     mgrkey = lib.groupsig_mgr_key_init(scheme)
     gml = lib.gml_init(scheme)
-    config = lib.groupsig_init(scheme, seed)
+    if lib.groupsig_init(scheme, seed) == lib.IERROR:
+        raise Exception('Error initializing scheme ' + scheme)
     
-    if lib.groupsig_setup(scheme, _grpkey, mgrkey, gml, config) == lib.IERROR:
+    if lib.groupsig_setup(scheme, _grpkey, mgrkey, gml) == lib.IERROR:
         raise Exception('Error setting up scheme ' + scheme)
 
     return {
         'grpkey': _grpkey,
         'mgrkey': mgrkey,
-        'gml': gml,
-        'config': config
+        'gml': gml
     }
 
 def get_joinseq(scheme):

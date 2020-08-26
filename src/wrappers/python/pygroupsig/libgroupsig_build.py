@@ -32,18 +32,12 @@ const groupsig_t* groupsig_get_groupsig_from_str(char *str);
 
 const groupsig_t* groupsig_get_groupsig_from_code(uint8_t code);
 
-groupsig_config_t* groupsig_init(uint8_t scheme, unsigned int seed);
+int groupsig_init(uint8_t code, unsigned int seed);
 
-int groupsig_clear(uint8_t code, groupsig_config_t *cfg);
-
-int groupsig_sysenv_update(uint8_t code, void *data);
-
-void* groupsig_sysenv_get(uint8_t code);
-
-int groupsig_sysenv_free(uint8_t code);
+int groupsig_clear(uint8_t code);
 
 int groupsig_setup(uint8_t code, groupsig_key_t *grpkey, groupsig_key_t *mgrkey, 
-gml_t *gml, groupsig_config_t *config);
+gml_t *gml);
 
 int groupsig_get_joinseq(uint8_t code, uint8_t *seq);
 

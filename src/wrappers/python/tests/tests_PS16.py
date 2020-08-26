@@ -29,20 +29,18 @@ class TestGroupOps(unittest.TestCase):
         groupsig.init(constants.PS16_CODE, 0)
         group = groupsig.setup(constants.PS16_CODE)
         self.code = constants.PS16_CODE
-        self.config = group['config']
         self.mgrkey = group['mgrkey']
         self.grpkey = group['grpkey']
         self.gml = group['gml']
         self.memkeys = []
         
     def tearDown(self):
-        groupsig.clear(self.code, self.config)
+        groupsig.clear(self.code)
 
     # Creates a group
     def test_groupCreate(self):
         self.assertNotEqual(self.grpkey, ffi.NULL)
         self.assertNotEqual(self.mgrkey, ffi.NULL)
-        self.assertNotEqual(self.config, ffi.NULL)
 
     # Adds one member
     def test_addMember(self):
@@ -109,7 +107,6 @@ class TestSignatureOps(unittest.TestCase):
         groupsig.init(constants.PS16_CODE, 0)
         group = groupsig.setup(constants.PS16_CODE)
         self.code = constants.PS16_CODE
-        self.config = group['config']
         self.mgrkey = group['mgrkey']
         self.grpkey = group['grpkey']
         self.gml = group['gml']
@@ -118,7 +115,7 @@ class TestSignatureOps(unittest.TestCase):
         self.sig = groupsig.sign("Hello, World!", self.memkeys[0], self.grpkey)
         
     def tearDown(self):
-        groupsig.clear(self.code, self.config)
+        groupsig.clear(self.code)
 
     # Exports and reimports a signature, and it verifies correctly
     def test_sigExportImport(self):
@@ -141,13 +138,12 @@ class TestGrpkeyOps(unittest.TestCase):
         groupsig.init(constants.PS16_CODE, 0)
         group = groupsig.setup(constants.PS16_CODE)
         self.code = constants.PS16_CODE
-        self.config = group['config']
         self.mgrkey = group['mgrkey']
         self.grpkey = group['grpkey']
         self.gml = group['gml']
         
     def tearDown(self):
-        groupsig.clear(self.code, self.config)
+        groupsig.clear(self.code)
 
     # Exports and reimports a group key
     def test_grpkeyExportImport(self):
@@ -166,13 +162,12 @@ class TestManagerkeyOps(unittest.TestCase):
         groupsig.init(constants.PS16_CODE, 0)
         group = groupsig.setup(constants.PS16_CODE)
         self.code = constants.PS16_CODE
-        self.config = group['config']
         self.mgrkey = group['mgrkey']
         self.grpkey = group['grpkey']
         self.gml = group['gml']
         
     def tearDown(self):
-        groupsig.clear(self.code, self.config)
+        groupsig.clear(self.code)
 
     # Exports and reimports an manager key
     def test_mgrkeyExportImport(self):
@@ -201,14 +196,13 @@ class TestMemkeyOps(unittest.TestCase):
         groupsig.init(constants.PS16_CODE, 0)
         group = groupsig.setup(constants.PS16_CODE)
         self.code = constants.PS16_CODE
-        self.config = group['config']
         self.mgrkey = group['mgrkey']
         self.grpkey = group['grpkey']
         self.gml = group['gml']
         self.addMember()
         
     def tearDown(self):
-        groupsig.clear(self.code, self.config)
+        groupsig.clear(self.code)
 
     # Exports and reimports a member key
     def test_memkeyExportImport(self):

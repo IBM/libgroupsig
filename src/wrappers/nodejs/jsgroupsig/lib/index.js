@@ -44,19 +44,16 @@ module.exports = {
     open: function (sig, grpkey, mgrkey, gml = null, crl = null) {
 	let id = null;
 	let proof = null;
-	console.log("WOLOLOOOO 0");	
 	let code = jsgroupsig.gs_signature_get_code(sig);
-	console.log("WOLOLOOOO 1");
-	/** XXX @TODO What if scheme has no proof? **/
-	if (jsgroupsig.gs_has_open_proof() == 1) {
-	    let proof = jsgroupsig.gs_proof_init(code);
+	if (jsgroupsig.gs_has_open_proof(code) == 1) {
+	    proof = jsgroupsig.gs_proof_init(code);
 	}
-	console.log("WOLOLOOOO 2");	
 	id = jsgroupsig.gs_open(sig, grpkey, mgrkey, gml, proof);
-	console.log("WOLOLOOOO 3");	
 	return { "id": id, "proof": proof }; 
     },
-    open_verify: jsgroupsig.gs_open_verify,
+    open_verify: function (proof, sig, grpkey, id = null) {
+	return jsgroupsig.gs_open_verify(proof, sig, grpkey, id);
+    },
     convert: jsgroupsig.gs_convert,
     unblind: function (bsig, bldkey, sig = null, grpkey = null) {
 	let nym = null;

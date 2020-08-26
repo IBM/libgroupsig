@@ -8,15 +8,18 @@ ffibuilder.cdef("#define PS16_JOIN_START 0")
 ffibuilder.cdef("#define PS16_JOIN_SEQ 3")
 
 ffibuilder.cdef("""
-groupsig_config_t* ps16_config_init(void);
-""")    
+int ps16_init();
+""")
+
+ffibuilder.cdef("""
+int ps16_clear();
+""")
 
 ffibuilder.cdef("""                
 int ps16_setup(
 groupsig_key_t *grpkey, 
 groupsig_key_t *mgrkey, 
-gml_t *gml, 
-groupsig_config_t *config);
+gml_t *gml);
 """)
                 
 ffibuilder.cdef("""
