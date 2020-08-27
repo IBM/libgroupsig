@@ -33,22 +33,13 @@
 groupsig_proof_t* ps16_proof_init() {
 
   groupsig_proof_t *proof;
-  ps16_proof_t *ps16_proof;
 
   if(!(proof = (groupsig_proof_t *) mem_malloc(sizeof(groupsig_proof_t)))) {
     return NULL;
   }
 
   proof->scheme = GROUPSIG_PS16_CODE;
-
-  if (!(ps16_proof = (ps16_proof_t *) mem_malloc(sizeof(ps16_proof_t)))) {
-    mem_free(proof); proof = NULL;
-    return NULL;
-  }
-
-  ps16_proof->pi = NULL;
-  ps16_proof->B = NULL;
-  proof->proof = ps16_proof;
+  proof->proof = NULL;
 
   return proof;
 }
@@ -66,11 +57,10 @@ int ps16_proof_free(groupsig_proof_t *proof) {
   ps16_proof = proof->proof;
 
   if (ps16_proof) {
-    if (ps16_proof->pi) { spk_dlog_free(ps16_proof->pi); ps16_proof->pi = NULL; }
-    if (ps16_proof->B) { pbcext_element_GT_clear(ps16_proof->B); ps16_proof->B = NULL; }
-    mem_free(ps16_proof); ps16_proof = NULL;
+    spk_pairing_homomorphism_G2_free(ps16_proof);
+    ps16_proof = NULL;
   }
-
+  
   mem_free(proof);
 
   return IOK;
@@ -80,7 +70,7 @@ int ps16_proof_free(groupsig_proof_t *proof) {
 int ps16_proof_get_size(groupsig_proof_t *proof) {
 
   ps16_proof_t *ps16_proof;
-  uint64_t size, B_len, proof_len;
+  uint64_t size, proof_len;
   
   if(!proof || proof->scheme != GROUPSIG_PS16_CODE) {
     LOG_EINVAL(&logger, __FILE__, "ps16_proof_get_size", __LINE__, LOGERROR);
@@ -89,10 +79,10 @@ int ps16_proof_get_size(groupsig_proof_t *proof) {
 
   ps16_proof = proof->proof;
 
-  if ((proof_len = spk_dlog_get_size(ps16_proof->pi)) == -1) return -1;
-  if (pbcext_element_GT_byte_size(&B_len) == IERROR) return -1;  
+  if ((proof_len = spk_pairing_homomorphism_G2_get_size(ps16_proof)) == -1)
+    return -1;
 
-  size = proof_len + B_len + sizeof(int)*1 + 1;
+  size = proof_len + sizeof(int)*1 + 1;
 
   if (size > INT_MAX) return -1;
   
@@ -105,7 +95,7 @@ int ps16_proof_export(byte_t **bytes, uint32_t *size, groupsig_proof_t *proof) {
   ps16_proof_t *ps16_proof;
   byte_t *_bytes, *__bytes;
   int rc, _size;
-  uint64_t proof_len, B_len;
+  uint64_t proof_len;
   uint8_t code;
   
   if(!proof || proof->scheme != GROUPSIG_PS16_CODE) {
@@ -128,18 +118,15 @@ int ps16_proof_export(byte_t **bytes, uint32_t *size, groupsig_proof_t *proof) {
   code = GROUPSIG_PS16_CODE;
   _bytes[0] = code;
 
-  /* Export the DLOG SPK */
+  /* Export the SPK */
   __bytes = &_bytes[1];
-  if (spk_dlog_export(&__bytes, &proof_len, ps16_proof->pi) == IERROR)
-    GOTOENDRC(IERROR, ps16_proof_export);
-
-  /* Export B */
-  __bytes = &_bytes[1+proof_len];
-  if(pbcext_dump_element_GT_bytes(&__bytes, &B_len, ps16_proof->B) == IERROR) 
+  if (spk_pairing_homomorphism_G2_export(&__bytes,
+					 &proof_len,
+					 ps16_proof) == IERROR)
     GOTOENDRC(IERROR, ps16_proof_export);
 
   /* Sanity check */
-  if (_size != proof_len+B_len+1) {
+  if (_size != proof_len+1) {
     LOG_ERRORCODE_MSG(&logger, __FILE__, "ps16_proof_export", __LINE__, 
 		      EDQUOT, "Unexpected size.", LOGERROR);
     GOTOENDRC(IERROR, ps16_proof_export);
@@ -165,7 +152,7 @@ groupsig_proof_t* ps16_proof_import(byte_t *source, uint32_t size) {
 
   groupsig_proof_t *proof;
   ps16_proof_t *ps16_proof;
-  uint64_t proof_len, B_len;
+  uint64_t proof_len;
   int rc;
   uint8_t scheme;
   
@@ -190,16 +177,11 @@ groupsig_proof_t* ps16_proof_import(byte_t *source, uint32_t size) {
     GOTOENDRC(IERROR, ps16_proof_import);
   }
 
-  if (!(ps16_proof->pi = spk_dlog_import(&source[1], &proof_len)))
+  if (!(ps16_proof = spk_pairing_homomorphism_G2_import(&source[1],
+							&proof_len)))
     GOTOENDRC(IERROR, ps16_proof_import);
   
-  if(!(ps16_proof->B = pbcext_element_GT_init()))
-    GOTOENDRC(IERROR, ps16_proof_import);
-  if(pbcext_get_element_GT_bytes(ps16_proof->B, &B_len,
-				 &source[1+proof_len]) == IERROR)
-    GOTOENDRC(IERROR, ps16_proof_import);
-
-  if (proof_len + B_len != size - 1) {
+  if (proof_len != size - 1) {
     LOG_ERRORCODE_MSG(&logger, __FILE__, "ps16_proof_import", __LINE__, 
 		      EDQUOT, "Unexpected proof size.", LOGERROR);
     GOTOENDRC(IERROR, ps16_proof_import);

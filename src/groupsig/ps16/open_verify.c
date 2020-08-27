@@ -74,12 +74,12 @@ int ps16_open_verify(uint8_t *ok,
   if (ps16_signature_export(&bsig, &slen, sig) == IERROR)
     GOTOENDRC(IERROR, ps16_open_verify);
 
-  if (spk_dlog_GT_verify(&_ok,
-			 e1,
-			 ps16_proof->B,
-			 ps16_proof->pi,
-			 bsig,
-			 slen) == IERROR)
+  if (spk_pairing_homomorphism_G2_verify(&_ok,
+					 ps16_sig->sigma1,
+					 e1,
+					 ps16_proof,
+					 bsig,
+					 slen) == IERROR)
     GOTOENDRC(IERROR, ps16_open_verify);
 
   *ok = _ok;

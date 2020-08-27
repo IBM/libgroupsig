@@ -32,10 +32,7 @@
  * reference to is needed in order to verify the proof. Therefore, PS16 proofs
  * are kind of detached signatures of a signature.
  */
-typedef struct _ps16_proof_t {
-  spk_dlog_t *pi;
-  pbcext_element_GT_t *B;
-} ps16_proof_t;
+typedef spk_pairing_homomorphism_G2_t ps16_proof_t;
 
 /** 
  * @fn struct groupsig_proof_t* ps16_proof_init()

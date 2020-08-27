@@ -34,8 +34,8 @@ extern "C" {
  * @brief Data structure for convenional discrete log proofs.
  */
 typedef struct _spk_dlog_t {
-  pbcext_element_Fr_t *c; //bigz_t c; /**< c component of conventional dlog proofs. */
-  pbcext_element_Fr_t *s; //bigz_t s; /**< s component of conventional dlog proofs. */
+  pbcext_element_Fr_t *c; /**< c component of conventional dlog proofs. */
+  pbcext_element_Fr_t *s; /**< s component of conventional dlog proofs. */
 } spk_dlog_t;
 
 /**
@@ -49,6 +49,11 @@ typedef struct _spk_rep_t {
   uint16_t ns; /**< Size of the s array */
 } spk_rep_t;
 
+typedef struct _spk_pairing_homomorphism_G2_t {
+  pbcext_element_Fr_t *c;
+  pbcext_element_G2_t *s;
+} spk_pairing_homomorphism_G2_t;
+
 /**
  * @fn spk_dlog_t* spk_dlog_init(void)
  * Allocates memory for a spk_dlog_t structure.
@@ -58,7 +63,7 @@ typedef struct _spk_rep_t {
 spk_dlog_t* spk_dlog_init(void);
 
 /**
- * @fn int spk_dlog_init(spk_dlog_t *spk)
+ * @fn int spk_dlog_free(spk_dlog_t *spk)
  * Frees the memory allocated for a spk_dlog_t structure.
  * 
  * @param[in,out] spk The spk_dlog_t* structure to free.
@@ -198,7 +203,7 @@ int spk_dlog_get_size(spk_dlog_t *proof);
 
 /**
  * @fn int spk_dlog_export_fd(spk_dlog_t *proof, FILE *fd)
- * @brief Exports a CPY06 proof as a byte array into the given file,
+ * @brief Exports a dlog proof as a byte array into the given file,
  *
  * The format of the produced bytearray will be will be:
  *
@@ -217,7 +222,7 @@ int spk_dlog_export_fd(spk_dlog_t *proof, FILE *fd);
 
 /**
  * @fn int spk_dlog_export(byte_t **bytes, uint64_t *len, spk_dlog_t *proof)
- * @brief Exports a CPY06 proof to a bytearray,
+ * @brief Exports a dlog proof to a bytearray,
  *
  * The format of the produced bytearray will be:
  *
@@ -250,7 +255,7 @@ spk_dlog_t* spk_dlog_import_fd(FILE *fd);
 
 /**
  * @fn spk_dlog_t* spk_dlog_import(byte_t *bytes, uint64_t *len)
- * @brief Exports a CPY06 proof to a bytearray,
+ * @brief Exports a dlog proof to a bytearray,
  *
  * The format of the received bytearray must be:
  *
@@ -370,6 +375,140 @@ int spk_rep_verify(uint8_t *ok,
 		   uint16_t *prods,
 		   spk_rep_t *pi,
 		   byte_t *msg, uint32_t size);
+
+
+  
+/**
+ * @fn spk_pairing_homomorphism_G2_t* spk_pairing_homomorphism_G2_init(void)
+ * Allocates memory for a spk_pairing_homomorphism_G2_t structure.
+ * 
+ * @return A pointer to the allocated structure or NULL if error.
+ */  
+spk_pairing_homomorphism_G2_t* spk_pairing_homomorphism_G2_init();
+
+/**
+ * @fn int spk_pairing_homomorphism_G2_free(spk_pairing_homomorphism_G2_t *spk)
+ * Frees the memory allocated for a spk_pairing_homomorphism_G2_t structure.
+ * 
+ * @param[in,out] spk The spk_pairing_homomorphism_G2_t* structure to free.
+ *
+ * @return IOK or IERROR.
+ */  
+int spk_pairing_homomorphism_G2_free(spk_pairing_homomorphism_G2_t *spk);
+  
+/**
+ * @fn int spk_pairing_homomorphism_G2_sign(spk_pairing_homomorphism_G2_t *pi,
+ *				            pbcext_element_G1_t *g,
+ *				            pbcext_element_GT_t *G,
+ *				            pbcext_element_G2_t *xx,
+ *				            byte_t *msg,
+ *				            uint32_t size)
+ * Given a pairing operation e from G1 x G2 -> GT, computes an SPK
+ * of a preimage of G given the group homomorphism from G2 to GT defined
+ * by e(g,\cdot). 
+ *
+ * Check https://www.crypto.ethz.ch/publications/files/Maurer15.ps 
+ * for details.
+ *
+ * @param[in,out] pi An initialized spk_pairing_homomorphism_G2_t structure.
+ * @param[in] g The G1 value defining the homomorphism.
+ * @param[in] G The publicly known result of e(g, xx)
+ * @param[in] xx The (secret) preimage.
+ * @param[in] msg The message to sign.
+ * @param[in] size The size, in bytes, of the message. 
+ *
+ * @return IOR or IERROR.
+ */
+int spk_pairing_homomorphism_G2_sign(spk_pairing_homomorphism_G2_t *pi,
+				     pbcext_element_G1_t *g,
+				     pbcext_element_GT_t *G,
+				     pbcext_element_G2_t *xx,
+				     byte_t *msg,
+				     uint32_t size);
+
+/**
+ * @fn int spk_pairing_homomorphism_G2_verify(uint8_t *ok,
+ *				       pbcext_element_G1_t *g,
+ *				       pbcext_element_GT_t *G,
+ *				       spk_pairing_homomorphism_G2_t *pi,
+ *				       byte_t *msg,
+ *				       uint32_t size)
+ * Verifies an SPK of a preimage of G given the group homomorphism from G2 to GT
+ * defined by e(g, \cdot). 
+ * 
+ * Check https://www.crypto.ethz.ch/publications/files/Maurer15.ps 
+ * for details.
+ *
+ * @param[in,out] ok Will be set to 1 if the proof verifies, 0 if not.
+ * @param[in] g The G1 value defining the homomorphism.
+ * @param[in] G The publicly known result of e(g, xx)
+ * @param[in] pi The proof.
+ * @param[in] msg The signed message.
+ * @param[in] size The size, in bytes, of the message.
+ *
+ * @return IOR or IERROR.
+ */  
+int spk_pairing_homomorphism_G2_verify(uint8_t *ok,
+				       pbcext_element_G1_t *g,
+				       pbcext_element_GT_t *G,
+				       spk_pairing_homomorphism_G2_t *pi,
+				       byte_t *msg,
+				       uint32_t size);
+
+/**
+ * @fn spk_pairing_homomorphism_G2_get_size(spk_pairing_homomorphism_G2_t *proof);
+ * Returns the number of bytes needed to represent the proof (in raw format.)
+ *
+ * @param[in] proof The proof.
+ * 
+ * @return The size in bytes required to represent the proof. -1 if error.
+ */  
+int spk_pairing_homomorphism_G2_get_size(spk_pairing_homomorphism_G2_t *proof);
+
+/**
+ * @fn int spk_pairing_homomorphism_G2_export(byte_t **bytes, 
+ *                                            uint64_t *len, 
+ *                                            spk_dlog_t *proof)
+ * @brief Exports a group homomorphism preimage spk to a bytearray,
+ *
+ * The format of the produced bytearray will be:
+ *
+ *    | sizeof(c) | c | sizeof(s) | s
+ *
+ * Where the sizeof fields are ints indicating the number of bytes of 
+ * the following field.
+ *
+ * @param[in,out] bytes The byte array to write the spk into. If *bytes is NULL,
+ *  memory will be internally allocated.
+ * @param[in,out] len Will be set to the number of bytes written into bytes.
+ * @param[in] proof The spk to export.
+ *
+ * @return IOK or IERROR.
+ */  
+int
+spk_pairing_homomorphism_G2_export(byte_t **bytes,
+				   uint64_t *len,
+				   spk_pairing_homomorphism_G2_t *proof);
+
+/**
+ * @fn spk_pairing_homomorphism_G2_t* spk_dlog_import(byte_t *bytes, 
+ *                                                    uint64_t *len)
+ * @brief Exports a group homomorphism preimage spk to a bytearray,
+ *
+ * The format of the received bytearray must be:
+ *
+ *    | sizeof(c) | c | sizeof(s) | s
+ *
+ * Where the sizeof fields are ints indicating the number of bytes of 
+ * the following field.
+ *
+ * @param[in] bytes The byte array containing the exported byte array).
+ * @param[in] len The length of the byte array.
+ *
+ * @return A pointer to the allocated structure or NULL if error.
+ */  
+spk_pairing_homomorphism_G2_t*
+spk_pairing_homomorphism_G2_import(byte_t *bytes, uint64_t *len);  
 
 #ifdef __cplusplus
 }
