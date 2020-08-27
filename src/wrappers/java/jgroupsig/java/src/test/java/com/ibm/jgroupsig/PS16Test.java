@@ -3,24 +3,24 @@ package com.ibm.jgroupsig;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
-public class BBS04Test {
+public class PS16Test {
 
     /**
-     * Will represent a BBS04 group from the point of view of the Issuer. I.e.,
+     * Will represent a PS16 group from the point of view of the Issuer. I.e.,
      * it has an initialized grpKey and issKey.
      */
-    private BBS04 groupMgr = null;
+    private PS16 groupMgr = null;
 
     /**
-     * Will represent a BBS04 group from the point of view of a user. I.e.,
+     * Will represent a PS16 group from the point of view of a user. I.e.,
      * it has an initialized grpKey. When used to sign, member keys will be 
      * added.
      */    
-    private BBS04 groupUser = null;
+    private PS16 groupUser = null;
     
-    BBS04Test() throws Exception {
-	this.groupMgr = new BBS04();
-	this.groupUser = new BBS04();
+    PS16Test() throws Exception {
+	this.groupMgr = new PS16();
+	this.groupUser = new PS16();
     }
 
     private MemKey addMember()
@@ -28,14 +28,24 @@ public class BBS04Test {
 	       Exception
     {
 
-	MemKey memkey = new MemKey(GS.BBS04_CODE);
+	MemKey memkey = new MemKey(GS.PS16_CODE);
 
 	long mout1 = this.groupMgr.joinMgr(0, 0);
 	if (mout1 == 0) {
 	    return null;
 	}
 
-	long mout2 = this.groupMgr.joinMem(memkey, 1, mout1);
+	long mout2 = this.groupUser.joinMem(memkey, 1, mout1);
+	if (mout2 == 0) {
+	    return null;
+	}
+
+	long mout3 = this.groupMgr.joinMgr(2, mout2);
+	if (mout3 == 0) {
+	    return null;
+	}
+
+	this.groupUser.joinMem(memkey, 3, mout3);
 
 	return memkey;
 	
@@ -53,7 +63,7 @@ public class BBS04Test {
     public void creationOfGroupShouldSetInternalAttributes() {
 
         // assert statements
-        assertTrue(this.groupMgr.getCode() == GS.BBS04_CODE,
+        assertTrue(this.groupMgr.getCode() == GS.PS16_CODE,
 		   "Unexpected group code.");
 	assertTrue(this.groupMgr.getGroup() != 0,
 		   "Unexpected group structure.");	
@@ -87,7 +97,7 @@ public class BBS04Test {
     {
     	this.groupMgr.setup();
     	int seq = this.groupMgr.getJoinSeq();
-    	assertTrue(seq == 1, "Unexpected join sequence steps.");
+    	assertTrue(seq == 3, "Unexpected join sequence steps.");
     }
 
     @Test
@@ -158,12 +168,16 @@ public class BBS04Test {
 	IdProof idProof = this.groupMgr.open(sig);
 	Identity id = idProof.getIdentity();
 	
-	/* Conver the identity to a string */
+	/* Convert the identity to a string */
 	
-    	/* The nyms must be different */
+    	/* The identity must be 1 */
     	String idStr = id.toStr();
 	boolean b = idStr.equals("1");
     	assertTrue(b, "Signer's identity should be 1.");
+
+	/* Verify the proof */
+	b = this.groupUser.openVerify(idProof, sig);
+	assertTrue(b, "Opening proof should be valid.");
 	
     }
 
@@ -210,5 +224,20 @@ public class BBS04Test {
     	boolean b = this.groupUser.verify(sig2, "Hello, World!");
     	assertTrue(b, "Imported signature should verify correctly.");
     }
+
+    @Test
+    public void exportImportOpenProof()
+    	throws Exception
+    {
+    	this.setupFull();
+    	MemKey mem = this.addMember();
+    	Signature sig = this.groupUser.sign("Hello, World!", mem);
+	IdProof idProof = this.groupMgr.open(sig);
+	String sproof = idProof.getProof().export();
+	Proof proof2 = new Proof(this.groupUser.getCode(), sproof);
+	IdProof idProof2 = new IdProof(proof2);
+	boolean b = this.groupUser.openVerify(idProof2, sig);
+    	assertTrue(b, "Imported proof should verify correctly.");
+    }    
     
 }

@@ -42,7 +42,7 @@ public class GL19Test {
 	    return null;
 	}
 
-	long mout2 = this.groupIssuer.joinMem(memkey, 1, mout1);
+	long mout2 = this.groupUser.joinMem(memkey, 1, mout1);
 	if (mout2 == 0) {
 	    return null;
 	}
@@ -52,7 +52,7 @@ public class GL19Test {
 	    return null;
 	}
 
-	this.groupIssuer.joinMem(memkey, 3, mout3);
+	this.groupUser.joinMem(memkey, 3, mout3);
 
 	return memkey;
 	
@@ -74,8 +74,6 @@ public class GL19Test {
         // assert statements
         assertTrue(this.groupIssuer.getCode() == GS.GL19_CODE,
 		   "Unexpected group code.");
-	assertTrue(this.groupIssuer.getConfig() != 0,
-		   "Unexpected group config.");
 	assertTrue(this.groupIssuer.getGroup() != 0,
 		   "Unexpected group structure.");	
     }

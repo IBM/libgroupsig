@@ -6,7 +6,7 @@ import java.lang.IllegalArgumentException;
 import java.lang.Exception;
 
 /**
- * Class for BBS04 Group Signature schemes.
+ * Class for PS16 Group Signature schemes.
  * 
  * Offers several interfaces to create and operate with group signatures schemes.
  * It is part of the groupsig package.
@@ -20,7 +20,7 @@ import java.lang.Exception;
  * @see com.ibm.jgroupsig.BlindSignature
  * @see com.ibm.jgroupsig.Signature
  */
-public class BBS04 implements GS {
+public class PS16 implements GS {
 
     /**
      * The GS scheme code.
@@ -48,22 +48,22 @@ public class BBS04 implements GS {
     public Gml gml = null;    
 
     /**
-     * Returns a BBS04 instance.
+     * Returns a PS16 instance.
      *
      * @exception IllegalArgumentException
      * @exception Exception
      */    
-    public BBS04()
+    public PS16()
 	throws IllegalArgumentException,
 	       Exception
     {
-	this.code = GS.BBS04_CODE;
+	this.code = GS.PS16_CODE;
 	this.ptr = groupsig_gsGetFromCode(this.code);
-	groupsig_gsInit(this.code, 0);	
+	groupsig_gsInit(this.code, 0);
     }
 
     /**
-     * Frees the memory internally allocated for the current BBS04 instance.
+     * Frees the memory internally allocated for the current PS16 instance.
      *
      * @exception IllegalArgumentException
      * @exception Exception
@@ -77,7 +77,7 @@ public class BBS04 implements GS {
     }
 
     /**
-     * Frees the memory internally allocated for the current BBS04 instance.
+     * Frees the memory internally allocated for the current PS16 instance.
      *
      * @exception IllegalArgumentException
      * @exception Exception
@@ -125,8 +125,8 @@ public class BBS04 implements GS {
     }
 
     /**
-     * Runs the setup process for a BBS04 group. As a result of a call to 
-     * this method, the grpKey, mgrKey and gml attributes of the current BBS04 
+     * Runs the setup process for a PS16 group. As a result of a call to 
+     * this method, the grpKey, mgrKey and gml attributes of the current PS16 
      * instance are initialized.
      *
      * @exception IllegalArgumentException
@@ -142,9 +142,9 @@ public class BBS04 implements GS {
 	this.gml = new Gml(this.code);
 	
     	groupsig_gsSetup(this.code,
-			 this.grpKey.getObject(),
-			 this.mgrKey.getObject(),
-			 this.gml.getObject());
+			    this.grpKey.getObject(),
+			    this.mgrKey.getObject(),
+			    this.gml.getObject());
 	return;
     }
 
@@ -429,26 +429,45 @@ public class BBS04 implements GS {
 	throws IllegalArgumentException,
 	       Exception {
 	Identity id = new Identity(this.code);
+	Proof proof = new Proof(this.code);
 	if(groupsig_gsOpen(id.getObject(),
-			   0,
+			   proof.getObject(),
 			   0,
 			   sig.getObject(),
 			   this.grpKey.getObject(),
 			   this.mgrKey.getObject(),
 			   this.gml.getObject()) == 1)
 	    throw new Exception("Error opening.");
-	IdProof idProof = new IdProof(id);
+	IdProof idProof = new IdProof(id, proof);
 	return idProof;
     }
 
+    /**
+     * Verifies an opening of a signature.
+     *
+     * @param idProof The object wrapping the open proof and, optionally,
+     *  the identity of the signer.
+     * @param sig The signature to open.
+     * @return True if the proof is valid, False otherwise.
+     * @exception UnsupportedEncodingException
+     * @exception IllegalArgumentException
+     * @exception Exception
+     */
     public boolean openVerify(IdProof idProof,
 			      Signature sig)
-	throws UnsupportedEncodingException,
-	       IllegalArgumentException,
-	       Exception	       
-    {
-	throw new Exception("Functionality not supported in BBS04.");		
-    }    
+	throws IllegalArgumentException,
+	       Exception {
+	long idPtr = 0;
+	long proofPtr = 0;
+	if (idProof.getIdentity() != null)
+	    idPtr = idProof.getIdentity().getObject();
+	if (idProof.getProof() != null)
+	    proofPtr = idProof.getProof().getObject();
+        return groupsig_gsOpenVerify(idPtr,
+				     proofPtr,
+				     sig.getObject(),
+				     this.grpKey.getObject());
+    }
 
     public BlindSignature blind(BldKey bldKey,
 				Signature sig,
@@ -457,7 +476,7 @@ public class BBS04 implements GS {
 	       IllegalArgumentException,
 	       Exception	       
     {
-	throw new Exception("Functionality not supported in BBS04.");		
+	throw new Exception("Functionality not supported in PS16.");		
     }
 
     public BlindSignature blind(BldKey bldKey,
@@ -466,7 +485,7 @@ public class BBS04 implements GS {
 	throws IllegalArgumentException,
 	       Exception
     {
-	throw new Exception("Functionality not supported in BBS04.");		
+	throw new Exception("Functionality not supported in PS16.");		
     }
 
     @Override
@@ -475,7 +494,7 @@ public class BBS04 implements GS {
 	throws IllegalArgumentException,
 	       Exception
     {
-	throw new Exception("Functionality not supported in BBS04.");		
+	throw new Exception("Functionality not supported in PS16.");		
     }    
 
     @Override
@@ -485,7 +504,7 @@ public class BBS04 implements GS {
 	       IllegalArgumentException,
 	       Exception	       
     {
-	throw new Exception("Functionality not supported in BBS04.");		
+	throw new Exception("Functionality not supported in PS16.");		
     }    
 
     @Override
@@ -496,13 +515,13 @@ public class BBS04 implements GS {
 	       IllegalArgumentException,
 	       Exception	       
     {
-	throw new Exception("Functionality not supported in BBS04.");	
+	throw new Exception("Functionality not supported in PS16.");	
     }    
     
     /**
-     * Returns the group key of the current BBS04 instance.
+     * Returns the group key of the current PS16 instance.
      *
-     * @return The group key of the current BBS04 instance.
+     * @return The group key of the current PS16 instance.
      */     
     public GrpKey getGrpKey() {
 	return this.grpKey;
@@ -520,9 +539,9 @@ public class BBS04 implements GS {
     }
 
     /**
-     * Returns the manager key of the current BBS04 instance.
+     * Returns the manager key of the current PS16 instance.
      *
-     * @return The manager key of the current BBS04 instance.
+     * @return The manager key of the current PS16 instance.
      */     
     public MgrKey getMgrKey() {
 	return this.mgrKey;
@@ -540,9 +559,9 @@ public class BBS04 implements GS {
     }
     
     /**
-     * Returns the group membership list of the current BBS04 instance.
+     * Returns the group membership list of the current PS16 instance.
      *
-     * @return The group membership list of the current BBS04 instance.
+     * @return The group membership list of the current PS16 instance.
      */     
     public Gml getGml() {
 	return this.gml;
@@ -558,9 +577,9 @@ public class BBS04 implements GS {
     }
 
     /**
-     * Returns the code of the current BBS04 instance.
+     * Returns the code of the current PS16 instance.
      *
-     * @return The code of the current BBS04 instance.
+     * @return The code of the current PS16 instance.
      */
     @Override    
     public int getCode() {
@@ -568,9 +587,9 @@ public class BBS04 implements GS {
     }
 
     /**
-     * Returns the internal native pointer to the current BBS04 instance.
+     * Returns the internal native pointer to the current PS16 instance.
      *
-     * @return The pointer to the current BBS04 instance.
+     * @return The pointer to the current PS16 instance.
      */
     @Override
     public long getGroup() {
