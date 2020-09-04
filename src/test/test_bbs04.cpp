@@ -40,13 +40,14 @@ namespace groupsig {
     groupsig_key_t *grpkey;
     gml_t *gml;
     groupsig_key_t **memkey;
-    groupsig_config_t *cfg;
     uint32_t n;
 
     BBS04Test() {
 
-      cfg = groupsig_init(GROUPSIG_BBS04_CODE, time(NULL));
-      EXPECT_NE(cfg, nullptr);
+      int rc;
+
+      rc = groupsig_init(GROUPSIG_BBS04_CODE, time(NULL));
+      EXPECT_EQ(rc, IOK);
   
       mgrkey = groupsig_mgr_key_init(GROUPSIG_BBS04_CODE);
       EXPECT_NE(mgrkey, nullptr);
@@ -72,7 +73,7 @@ namespace groupsig {
 	}
 	free(memkey); memkey = NULL;
       }
-      groupsig_clear(GROUPSIG_BBS04_CODE, cfg);      
+      groupsig_clear(GROUPSIG_BBS04_CODE);      
     }
 
     void addMembers(uint32_t n) {
@@ -181,7 +182,7 @@ namespace groupsig {
 
     int rc;
 
-    rc = groupsig_setup(GROUPSIG_BBS04_CODE, grpkey, mgrkey, gml, cfg);
+    rc = groupsig_setup(GROUPSIG_BBS04_CODE, grpkey, mgrkey, gml);
     EXPECT_EQ(rc, IOK);
     
     addMembers(1);
@@ -196,7 +197,7 @@ namespace groupsig {
     groupsig_signature_t *sig;
     int rc;
 
-    rc = groupsig_setup(GROUPSIG_BBS04_CODE, grpkey, mgrkey, gml, cfg);
+    rc = groupsig_setup(GROUPSIG_BBS04_CODE, grpkey, mgrkey, gml);
     EXPECT_EQ(rc, IOK);
 
     /* Initialize the group signature object */
@@ -218,7 +219,7 @@ namespace groupsig {
     int rc;
     uint8_t b;
 
-    rc = groupsig_setup(GROUPSIG_BBS04_CODE, grpkey, mgrkey, gml, cfg);
+    rc = groupsig_setup(GROUPSIG_BBS04_CODE, grpkey, mgrkey, gml);
     EXPECT_EQ(rc, IOK);
 
     /* Initialize the group signature object */
@@ -260,7 +261,7 @@ namespace groupsig {
     int rc;
     uint8_t b;
 
-    rc = groupsig_setup(GROUPSIG_BBS04_CODE, grpkey, mgrkey, gml, cfg);
+    rc = groupsig_setup(GROUPSIG_BBS04_CODE, grpkey, mgrkey, gml);
     EXPECT_EQ(rc, IOK);
 
     /* Initialize the group signature object */
@@ -309,7 +310,7 @@ namespace groupsig {
     char *str;
     int rc;
 
-    rc = groupsig_setup(GROUPSIG_BBS04_CODE, grpkey, mgrkey, gml, cfg);
+    rc = groupsig_setup(GROUPSIG_BBS04_CODE, grpkey, mgrkey, gml);
     EXPECT_EQ(rc, IOK);
 
     /* Initialize the group signature object */
@@ -363,7 +364,7 @@ namespace groupsig {
     uint32_t size;
     int rc, len;
 
-    rc = groupsig_setup(GROUPSIG_BBS04_CODE, grpkey, mgrkey, gml, cfg);
+    rc = groupsig_setup(GROUPSIG_BBS04_CODE, grpkey, mgrkey, gml);
     EXPECT_EQ(rc, IOK);
 
     /* Get the size of the string to store the exported key */
@@ -394,7 +395,7 @@ namespace groupsig {
     groupsig_key_t *dst;
     int rc;
 
-    rc = groupsig_setup(GROUPSIG_BBS04_CODE, grpkey, mgrkey, gml, cfg);
+    rc = groupsig_setup(GROUPSIG_BBS04_CODE, grpkey, mgrkey, gml);
     EXPECT_EQ(rc, IOK);
 
     dst = groupsig_grp_key_init(GROUPSIG_BBS04_CODE);
@@ -418,7 +419,7 @@ namespace groupsig {
     uint32_t size;
     int rc, len;
 
-    rc = groupsig_setup(GROUPSIG_BBS04_CODE, grpkey, mgrkey, gml, cfg);
+    rc = groupsig_setup(GROUPSIG_BBS04_CODE, grpkey, mgrkey, gml);
     EXPECT_EQ(rc, IOK);
     
     /* Get the size of the string to store the exported key */
@@ -449,7 +450,7 @@ namespace groupsig {
     groupsig_key_t *dst;
     int rc;
 
-    rc = groupsig_setup(GROUPSIG_BBS04_CODE, grpkey, mgrkey, gml, cfg);
+    rc = groupsig_setup(GROUPSIG_BBS04_CODE, grpkey, mgrkey, gml);
     EXPECT_EQ(rc, IOK);
 
     dst = groupsig_mgr_key_init(GROUPSIG_BBS04_CODE);
@@ -473,7 +474,7 @@ namespace groupsig {
     uint32_t size;
     int rc, len;
 
-    rc = groupsig_setup(GROUPSIG_BBS04_CODE, grpkey, mgrkey, gml, cfg);
+    rc = groupsig_setup(GROUPSIG_BBS04_CODE, grpkey, mgrkey, gml);
     EXPECT_EQ(rc, IOK);
 
     /* Add one member */
@@ -507,7 +508,7 @@ namespace groupsig {
     groupsig_key_t *dst;
     int rc;
 
-    rc = groupsig_setup(GROUPSIG_BBS04_CODE, grpkey, mgrkey, gml, cfg);
+    rc = groupsig_setup(GROUPSIG_BBS04_CODE, grpkey, mgrkey, gml);
     EXPECT_EQ(rc, IOK);
 
    /* Add one member */
@@ -535,7 +536,7 @@ namespace groupsig {
     int rc;
     uint8_t b;
 
-    rc = groupsig_setup(GROUPSIG_BBS04_CODE, grpkey, mgrkey, gml, cfg);
+    rc = groupsig_setup(GROUPSIG_BBS04_CODE, grpkey, mgrkey, gml);
     EXPECT_EQ(rc, IOK);
 
     /* Initialize the group signature object */
@@ -581,7 +582,7 @@ namespace groupsig {
     int rc;
     uint8_t b;
 
-    rc = groupsig_setup(GROUPSIG_BBS04_CODE, grpkey, mgrkey, gml, cfg);
+    rc = groupsig_setup(GROUPSIG_BBS04_CODE, grpkey, mgrkey, gml);
     EXPECT_EQ(rc, IOK);   
 
     /* Initialize the src group signature object */
@@ -641,7 +642,7 @@ namespace groupsig {
     int rc;
     uint8_t b;
 
-    rc = groupsig_setup(GROUPSIG_BBS04_CODE, grpkey, mgrkey, gml, cfg);
+    rc = groupsig_setup(GROUPSIG_BBS04_CODE, grpkey, mgrkey, gml);
     EXPECT_EQ(rc, IOK); 
 
     /* Initialize the group signature object */
@@ -697,7 +698,7 @@ namespace groupsig {
     gml_t *imported;
     int rc;
 
-    rc = groupsig_setup(GROUPSIG_BBS04_CODE, grpkey, mgrkey, gml, cfg);
+    rc = groupsig_setup(GROUPSIG_BBS04_CODE, grpkey, mgrkey, gml);
     EXPECT_EQ(rc, IOK); 
 
     /* Add one member */

@@ -25,6 +25,7 @@
 #include "groupsig/bbs04/signature.h"
 /* #include "groupsig/cpy06/signature.h" */
 #include "groupsig/gl19/signature.h"
+#include "groupsig/ps16/signature.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -34,7 +35,7 @@ extern "C" {
  * @def GROUPSIG_SIGNATURE_HANDLES_N
  * @brief Number of supported set of handles for managing group signatures.
  */
-#define GROUPSIG_SIGNATURE_HANDLES_N 2//4
+#define GROUPSIG_SIGNATURE_HANDLES_N 3//4
 
 /**
  * @var GROUPSIG_SIGNATURE_HANDLES
@@ -45,6 +46,7 @@ static const groupsig_signature_handle_t *GROUPSIG_SIGNATURE_HANDLES[GROUPSIG_SI
   &bbs04_signature_handle,
   /* &cpy06_signature_handle, */
   &gl19_signature_handle,
+  &ps16_signature_handle,
 };
 
 #ifdef __cplusplus

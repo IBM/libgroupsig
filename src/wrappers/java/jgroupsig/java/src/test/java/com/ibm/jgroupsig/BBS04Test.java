@@ -55,8 +55,6 @@ public class BBS04Test {
         // assert statements
         assertTrue(this.groupMgr.getCode() == GS.BBS04_CODE,
 		   "Unexpected group code.");
-	assertTrue(this.groupMgr.getConfig() != 0,
-		   "Unexpected group config.");
 	assertTrue(this.groupMgr.getGroup() != 0,
 		   "Unexpected group structure.");	
     }
@@ -157,7 +155,8 @@ public class BBS04Test {
     	Signature sig = this.groupUser.sign("Hello, World!", memkey2);
 
 	/* Open the signature */
-	Identity id = this.groupMgr.open(sig);
+	IdProof idProof = this.groupMgr.open(sig);
+	Identity id = idProof.getIdentity();
 	
 	/* Conver the identity to a string */
 	

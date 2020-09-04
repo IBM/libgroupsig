@@ -23,7 +23,6 @@
 
 #include "gl19.h"
 #include "logger.h"
-#include "bigz.h"
 #include "groupsig/gl19/identity.h"
 #include "groupsig/gl19/grp_key.h"
 #include "groupsig/gl19/mem_key.h"
@@ -92,8 +91,8 @@ int gl19_join_mem(message_t **mout, groupsig_key_t *memkey,
 
     /* Compute the SPK */
     if(!(pi = spk_dlog_init())) GOTOENDRC(IERROR, gl19_join_mem);
-    if(spk_dlog_sign(pi, gl19_memkey->H,
-		     gl19_grpkey->h1, gl19_memkey->y, bn, len) == IERROR)
+    if(spk_dlog_G1_sign(pi, gl19_memkey->H,
+			gl19_grpkey->h1, gl19_memkey->y, bn, len) == IERROR)
       GOTOENDRC(IERROR, gl19_join_mem);
 
     /* Build the output message -- I don't like this */
@@ -108,9 +107,7 @@ int gl19_join_mem(message_t **mout, groupsig_key_t *memkey,
       GOTOENDRC(IERROR, gl19_join_mem);
     len += Hlen;
    
-    if(spk_dlog_export_bytearray_null(&bpi,
-				      &pilen,
-				      pi) == IERROR)
+    if(spk_dlog_export(&bpi, &pilen, pi) == IERROR)
       GOTOENDRC(IERROR, gl19_join_mem);
     
     len += pilen;

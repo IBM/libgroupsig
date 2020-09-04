@@ -27,45 +27,26 @@
 #include "groupsig/bbs04/grp_key.h"
 #include "groupsig/bbs04/mgr_key.h"
 #include "groupsig/bbs04/gml.h"
-#include "math/nt.h"
 #include "sys/mem.h"
 #include "shim/pbc_ext.h"
 
-groupsig_config_t* bbs04_config_init() {
+int bbs04_init() {
   
-  groupsig_config_t *cfg;
-
-  if(!(cfg = (groupsig_config_t *) mem_malloc(sizeof(groupsig_config_t)))) {
-    return NULL;
-  }
-
-  BBS04_CONFIG_SET_DEFAULTS(cfg);
-
   if(pbcext_init(BLS12_381) == IERROR) {
-    mem_free(cfg); cfg = NULL;
-    return NULL;
+    return IERROR;
   }  
 
-  return cfg;
-
-}
-
-int bbs04_config_free(groupsig_config_t *cfg) {
-
-  if(!cfg) {
-    return IOK;
-  }
-
-  mem_free(cfg); cfg = NULL;
-  
   return IOK;
 
 }
 
+int bbs04_clear() {  
+  return IOK;
+}
+
 int bbs04_setup(groupsig_key_t *grpkey,
 		groupsig_key_t *mgrkey,
-		gml_t *gml,
-		groupsig_config_t *config) {
+		gml_t *gml) {
 
   bbs04_grp_key_t *gkey;
   bbs04_mgr_key_t *mkey;

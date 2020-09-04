@@ -8,15 +8,18 @@ ffibuilder.cdef("#define BBS04_JOIN_START 0")
 ffibuilder.cdef("#define BBS04_JOIN_SEQ 1")
 
 ffibuilder.cdef("""
-groupsig_config_t* bbs04_config_init(void);
-""")    
+int bbs04_init();
+""")
+
+ffibuilder.cdef("""
+int bbs04_clear();
+""")
 
 ffibuilder.cdef("""                
 int bbs04_setup(
 groupsig_key_t *grpkey, 
 groupsig_key_t *mgrkey, 
-gml_t *gml, 
-groupsig_config_t *config);
+gml_t *gml);
 """)
                 
 ffibuilder.cdef("""

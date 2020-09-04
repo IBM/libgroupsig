@@ -42,7 +42,6 @@ sysenv_t *sysenv;
 int main(int argc, char *argv[]) {
   int argnum = 1;
   char *s_sig, *s_msg, *s_grpkey;
-  groupsig_config_t *cfg;  
   groupsig_key_t *grpkey;
   groupsig_signature_t *sig;
   message_t *msg;
@@ -73,7 +72,7 @@ int main(int argc, char *argv[]) {
   }
   argnum++;
 
-  if(!(cfg = groupsig_init(scheme, time(NULL)))) {
+  if(groupsig_init(scheme, time(NULL)) == IERROR) {
     return IERROR;
   }
   
@@ -200,7 +199,7 @@ int main(int argc, char *argv[]) {
   }
 #endif
 
-  groupsig_clear(scheme, cfg); cfg = NULL;
+  groupsig_clear(scheme);
   groupsig_grp_key_free(grpkey); grpkey = NULL;
   message_free(msg); msg = NULL;  
   

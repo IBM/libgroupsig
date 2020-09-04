@@ -15,6 +15,7 @@
 
 static const char *JNIT_CLASS_GL19 = "com/ibm/jgroupsig/GL19";
 static const char *JNIT_CLASS_BBS04 = "com/ibm/jgroupsig/BBS04";
+static const char *JNIT_CLASS_PS16 = "com/ibm/jgroupsig/PS16";
 static const char *JNIT_CLASS_GRPKEY = "com/ibm/jgroupsig/GrpKey";
 static const char *JNIT_CLASS_MGRKEY = "com/ibm/jgroupsig/MgrKey";
 static const char *JNIT_CLASS_MEMKEY = "com/ibm/jgroupsig/MemKey";
@@ -23,6 +24,7 @@ static const char *JNIT_CLASS_IDENTITY = "com/ibm/jgroupsig/Identity";
 static const char *JNIT_CLASS_GML = "com/ibm/jgroupsig/Gml";
 static const char *JNIT_CLASS_SIGNATURE = "com/ibm/jgroupsig/Signature";
 static const char *JNIT_CLASS_BLINDSIG = "com/ibm/jgroupsig/BlindSignature";
+static const char *JNIT_CLASS_PROOF = "com/ibm/jgroupsig/Proof";
 
 
 /********** GS functions **********/
@@ -148,13 +150,13 @@ static jlong groupsig_gsGetFromCode(JNIEnv *env,
   
 }
 
-static jlong groupsig_gsInit(JNIEnv *env,
+static jint groupsig_gsInit(JNIEnv *env,
 			     jobject obj,
 			     jint code,
 			     jint seed) {
 
-  groupsig_config_t *gc;
-  jclass jcls;   
+  jclass jcls;
+  int rc;
   
   (void) env;
   (void) obj;
@@ -162,25 +164,23 @@ static jlong groupsig_gsInit(JNIEnv *env,
   if ((int) code > UINT8_MAX || (int) seed > UINT_MAX) {
     jcls = (*env)->FindClass(env, "java/lang/IllegalArgumentException");
     (*env)->ThrowNew(env, jcls, "Invalid argument.");
-    return (jlong) 0;    
+    return (jint) IERROR;    
   }      
 
-  if(!(gc = (groupsig_config_t *) groupsig_init(code, seed))) {
+  if(groupsig_init(code, seed) == IERROR) {
     jcls = (*env)->FindClass(env, "java/lang/Exception");
     (*env)->ThrowNew(env, jcls, "Internal error.");
-    return (jlong) 0;
+    return (jint) IERROR;
   }
 
-  return (jlong) gc;
+  return (jint) IOK;
 
 }
 
 static jint groupsig_gsClear(JNIEnv *env,
 			     jobject obj,
-			     jint code,
-			     jlong ptr) {
+			     jint code) {
 
-  groupsig_config_t *gc;
   jclass jcls;
   int rc;
   
@@ -193,7 +193,7 @@ static jint groupsig_gsClear(JNIEnv *env,
     return (jint) IERROR;    
   }      
 
-  rc = groupsig_clear((uint8_t) code, (groupsig_config_t *) ptr);
+  rc = groupsig_clear((uint8_t) code);
   if (rc == IERROR) {
     jcls = (*env)->FindClass(env, "java/lang/Exception");
     (*env)->ThrowNew(env, jcls, "Internal error.");
@@ -205,11 +205,10 @@ static jint groupsig_gsClear(JNIEnv *env,
 
 static jboolean groupsig_gsHasGml(JNIEnv *env,
 				  jobject obj,
-				  jint code,
-				  jlong ptr) {
+				  jint code) {
 
-  groupsig_config_t *gc;
   jclass jcls;
+  groupsig_t *gs;
   uint8_t b;
   
   (void) env;
@@ -219,9 +218,15 @@ static jboolean groupsig_gsHasGml(JNIEnv *env,
     jcls = (*env)->FindClass(env, "java/lang/IllegalArgumentException");
     (*env)->ThrowNew(env, jcls, "Invalid argument.");
     return (jint) JNI_FALSE;    
-  }      
+  }
 
-  b = ((groupsig_config_t *) ptr)->has_gml;
+  if(!(gs = (groupsig_t *) groupsig_get_groupsig_from_code((uint8_t) code))) {
+    jcls = (*env)->FindClass(env, "java/lang/Exception");
+    (*env)->ThrowNew(env, jcls, "Internal error.");
+    return (jint) JNI_FALSE;
+  }  
+
+  b = gs->desc->has_gml;
   if (b) return JNI_TRUE;
   return JNI_FALSE;
 
@@ -232,8 +237,7 @@ static jint groupsig_gsSetup(JNIEnv *env,
 			     jint code,
 			     jlong grpKeyPtr,
 			     jlong mgrKeyPtr,
-			     jlong gmlPtr,
-			     jlong cfgPtr) {
+			     jlong gmlPtr) {
 
   jclass jcls;
   int rc;
@@ -241,7 +245,7 @@ static jint groupsig_gsSetup(JNIEnv *env,
   (void) env;
   (void) obj;
 
-  if (!grpKeyPtr || !mgrKeyPtr || !cfgPtr || (int) code > UINT8_MAX) {
+  if (!grpKeyPtr || !mgrKeyPtr || (int) code > UINT8_MAX) {
     jcls = (*env)->FindClass(env, "java/lang/IllegalArgumentException");
     (*env)->ThrowNew(env, jcls, "Invalid argument.");
     return (jint) IERROR;    
@@ -250,8 +254,7 @@ static jint groupsig_gsSetup(JNIEnv *env,
   rc= groupsig_setup((uint8_t) code,
 		     (groupsig_key_t *) grpKeyPtr,
 		     (groupsig_key_t *) mgrKeyPtr, 
-		     (gml_t *) gmlPtr,
-		     (groupsig_config_t *) cfgPtr);
+		     (gml_t *) gmlPtr);
 
   if (rc == IERROR) {
     jcls = (*env)->FindClass(env, "java/lang/Exception");
@@ -515,7 +518,7 @@ static jint groupsig_gsOpen(JNIEnv *env,
 			    jlong grpKeyPtr,
 			    jlong mgrKeyPtr,
 			    jlong gmlPtr) {
-
+  
   jclass jcls;
   int rc;
   
@@ -544,6 +547,43 @@ static jint groupsig_gsOpen(JNIEnv *env,
   
   return (jint) rc;
   
+}
+
+static jboolean groupsig_gsOpenVerify(JNIEnv *env,
+				      jobject obj,
+				      jlong idPtr,
+				      jlong proofPtr,
+				      jlong sigPtr,
+				      jlong grpKeyPtr) {
+
+  jclass jcls;
+  int rc;
+  uint8_t ok;
+  
+  (void) env;
+  (void) obj;
+
+  if (!proofPtr || !sigPtr || !grpKeyPtr) {
+    jcls = (*env)->FindClass(env, "java/lang/IllegalArgumentException");
+    (*env)->ThrowNew(env, jcls, "Invalid argument.");
+    return JNI_FALSE;    
+  }
+
+  rc = groupsig_open_verify(&ok,
+			    (identity_t *) idPtr,
+			    (groupsig_proof_t *) proofPtr,
+			    (groupsig_signature_t *) sigPtr,
+			    (groupsig_key_t *) grpKeyPtr);
+
+  if (rc == IERROR) {
+    jcls = (*env)->FindClass(env, "java/lang/Exception");
+    (*env)->ThrowNew(env, jcls, "Internal error.");
+    return JNI_FALSE;
+  }
+
+  if (ok) return JNI_TRUE;
+  return JNI_FALSE;  
+    
 }
 
 static jint groupsig_gsBlind(JNIEnv *env,
@@ -747,10 +787,10 @@ static JNINativeMethod funcs_gs[] = {
   { "groupsig_gsGetCodeFromStr", "(Ljava/lang/String;)I", (void *) &groupsig_gsGetCodeFromStr },
   { "groupsig_gsGetFromStr", "(Ljava/lang/String;)J", (void *) &groupsig_gsGetFromStr },
   { "groupsig_gsGetFromCode", "(I)J", (void *) &groupsig_gsGetFromCode },
-  { "groupsig_gsInit", "(II)J", (void *) &groupsig_gsInit },
-  { "groupsig_gsClear", "(IJ)I", (void *) &groupsig_gsClear },
-  { "groupsig_gsHasGml", "(IJ)Z", (void *) &groupsig_gsHasGml },
-  { "groupsig_gsSetup", "(IJJJJ)I", (void *) &groupsig_gsSetup },
+  { "groupsig_gsInit", "(II)I", (void *) &groupsig_gsInit },
+  { "groupsig_gsClear", "(I)I", (void *) &groupsig_gsClear },
+  { "groupsig_gsHasGml", "(I)Z", (void *) &groupsig_gsHasGml },
+  { "groupsig_gsSetup", "(IJJJ)I", (void *) &groupsig_gsSetup },
   { "groupsig_gsGetJoinSeq", "(I)I", (void *) &groupsig_gsGetJoinSeq },
   { "groupsig_gsGetJoinStart", "(I)I", (void *) &groupsig_gsGetJoinStart },
   { "groupsig_gsJoinMem", "(JIJJ)J", (void *) &groupsig_gsJoinMem },
@@ -759,7 +799,7 @@ static JNINativeMethod funcs_gs[] = {
   { "groupsig_gsVerify", "(J[BIJ)Z", (void *) &groupsig_gsVerify },
   /* { "groupsig_gsReveal", , }, */
   { "groupsig_gsOpen", "(JJJJJJJ)I", (void *) &groupsig_gsOpen },
-  /* { "groupsig_gsOpenVerify", , }, */
+  { "groupsig_gsOpenVerify", "(JJJJ)Z", (void *) &groupsig_gsOpenVerify },
   /* { "groupsig_gsTrace", , }, */
   /* { "groupsig_gsClaim", , }, */
   /* { "groupsig_gsClaimVerify", , }, */
@@ -1726,11 +1766,143 @@ static JNINativeMethod funcs_blindsig[] = {
   { "groupsig_blindSignatureImport", "(I[BI)J", (void *) &groupsig_blindSignatureImport },
 };
 
+/********** Proof functions **********/
+
+static jlong groupsig_proofInit(JNIEnv *env,
+				jobject obj,
+				jint code) {
+  
+  jclass jcls;
+  groupsig_proof_t *proof;
+
+  (void) env;
+  (void) obj;
+
+  if ((int) code > UINT8_MAX) {
+    jcls = (*env)->FindClass(env, "java/lang/IllegalArgumentException");
+    (*env)->ThrowNew(env, jcls, "Invalid argument.");
+    return (jlong) 0;
+  }
+  
+  if(!(proof = groupsig_proof_init((uint8_t) code))) {
+    jcls = (*env)->FindClass(env, "java/lang/Exception");
+    (*env)->ThrowNew(env, jcls, "Internal error.");
+    return (jlong) 0;
+  }
+
+  return (jlong) proof;
+  
+}
+
+static jint groupsig_proofFree(JNIEnv *env,
+			       jobject obj,
+			       jlong ptr) {
+  
+  (void) env;
+  (void) obj;
+
+  return (jint) groupsig_proof_free((groupsig_proof_t *) ptr);
+  
+}
+
+static jint groupsig_proofGetCode(JNIEnv *env,
+				  jobject obj,
+				  jlong ptr) {
+  
+  jclass jcls;
+
+  (void) env;
+  (void) obj;
+
+  if (!ptr) {
+    jcls = (*env)->FindClass(env, "java/lang/IllegalArgumentException");
+    (*env)->ThrowNew(env, jcls, "Argument cannot be null.");
+    return (jint) IERROR;
+  }
+  
+  return ((groupsig_proof_t *) ptr)->scheme;
+
+}
+
+static jbyteArray groupsig_proofExport(JNIEnv *env,
+				       jobject obj,
+				       long ptr) {
+
+  jclass jcls;
+  jbyteArray result;
+  byte_t *bytes;
+  uint32_t size;
+  int len;
+  
+  if (!ptr) {
+    jcls = (*env)->FindClass(env, "java/lang/IllegalArgumentException");
+    (*env)->ThrowNew(env, jcls, "Argument cannot be null.");
+    return NULL;
+  }
+
+  bytes = NULL;
+  if(groupsig_proof_export(&bytes, &size,
+			   (groupsig_proof_t *) ptr) == IERROR) {
+    jcls = (*env)->FindClass(env, "java/lang/Exception");
+    (*env)->ThrowNew(env, jcls, "Internal error.");
+    return NULL;
+  }
+
+  result=(*env)->NewByteArray(env, size);
+  (*env)->SetByteArrayRegion(env, result, 0, size, (const jbyte *) bytes);
+  
+  return result;
+  
+}
+
+static jlong groupsig_proofImport(JNIEnv *env,
+				  jobject obj,
+				  int code,
+				  jbyteArray bytes,
+				  int size) {
+  jclass jcls;
+  groupsig_proof_t *proof;
+  byte_t *_bytes;
+  
+  if (!bytes || !size) {
+    jcls = (*env)->FindClass(env, "java/lang/IllegalArgumentException");
+    (*env)->ThrowNew(env, jcls, "Argument cannot be null.");
+    return (jlong) 0;
+  }
+
+  if(!(_bytes = (byte_t *) malloc(sizeof(byte_t)*size))) {
+    jcls = (*env)->FindClass(env, "java/lang/Exception");
+    (*env)->ThrowNew(env, jcls, "Internal error.");
+    return (jint) IERROR;
+  }
+
+  (*env)->GetByteArrayRegion(env, bytes, 0, size, (jbyte *) _bytes); 
+
+  if(!(proof = groupsig_proof_import(code, _bytes, size))) {
+    jcls = (*env)->FindClass(env, "java/lang/Exception");
+    (*env)->ThrowNew(env, jcls, "Internal error.");
+    return (jlong) 0;
+  }
+  free(_bytes); _bytes = NULL;
+  
+  return (jlong) proof;
+  
+}
+
+static JNINativeMethod funcs_proof[] = {
+  { "groupsig_proofInit", "(I)J", (void *) &groupsig_proofInit },
+  { "groupsig_proofFree", "(J)I", (void *) &groupsig_proofFree },
+  { "groupsig_proofGetCode", "(J)I", (void *) &groupsig_proofGetCode },
+  { "groupsig_proofExport", "(J)[B", (void *) &groupsig_proofExport },
+  { "groupsig_proofImport", "(I[BI)J", (void *) &groupsig_proofImport },
+};
+
 JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* reserved) {
 
   JNIEnv *env;
   jclass  cls_gl19;
   jclass  cls_bbs04;
+  jclass  cls_ps16;  
   jclass  cls_grpkey;
   jclass  cls_mgrkey;
   jclass  cls_memkey;
@@ -1739,6 +1911,7 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* reserved) {
   jclass  cls_gml;
   jclass  cls_signature;
   jclass  cls_blindsig;
+  jclass  cls_proof;  
   jint    res;
 
   (void)reserved;
@@ -1770,7 +1943,21 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* reserved) {
   if (res != 0) {
     fprintf(stderr, "Error registering natives for %s\n", JNIT_CLASS_BBS04);
     return -1;
+  }
+
+  /* Register PS16 */
+  cls_ps16 = (*env)->FindClass(env, JNIT_CLASS_PS16);
+  if (cls_ps16 == NULL) {
+    fprintf(stderr, "Error finding %s\n", JNIT_CLASS_PS16);
+    return -1;
+  }
+
+  res = (*env)->RegisterNatives(env, cls_ps16, funcs_gs, sizeof(funcs_gs)/sizeof(*funcs_gs));
+  if (res != 0) {
+    fprintf(stderr, "Error registering natives for %s\n", JNIT_CLASS_PS16);
+    return -1;
   }  
+  
 
   /* Register GrpKey */
   cls_grpkey = (*env)->FindClass(env, JNIT_CLASS_GRPKEY);
@@ -1870,6 +2057,19 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* reserved) {
     return -1;
   }
 
+  /* Register Proof */
+  cls_proof = (*env)->FindClass(env, JNIT_CLASS_PROOF);
+  if (cls_proof == NULL) {
+    fprintf(stderr, "Error finding %s\n", JNIT_CLASS_PROOF);
+    return -1;
+  }
+
+  res = (*env)->RegisterNatives(env, cls_proof, funcs_proof, sizeof(funcs_proof)/sizeof(*funcs_proof));
+  if (res != 0) {
+    fprintf(stderr, "Error registering natives for %s\n", JNIT_CLASS_PROOF);
+    return -1;
+  }  
+
   return JNI_VERSION_1_8;
 }
 
@@ -1878,6 +2078,7 @@ JNIEXPORT void JNICALL JNI_OnUnload(JavaVM *vm, void *reserved) {
   JNIEnv *env;
   jclass cls_gl19;
   jclass cls_bbs04;
+  jclass cls_ps16;  
   jclass cls_grpkey;
   jclass cls_mgrkey;
   jclass cls_memkey;
@@ -1886,6 +2087,7 @@ JNIEXPORT void JNICALL JNI_OnUnload(JavaVM *vm, void *reserved) {
   jclass cls_gml;
   jclass cls_signature;
   jclass cls_blindsig;
+  jclass cls_proof;
   
   (void)reserved;
 
@@ -1905,6 +2107,13 @@ JNIEXPORT void JNICALL JNI_OnUnload(JavaVM *vm, void *reserved) {
     return;
 
   (*env)->UnregisterNatives(env, cls_bbs04);
+
+  /* PS16 */
+  cls_ps16 = (*env)->FindClass(env, JNIT_CLASS_PS16);
+  if (cls_ps16 == NULL)
+    return;
+
+  (*env)->UnregisterNatives(env, cls_ps16);  
 
   /* GRPKEY */
   cls_grpkey = (*env)->FindClass(env, JNIT_CLASS_GRPKEY);
@@ -1961,5 +2170,13 @@ JNIEXPORT void JNICALL JNI_OnUnload(JavaVM *vm, void *reserved) {
     return;
 
   (*env)->UnregisterNatives(env, cls_blindsig);
+
+  /* PROOF */
+  cls_proof = (*env)->FindClass(env, JNIT_CLASS_PROOF);
+  if (cls_proof == NULL)
+    return;
+
+  (*env)->UnregisterNatives(env, cls_proof);
+  
   
 }

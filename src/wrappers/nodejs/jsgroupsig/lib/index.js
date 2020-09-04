@@ -8,6 +8,7 @@ const jsgroupsig = require("../build/Release/jsgroupsig")
 const BBS04 = 1;
 //const CPY06 = 2;
 const GL19 = 3;
+const PS16 = 4;
 
 module.exports = {
 
@@ -18,6 +19,7 @@ module.exports = {
     BBS04: BBS04,
     //CPY06: CPY06,
     GL19: GL19,
+    PS16: PS16,
 
     /**
      * Prints "Hello, World!" in the standard output.
@@ -272,13 +274,44 @@ module.exports = {
      * @param {native}   grpkey        The group key.
      * @param {native}   mgrkey        The opener's key.
      * @param {native}   [gml]         A Group Membership List.
-     * @param {native}   [proof]       An initialized proof. This will be filled
-     *  with a opening proof for schemes that support it.
      * @param {native}   [crl]         A Certificate Revocation List.
      *
-     * @return {native} The identity of the signer.
+     * @return {object} An object containing an 'id' field with a native data
+     *  structure representing the identity of the signer, and a 'proof' field
+     *  that, for schemes that support verifiable opening, contains a native
+     *  structure with the opening proof..
      */        
-    open: jsgroupsig.gs_open,
+    open: function (sig, grpkey, mgrkey, gml = null, crl = null) {
+	let id = null;
+	let proof = null;
+	let code = jsgroupsig.gs_signature_get_code(sig);
+	if (jsgroupsig.gs_has_open_proof(code) == 1) {
+	    proof = jsgroupsig.gs_proof_init(code);
+	}
+	id = jsgroupsig.gs_open(sig, grpkey, mgrkey, gml, proof);
+	return { "id": id, "proof": proof }; 
+    },
+
+    /**
+     * Verifies opening proofs produced by the open algorithm.
+     *
+     * @link https://github.com/IBM/libgroupsig/wiki.
+     *
+     * @since      1.0.0
+     *
+     * @fires   On error, throws a TypeError.
+     *
+     * @param {native}   proof         The opening proof to verify.
+     * @param {native}   sig           The group signature to open.
+     * @param {native}   grpkey        The group key.
+     * @param {native}   [id]          The signer identity produced by the open
+     *                                 algorithm.
+     *
+     * @return {boolean} true if the proof is valid, false otherwise.
+     */        
+    open_verify: function (proof, sig, grpkey, id = null) {
+	return jsgroupsig.gs_open_verify(proof, sig, grpkey, id);
+    },
 
     /**
      * Blinds a group signature.
@@ -1030,6 +1063,16 @@ module.exports = {
      * @return {string} The human readable string for the blinded signature.
      */        
     blindsig_to_string: jsgroupsig.gs_blindsig_to_string,
+
+    /* proof.h */
+    proof_handle_from_code: jsgroupsig.gs_proof_handle_from_code,
+    proof_init: jsgroupsig.gs_proof_init,
+    proof_free: jsgroupsig.gs_proof_free,
+    proof_copy: jsgroupsig.gs_proof_copy,
+    proof_get_size: jsgroupsig.gs_proof_get_size,
+    proof_export: jsgroupsig.gs_proof_export,
+    proof_import: jsgroupsig.gs_proof_import,
+    proof_to_string: jsgroupsig.gs_proof_to_string,    
 
     /* identity.h */
 

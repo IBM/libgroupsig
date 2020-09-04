@@ -25,6 +25,7 @@
 #include "groupsig/bbs04/identity.h"
 /* #include "groupsig/cpy06/identity.h" */
 #include "groupsig/gl19/identity.h"
+#include "groupsig/ps16/identity.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -34,7 +35,7 @@ extern "C" {
  * @def IDENTITY_HANDLES_N
  * @brief Number of supported identity handles.
  */
-#define IDENTITY_HANDLES_N 2//4
+#define IDENTITY_HANDLES_N 3//4
 
 /**
  * @var IDENTITY_HANDLES
@@ -45,6 +46,7 @@ static const identity_handle_t *IDENTITY_HANDLES[IDENTITY_HANDLES_N] = {
   &bbs04_identity_handle,
   /* &cpy06_identity_handle, */
   &gl19_identity_handle,
+  &ps16_identity_handle,
 };
 
 #ifdef __cplusplus

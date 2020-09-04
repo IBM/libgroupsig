@@ -28,13 +28,14 @@
 #include "sys/mem.h"
 #include "registered_groupsigs.h"
 
-#define GROUPSIG_REGISTERED_GROUPSIGS_N 2//4
+#define GROUPSIG_REGISTERED_GROUPSIGS_N 3//4
 static const groupsig_t *GROUPSIG_REGISTERED_GROUPSIGS[GROUPSIG_REGISTERED_GROUPSIGS_N] = {
-  /* &kty04_groupsig_bundle, */
-  &bbs04_groupsig_bundle,
-  /* &cpy06_groupsig_bundle, */
+/* &kty04_groupsig_bundle, */
+&bbs04_groupsig_bundle,
+/* &cpy06_groupsig_bundle, */
   &gl19_groupsig_bundle,
-};
+  &ps16_groupsig_bundle,
+  };
 
 int groupsig_hello_world(void) {
   fprintf(stdout, "Hello, World!\n");
@@ -86,25 +87,7 @@ const groupsig_t* groupsig_get_groupsig_from_code(uint8_t code) {
 
 }
 
-groupsig_config_t* groupsig_init(uint8_t code, unsigned int seed) {
-
-  const groupsig_t *gs;
-  
-  if(!(gs = groupsig_get_groupsig_from_code(code))) {
-    return NULL;
-  }
-
-  /* 1) System-wide environment: right now, only seed the PRNGs */
-  if(!(sysenv = sysenv_init(seed))) {
-    return NULL;
-  }
-
-  /* 2) Scheme-specific variables */
-  return gs->config_init();
-
-}
-
-int groupsig_clear(uint8_t code, groupsig_config_t *cfg) {
+int groupsig_init(uint8_t code, unsigned int seed) {
 
   const groupsig_t *gs;
   
@@ -113,10 +96,28 @@ int groupsig_clear(uint8_t code, groupsig_config_t *cfg) {
   }
 
   /* 1) System-wide environment: right now, only seed the PRNGs */
-  groupsig_sysenv_free(code);
+  if(!(sysenv = sysenv_init(seed))) {
+    return IERROR;
+  }
+
+  /* 2) Scheme-specific variables */
+  return gs->init();
+
+}
+
+int groupsig_clear(uint8_t code) {
+
+  const groupsig_t *gs;
+  
+  if(!(gs = groupsig_get_groupsig_from_code(code))) {
+    return IERROR;
+  }
+
+  /* 1) System-wide environment: right now, only seed the PRNGs */
+  if (sysenv){ sysenv_free(sysenv); sysenv = NULL; }
 
   /* 2) Scheme-specific data */
-  return gs->config_free(cfg);
+  return gs->clear();
 
 }
 
@@ -143,7 +144,7 @@ int groupsig_get_joinseq(uint8_t code, uint8_t *seq) {
     return IERROR;
   }  
   
-  /* Run the CONFIG JOINSEQ action */
+  /* Run the JOINSEQ action */
   return gs->get_joinseq(seq);
   
 }
@@ -157,118 +158,118 @@ int groupsig_get_joinstart(uint8_t code, uint8_t *start) {
     return IERROR;
   }  
   
-  /* Run the CONFIG JOINSTART action */
+  /* Run the JOINSTART action */
   return gs->get_joinstart(start);
   
 }
 
-int groupsig_config_free(groupsig_config_t *cfg) {
+/* int groupsig_config_free(groupsig_config_t *cfg) { */
 
-  const groupsig_t *gs;
+/*   const groupsig_t *gs; */
 
-  if(!cfg) {
-    return IOK;
-  }
+/*   if(!cfg) { */
+/*     return IOK; */
+/*   } */
 
-  /* Get the group signature scheme from its code */
-  if(!(gs = groupsig_get_groupsig_from_code(cfg->scheme))) {
-    return IERROR;
-  }  
+/*   /\* Get the group signature scheme from its code *\/ */
+/*   if(!(gs = groupsig_get_groupsig_from_code(cfg->scheme))) { */
+/*     return IERROR; */
+/*   }   */
 
-  /* Run the CONFIG INIT action */
-  return gs->config_free(cfg);
+/*   /\* Run the CONFIG INIT action *\/ */
+/*   return gs->config_free(cfg); */
 
-}
+/* } */
 
-int groupsig_sysenv_update(uint8_t code, void *data) {
+/* int groupsig_sysenv_update(uint8_t code, void *data) { */
 
-  const groupsig_t *gs;
+/*   const groupsig_t *gs; */
 
-  if(!data) {
-    LOG_EINVAL(&logger, __FILE__, "groupsig_sysenv_update", __LINE__, LOGERROR);
-    return IERROR;
-  }
+/*   if(!data) { */
+/*     LOG_EINVAL(&logger, __FILE__, "groupsig_sysenv_update", __LINE__, LOGERROR); */
+/*     return IERROR; */
+/*   } */
 
-  /* Get the group signature scheme from its code */
-  if(!(gs = groupsig_get_groupsig_from_code(code))) {
-    return IERROR;
-  }
+/*   /\* Get the group signature scheme from its code *\/ */
+/*   if(!(gs = groupsig_get_groupsig_from_code(code))) { */
+/*     return IERROR; */
+/*   } */
 
-  /* For some schemes, there might not be and env_update action set. */
-  if(!gs->sysenv_update) {
-    LOG_EINVAL_MSG(&logger, __FILE__, "groupsig_sysenv_update", __LINE__,
-		   "It is not possible to update the environment for this scheme.",
-		   LOGERROR);
-    return IERROR;
-  }
+/*   /\* For some schemes, there might not be and env_update action set. *\/ */
+/*   if(!gs->sysenv_update) { */
+/*     LOG_EINVAL_MSG(&logger, __FILE__, "groupsig_sysenv_update", __LINE__, */
+/* 		   "It is not possible to update the environment for this scheme.", */
+/* 		   LOGERROR); */
+/*     return IERROR; */
+/*   } */
 
-  /* Run the CONFIG INIT action */
-  return gs->sysenv_update(data);
+/*   /\* Run the CONFIG INIT action *\/ */
+/*   return gs->sysenv_update(data); */
 
-}
+/* } */
 
-void* groupsig_sysenv_get(uint8_t code) {
+/* void* groupsig_sysenv_get(uint8_t code) { */
 
-  const groupsig_t *gs;
+/*   const groupsig_t *gs; */
 
-  /* Get the group signature scheme from its code */
-  if(!(gs = groupsig_get_groupsig_from_code(code))) {
-    return NULL;
-  }
+/*   /\* Get the group signature scheme from its code *\/ */
+/*   if(!(gs = groupsig_get_groupsig_from_code(code))) { */
+/*     return NULL; */
+/*   } */
 
-  /* For some schemes, there might not be and env_update action set. */
-  if(!gs->sysenv_get) {
-    LOG_EINVAL_MSG(&logger, __FILE__, "groupsig_sysenv_get", __LINE__,
-		   "It is not possible to get the environment for this scheme.",
-		   LOGERROR);
-    return NULL;
-  }
+/*   /\* For some schemes, there might not be and env_update action set. *\/ */
+/*   if(!gs->sysenv_get) { */
+/*     LOG_EINVAL_MSG(&logger, __FILE__, "groupsig_sysenv_get", __LINE__, */
+/* 		   "It is not possible to get the environment for this scheme.", */
+/* 		   LOGERROR); */
+/*     return NULL; */
+/*   } */
 
-  /* Run the CONFIG INIT action */
-  return gs->sysenv_get();
+/*   /\* Run the CONFIG INIT action *\/ */
+/*   return gs->sysenv_get(); */
 
-}
+/* } */
 
-int groupsig_sysenv_free(uint8_t code) {
+/* int groupsig_sysenv_free(uint8_t code) { */
 
-  const groupsig_t *gs;
+/*   const groupsig_t *gs; */
 
-  /* Get the group signature scheme from its code */
-  if(!(gs = groupsig_get_groupsig_from_code(code))) {
-    return IERROR;
-  }
+/*   /\* Get the group signature scheme from its code *\/ */
+/*   if(!(gs = groupsig_get_groupsig_from_code(code))) { */
+/*     return IERROR; */
+/*   } */
 
-  if(!sysenv) {
-    return IOK;
-  }
+/*   if(!sysenv) { */
+/*     return IOK; */
+/*   } */
 
-  /* For some schemes, there might not be and env_free action set. */
-  if(!gs->sysenv_free) {
-    LOG_EINVAL_MSG(&logger, __FILE__, "groupsig_sysenv_free", __LINE__,
-		   "It is not possible to update the environment for this scheme.",
-		   LOGWARN);
-  } else {
+/*   /\* For some schemes, there might not be and env_free action set. *\/ */
+/*   if(!gs->sysenv_free) { */
+/*     LOG_EINVAL_MSG(&logger, __FILE__, "groupsig_sysenv_free", __LINE__, */
+/* 		   "It is not possible to update the environment for this scheme.", */
+/* 		   LOGWARN); */
+/*   } else { */
 
-    if(gs->sysenv_free() == IERROR) {
-      return IERROR;
-    }
+/*     if(gs->sysenv_free() == IERROR) { */
+/*       return IERROR; */
+/*     } */
 
-  }
+/*   } */
 
-  if(sysenv) {
-    if(sysenv_free(sysenv) == IERROR) {
-      sysenv = NULL;
-      return IERROR;
-    }
-    sysenv = NULL;
-  }
+/*   if(sysenv) { */
+/*     if(sysenv_free(sysenv) == IERROR) { */
+/*       sysenv = NULL; */
+/*       return IERROR; */
+/*     } */
+/*     sysenv = NULL; */
+/*   } */
 
-  return IOK;
+/*   return IOK; */
 
-}
+/* } */
 
 int groupsig_setup(uint8_t code, groupsig_key_t *grpkey, 
-		   groupsig_key_t *mgrkey, gml_t *gml, groupsig_config_t *config) {
+		   groupsig_key_t *mgrkey, gml_t *gml) {
 
   const groupsig_t *gs;
 
@@ -285,7 +286,7 @@ int groupsig_setup(uint8_t code, groupsig_key_t *grpkey,
   }  
 
   /* Run the SETUP action */
-  return gs->setup(grpkey, mgrkey, gml, config);
+  return gs->setup(grpkey, mgrkey, gml);
 
 }
 
@@ -407,7 +408,7 @@ int groupsig_open_verify(uint8_t *ok, identity_t *id,
   const groupsig_t *gs;
   
   /* All the parameters are mandatory. */
-  if(!id || !proof || !sig || !grpkey || sig->scheme != grpkey->scheme ||
+  if(!proof || !sig || !grpkey || sig->scheme != grpkey->scheme ||
      proof->scheme != sig->scheme) {
     LOG_EINVAL(&logger, __FILE__, "groupsig_open_verify", __LINE__, LOGERROR);
     return IERROR;
@@ -710,11 +711,11 @@ int groupsig_verify_link(uint8_t *ok,
 }
 
 int groupsig_seqlink(groupsig_proof_t **proof,
-		       groupsig_key_t *grpkey,
-		       groupsig_key_t *memkey,
-		       message_t *msg,
-		       groupsig_signature_t **sigs,
-		       message_t **msgs,
+		     groupsig_key_t *grpkey,
+		     groupsig_key_t *memkey,
+		     message_t *msg,
+		     groupsig_signature_t **sigs,
+		     message_t **msgs,
 		     uint32_t n) {
 
   const groupsig_t *gs;
@@ -736,12 +737,12 @@ int groupsig_seqlink(groupsig_proof_t **proof,
 }
 
 int groupsig_verify_seqlink(uint8_t *ok,
-			      groupsig_key_t *grpkey,
-			      groupsig_proof_t *proof,
-			      message_t *msg,
-			      groupsig_signature_t **sigs,
-			      message_t **msgs,
-			      uint32_t n) {
+			    groupsig_key_t *grpkey,
+			    groupsig_proof_t *proof,
+			    message_t *msg,
+			    groupsig_signature_t **sigs,
+			    message_t **msgs,
+			    uint32_t n) {
 
   const groupsig_t *gs;
 

@@ -26,6 +26,19 @@ target_link_libraries(BBS04Test
   pthread)
 add_test(NAME BBS04Test COMMAND BBS04Test)
 
+# Tests for PS16
+add_executable(PS16Test test_ps16.cpp)
+target_link_libraries(PS16Test
+  PUBLIC
+  groupsig
+  big
+  sys
+  logger
+  gtest_main
+  gtest
+  pthread)
+add_test(NAME PS16Test COMMAND PS16Test)
+
 # Tests for Bigz
 add_executable(BigzTest test_bigz.cpp)
 target_link_libraries(BigzTest

@@ -33,11 +33,6 @@ public class BBS04 implements GS {
     public long ptr = 0;
 
     /**
-     * The pointer to the internal JNI GS configuration.
-     */
-    public long cfgPtr = 0;    
-
-    /**
      * The group key for this GS instance.
      */
     private GrpKey grpKey = null;
@@ -64,7 +59,7 @@ public class BBS04 implements GS {
     {
 	this.code = GS.BBS04_CODE;
 	this.ptr = groupsig_gsGetFromCode(this.code);
-	this.cfgPtr = groupsig_gsInit(this.code, 0);
+	groupsig_gsInit(this.code, 0);	
     }
 
     /**
@@ -92,7 +87,7 @@ public class BBS04 implements GS {
 	throws IllegalArgumentException,
 	       Exception
     {
-	return groupsig_gsClear(this.code, this.cfgPtr);
+	return groupsig_gsClear(this.code);
     }
 
     /**
@@ -126,7 +121,7 @@ public class BBS04 implements GS {
      * @return True or False.
      */    
     public boolean hasGml() {
-	return groupsig_gsHasGml(this.code, this.cfgPtr);
+	return groupsig_gsHasGml(this.code);
     }
 
     /**
@@ -147,10 +142,9 @@ public class BBS04 implements GS {
 	this.gml = new Gml(this.code);
 	
     	groupsig_gsSetup(this.code,
-			    this.grpKey.getObject(),
-			    this.mgrKey.getObject(),
-			    this.gml.getObject(),
-			    this.cfgPtr);
+			 this.grpKey.getObject(),
+			 this.mgrKey.getObject(),
+			 this.gml.getObject());
 	return;
     }
 
@@ -425,15 +419,13 @@ public class BBS04 implements GS {
      * Opens the given signature.
      *
      * @param sig The signature to open.
-     * @param grpKey A group key.
-     * @param mgrKey The manager key that issued the signer's key.
-     * @param Gml The GML of the member's group.
-     * @return The identity of the signer.
+     * @return An object wrapping the identity of the signer and, optionally,
+     *  a proof of opening (for schemes that support it).
      * @exception UnsupportedEncodingException
      * @exception IllegalArgumentException
      * @exception Exception
      */
-    public Identity open(Signature sig)
+    public IdProof open(Signature sig)
 	throws IllegalArgumentException,
 	       Exception {
 	Identity id = new Identity(this.code);
@@ -445,8 +437,18 @@ public class BBS04 implements GS {
 			   this.mgrKey.getObject(),
 			   this.gml.getObject()) == 1)
 	    throw new Exception("Error opening.");
-	return id;	
+	IdProof idProof = new IdProof(id);
+	return idProof;
     }
+
+    public boolean openVerify(IdProof idProof,
+			      Signature sig)
+	throws UnsupportedEncodingException,
+	       IllegalArgumentException,
+	       Exception	       
+    {
+	throw new Exception("Functionality not supported in BBS04.");		
+    }    
 
     public BlindSignature blind(BldKey bldKey,
 				Signature sig,
@@ -566,16 +568,6 @@ public class BBS04 implements GS {
     }
 
     /**
-     * Returns the internal native pointer to the current BBS04 instance config.
-     *
-     * @return The pointer to the current BBS04 instance config.
-     */
-    @Override    
-    public long getConfig() {
-	return this.cfgPtr;
-    }
-
-    /**
      * Returns the internal native pointer to the current BBS04 instance.
      *
      * @return The pointer to the current BBS04 instance.
@@ -592,17 +584,14 @@ public class BBS04 implements GS {
     private static native int groupsig_gsGetCodeFromStr(String str);
     private static native long groupsig_gsGetFromStr(String str);
     private static native long groupsig_gsGetFromCode(int code);
-    private static native long groupsig_gsInit(int code,
-    					       int seed);
-    private static native int groupsig_gsClear(int code,
-    					       long cfgPtr);
-    private static native boolean groupsig_gsHasGml(int code,
-    						    long cfg);
+    private static native int groupsig_gsInit(int code,
+					      int seed);
+    private static native int groupsig_gsClear(int code);
+    private static native boolean groupsig_gsHasGml(int code);
     private static native int groupsig_gsSetup(int code,
     					       long grpKeyPtr,
     					       long mgrKeyPtr,
-    					       long gmlPtr,
-    					       long cfgPtr);
+    					       long gmlPtr);
     private static native int groupsig_gsGetJoinSeq(int code);
     private static native int groupsig_gsGetJoinStart(int code);
     private static native long groupsig_gsJoinMem(long memKeyPtr,
@@ -631,6 +620,10 @@ public class BBS04 implements GS {
 					      long grpKeyPtr,
 					      long mgrKeyPtr,
 					      long gmlPtr);
+    private static native boolean groupsig_gsOpenVerify(long idPtr,
+							long proofPtr,
+							long sigPtr,
+							long grpKeyPtr);    
     private static native int groupsig_gsBlind(long bSigPtr,
     					       long bldKeyPtr,
     					       long grpKeyPtr,

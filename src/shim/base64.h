@@ -24,15 +24,17 @@
 #include "types.h"
 
 /** 
- * @fn char* base64_encode(const byte_t *in, uint64_t length)
+ * @fn char* base64_encode(const byte_t *in, uint64_t length, uint8_t nl)
  * @brief Base64-encodes the specified byte array.
  *
  * @param[in] in The byte array to encode.
  * @param[in] length The number of bytes in <i>in</i>.
+ * @param[in] nl If 0, no line feeds will be added every 72 chars nor
+ *  at the end of the resulting string. Else, they will.
  * 
  * @return A pointer to the resulting Base64 string, or NULL if error.
  */
-char* base64_encode(const byte_t *in, uint64_t length);
+char* base64_encode(const byte_t *in, uint64_t length, uint8_t nl);
 
 /** 
  * @fn byte_t* base64_decode(const char *in, uint64_t *length_dec)

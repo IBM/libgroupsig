@@ -27,7 +27,7 @@ def init(scheme, seed=0):
 
     return
 
-def clear(scheme, config):
+def clear(scheme):
     """
     Clears any system wide variables used to manage group signature schemes of 
     the given type and the configuration options that some schemes may have. 
@@ -39,7 +39,7 @@ def clear(scheme, config):
         void. On error, an Exception is thrown.
     """    
 
-    if lib.groupsig_clear(scheme, config) == lib.IERROR:
+    if lib.groupsig_clear(scheme) == lib.IERROR:
         raise Exception('Error clearing groupsig environment.')
 
     return
@@ -74,16 +74,16 @@ def setup(scheme, grpkey=ffi.NULL, seed=0):
         _grpkey = grpkey
     mgrkey = lib.groupsig_mgr_key_init(scheme)
     gml = lib.gml_init(scheme)
-    config = lib.groupsig_init(scheme, seed)
+    if lib.groupsig_init(scheme, seed) == lib.IERROR:
+        raise Exception('Error initializing scheme ' + scheme)
     
-    if lib.groupsig_setup(scheme, _grpkey, mgrkey, gml, config) == lib.IERROR:
+    if lib.groupsig_setup(scheme, _grpkey, mgrkey, gml) == lib.IERROR:
         raise Exception('Error setting up scheme ' + scheme)
 
     return {
         'grpkey': _grpkey,
         'mgrkey': mgrkey,
-        'gml': gml,
-        'config': config
+        'gml': gml
     }
 
 def get_joinseq(scheme):
@@ -238,7 +238,7 @@ def verify(sig, msg, grpkey):
         if _b[0] == 0:
             return False
 
-def open(sig, mgrkey, grpkey, gml=ffi.NULL, crl=ffi.NULL, proof=ffi.NULL):
+def open(sig, mgrkey, grpkey, gml=ffi.NULL, crl=ffi.NULL):
     """
     Opens a group signature, in schemes that support it.
     Optional parameters may be ignored in some schemes.
@@ -249,18 +249,33 @@ def open(sig, mgrkey, grpkey, gml=ffi.NULL, crl=ffi.NULL, proof=ffi.NULL):
         grpkey: The group key.
         gml: Optional. The GML.
         crl: Optional. The CRL (Certificate Revocation List).
-        proof: DO NOT USE. WILL BE REMOVED.
     Returns:
         A native object representing the identity of the signer. On error,
         an exception is thrown.
     """
     
     identity = lib.identity_init(sig.scheme)
+    proof = lib.groupsig_proof_init(sig.scheme)
 
     if lib.groupsig_open(identity, proof, crl, sig, grpkey, mgrkey, gml) == lib.IERROR:
         raise Exception('Error opening signature')
 
-    return identity
+    return  {
+        'identity': identity,
+        'proof': proof
+    }
+
+def open_verify(proof, sig, grpkey, identity=ffi.NULL):
+
+    _b = ffi.new("uint8_t *")
+    
+    if lib.groupsig_open_verify(_b, identity, proof, sig, grpkey) == lib.IERROR:
+        raise Exception('Error verifying open proof')
+    else:
+        if _b[0] == 1:
+            return True
+        if _b[0] == 0:
+            return False
 
 def blind(grpkey, sig, msg, bldkey=ffi.NULL):
     """

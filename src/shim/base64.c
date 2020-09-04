@@ -23,12 +23,13 @@ static const unsigned char base64_table[65] =
  * base64_encode - Base64 encode
  * @src: Data to be encoded. Must be a 0-ended string.
  * @len: Length of the data to be encoded
+ * @nl: If 0, no '\n' chars will be added each 72 chars nor at the end.
  *
  * Caller is responsible for freeing the returned buffer. Returned buffer is
  * nul terminated to make it easier to use as a C string. The nul terminator is
  * not included in out_len.
  */
-char * base64_encode(const byte_t *src, uint64_t len) {
+char * base64_encode(const byte_t *src, uint64_t len, uint8_t nl) {
 
   char *out, *pos;
   const byte_t *end, *in;
@@ -40,7 +41,7 @@ char * base64_encode(const byte_t *src, uint64_t len) {
   }
 
   olen = len * 4 / 3 + 4; /* 3-byte blocks to 4-byte */
-  olen += olen / 72; /* line feeds */
+  if(nl) olen += olen / 72; /* line feeds */
   olen++; /* nul termination */
   if (olen < len)
     return NULL; /* integer overflow */
@@ -59,7 +60,7 @@ char * base64_encode(const byte_t *src, uint64_t len) {
     *pos++ = base64_table[in[2] & 0x3f];
     in += 3;
     line_len += 4;
-    if (line_len >= 72) {
+    if (line_len >= 72 && nl) {
       *pos++ = '\n';
       line_len = 0;
     }
@@ -79,7 +80,7 @@ char * base64_encode(const byte_t *src, uint64_t len) {
     line_len += 4;
   }
 
-  if (line_len)
+  if (line_len && nl)
     *pos++ = '\n';
 
   *pos = '\0';
