@@ -68,7 +68,9 @@ int bbs04_join_mgr(message_t **mout, gml_t *gml,
   bbs04_mgrkey = (bbs04_mgr_key_t *) mgrkey->key;
   bbs04_grpkey = (bbs04_grp_key_t *) grpkey->key;
   rc = IOK;
+  bkey = NULL;
   gammax = NULL;
+  memkey = NULL;
   
   if(!(memkey = bbs04_mem_key_init())) GOTOENDRC(IERROR, bbs04_join_mgr);
   bbs04_memkey = (bbs04_mem_key_t *) memkey->key;
@@ -105,7 +107,9 @@ int bbs04_join_mgr(message_t **mout, gml_t *gml,
   /* Initialize the GML entry */
   if(!(bbs04_entry = bbs04_gml_entry_init()))
     GOTOENDRC(IERROR, bbs04_join_mgr);
-    
+
+  if(!(bbs04_entry->trapdoor = trapdoor_init(GROUPSIG_BBS04_CODE)))
+    GOTOENDRC(IERROR, bbs04_join_mgr);
   bbs04_trap = (bbs04_trapdoor_t *) bbs04_entry->trapdoor->trap;
   if(!(bbs04_trap->open = pbcext_element_G1_init()))
     GOTOENDRC(IERROR, bbs04_join_mgr);
@@ -113,6 +117,8 @@ int bbs04_join_mgr(message_t **mout, gml_t *gml,
     GOTOENDRC(IERROR, bbs04_join_mgr);
   
   /* Currently, BBS04 identities are just uint64_t's */
+  if(!(bbs04_entry->id = identity_init(GROUPSIG_BBS04_CODE)))
+    GOTOENDRC(IERROR, bbs04_join_mgr);
   *(bbs04_identity_t *) bbs04_entry->id->id = gml->n;
   
   if(gml_insert(gml, bbs04_entry) == IERROR) GOTOENDRC(IERROR, bbs04_join_mgr);
@@ -136,7 +142,9 @@ int bbs04_join_mgr(message_t **mout, gml_t *gml,
   
  bbs04_join_mgr_end:
 
-  if(gammax) { pbcext_element_Fr_clear(gammax); gammax = NULL; }
+  if (gammax) { pbcext_element_Fr_free(gammax); gammax = NULL; }
+  if (memkey) { bbs04_mem_key_free(memkey); memkey = NULL; }
+  if (bkey) { mem_free(bkey); bkey = NULL; }
   if (rc == IERROR) { bbs04_gml_entry_free(bbs04_entry); bbs04_entry = NULL; }
   
   return rc;

@@ -351,6 +351,8 @@ namespace groupsig {
 
     rc = identity_free(id);
     EXPECT_EQ(rc, IOK);
+
+    free(str); str = nullptr;
     
   }  
 
@@ -711,6 +713,9 @@ namespace groupsig {
     /* Import */
     imported = gml_import(GROUPSIG_BBS04_CODE, GML_FILE, (void *) "gml");
     EXPECT_NE(imported, nullptr);
+
+    rc = gml_free(imported);
+    EXPECT_NE(rc, IERROR);    
     
   }  
   

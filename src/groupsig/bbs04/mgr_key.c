@@ -69,9 +69,9 @@ int bbs04_mgr_key_free(groupsig_key_t *key) {
 
   if(key->key) {
     bbs04_key = key->key;
-    if(bbs04_key->xi1) { pbcext_element_Fr_clear(bbs04_key->xi1); bbs04_key->xi1 = NULL; }
-    if(bbs04_key->xi2) { pbcext_element_Fr_clear(bbs04_key->xi2); bbs04_key->xi2 = NULL; }
-    if(bbs04_key->gamma) { pbcext_element_Fr_clear(bbs04_key->gamma); bbs04_key->gamma = NULL; }
+    if(bbs04_key->xi1) { pbcext_element_Fr_free(bbs04_key->xi1); bbs04_key->xi1 = NULL; }
+    if(bbs04_key->xi2) { pbcext_element_Fr_free(bbs04_key->xi2); bbs04_key->xi2 = NULL; }
+    if(bbs04_key->gamma) { pbcext_element_Fr_free(bbs04_key->gamma); bbs04_key->gamma = NULL; }
     mem_free(key->key); key->key = NULL;
   }
   
@@ -113,9 +113,9 @@ int bbs04_mgr_key_copy(groupsig_key_t *dst, groupsig_key_t *src) {
  bbs04_mgr_key_copy_end:
 
   if(rc == IERROR) {
-    if (bbs04_dst->xi1) { pbcext_element_Fr_clear(bbs04_dst->xi1); bbs04_dst->xi1 = NULL; }
-    if (bbs04_dst->xi2) { pbcext_element_Fr_clear(bbs04_dst->xi2); bbs04_dst->xi2 = NULL; }
-    if (bbs04_dst->gamma) { pbcext_element_Fr_clear(bbs04_dst->gamma); bbs04_dst->gamma = NULL; }
+    if (bbs04_dst->xi1) { pbcext_element_Fr_free(bbs04_dst->xi1); bbs04_dst->xi1 = NULL; }
+    if (bbs04_dst->xi2) { pbcext_element_Fr_free(bbs04_dst->xi2); bbs04_dst->xi2 = NULL; }
+    if (bbs04_dst->gamma) { pbcext_element_Fr_free(bbs04_dst->gamma); bbs04_dst->gamma = NULL; }
   }
 
   return rc;

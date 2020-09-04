@@ -64,7 +64,7 @@ int bbs04_trapdoor_free(trapdoor_t *trap) {
   
   if(trap->trap) {
     bbs04_trap = trap->trap;
-    pbcext_element_G1_clear(bbs04_trap->open);
+    pbcext_element_G1_free(bbs04_trap->open);
     mem_free(bbs04_trap); bbs04_trap = NULL;
   }
   
@@ -87,7 +87,7 @@ int bbs04_trapdoor_copy(trapdoor_t *dst, trapdoor_t *src) {
 
   if(pbcext_element_G1_set(((bbs04_trapdoor_t *) dst->trap)->open, 
 			   ((bbs04_trapdoor_t *) src->trap)->open) == IERROR) {
-    pbcext_element_G1_clear(((bbs04_trapdoor_t *) dst->trap)->open);
+    pbcext_element_G1_free(((bbs04_trapdoor_t *) dst->trap)->open);
     ((bbs04_trapdoor_t *) dst->trap)->open = NULL;
     return IERROR;
   }
