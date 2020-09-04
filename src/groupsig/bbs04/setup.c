@@ -135,7 +135,7 @@ int bbs04_setup(groupsig_key_t *grpkey,
 
  bbs04_setup_end:
 
-  if(inv) { pbcext_element_Fr_clear(inv); inv = NULL; }
+  if(inv) { pbcext_element_Fr_free(inv); inv = NULL; }
 
   return rc;
 

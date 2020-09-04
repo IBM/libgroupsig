@@ -284,17 +284,8 @@ bbs04_gml_entry_t* bbs04_gml_entry_init() {
     return NULL;
   }
 
-  if(!(entry->id = identity_init(GROUPSIG_BBS04_CODE))) {
-    identity_free(entry->id); entry->id = NULL;
-    mem_free(entry); entry = NULL;
-    return NULL;
-  }
-
-  if(!(entry->trapdoor = trapdoor_init(GROUPSIG_BBS04_CODE))) {
-    identity_free(entry->id); entry->id = NULL;
-    mem_free(entry); entry = NULL;
-    return NULL;
-  }
+  entry->trapdoor = NULL;
+  entry->id = NULL;
   
   return entry;
 

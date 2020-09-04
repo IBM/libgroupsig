@@ -326,28 +326,28 @@ int bbs04_sign(groupsig_signature_t *sig, message_t *msg, groupsig_key_t *memkey
   /* pbcext_element_G1_t *aux_G1; */
   /* pbcext_element_GT_t  *aux_e1, *aux_e2, *aux_e3, *aux_o1; */
   
-  if(R1) { pbcext_element_G1_clear(R1); R1 = NULL; }
-  if(R2) { pbcext_element_G1_clear(R2); R2 = NULL; }
-  if(R3) { pbcext_element_GT_clear(R3); R3 = NULL; }
-  if(R4) { pbcext_element_G1_clear(R4); R4 = NULL; }
-  if(R5) { pbcext_element_G1_clear(R5); R5 = NULL; } 
-  if(alpha) { pbcext_element_Fr_clear(alpha); alpha = NULL; }
-  if(beta) { pbcext_element_Fr_clear(beta); beta = NULL; }
-  if(delta1) { pbcext_element_Fr_clear(delta1); delta1 = NULL; }
-  if(delta2) { pbcext_element_Fr_clear(delta2); delta2 = NULL; }
-  if(ralpha) { pbcext_element_Fr_clear(ralpha); ralpha = NULL; }
-  if(rbeta) { pbcext_element_Fr_clear(rbeta); rbeta = NULL; }
-  if(rx) { pbcext_element_Fr_clear(rx); rx = NULL; }
-  if(rdelta1) { pbcext_element_Fr_clear(rdelta1); rdelta1 = NULL; }
-  if(rdelta2) { pbcext_element_Fr_clear(rdelta2); rdelta2 = NULL; }
-  if(alphabeta) { pbcext_element_Fr_clear(alphabeta); alphabeta = NULL; }
-  if(aux_Fr) { pbcext_element_Fr_clear(aux_Fr); aux_Fr = NULL; }
-  if(R4) { pbcext_element_G1_clear(R4); R4 = NULL; }
-  if(aux_G1) { pbcext_element_G1_clear(aux_G1); aux_G1 = NULL; }
-  if(aux_e1) { pbcext_element_GT_clear(aux_e1); aux_e1 = NULL; }
-  if(aux_e2) { pbcext_element_GT_clear(aux_e2); aux_e2 = NULL; }
-  if(aux_e3) { pbcext_element_GT_clear(aux_e3); aux_e3 = NULL; }
-  if(aux_o1) { pbcext_element_GT_clear(aux_o1); aux_o1 = NULL; }
+  if(R1) { pbcext_element_G1_free(R1); R1 = NULL; }
+  if(R2) { pbcext_element_G1_free(R2); R2 = NULL; }
+  if(R3) { pbcext_element_GT_free(R3); R3 = NULL; }
+  if(R4) { pbcext_element_G1_free(R4); R4 = NULL; }
+  if(R5) { pbcext_element_G1_free(R5); R5 = NULL; } 
+  if(alpha) { pbcext_element_Fr_free(alpha); alpha = NULL; }
+  if(beta) { pbcext_element_Fr_free(beta); beta = NULL; }
+  if(delta1) { pbcext_element_Fr_free(delta1); delta1 = NULL; }
+  if(delta2) { pbcext_element_Fr_free(delta2); delta2 = NULL; }
+  if(ralpha) { pbcext_element_Fr_free(ralpha); ralpha = NULL; }
+  if(rbeta) { pbcext_element_Fr_free(rbeta); rbeta = NULL; }
+  if(rx) { pbcext_element_Fr_free(rx); rx = NULL; }
+  if(rdelta1) { pbcext_element_Fr_free(rdelta1); rdelta1 = NULL; }
+  if(rdelta2) { pbcext_element_Fr_free(rdelta2); rdelta2 = NULL; }
+  if(alphabeta) { pbcext_element_Fr_free(alphabeta); alphabeta = NULL; }
+  if(aux_Fr) { pbcext_element_Fr_free(aux_Fr); aux_Fr = NULL; }
+  if(R4) { pbcext_element_G1_free(R4); R4 = NULL; }
+  if(aux_G1) { pbcext_element_G1_free(aux_G1); aux_G1 = NULL; }
+  if(aux_e1) { pbcext_element_GT_free(aux_e1); aux_e1 = NULL; }
+  if(aux_e2) { pbcext_element_GT_free(aux_e2); aux_e2 = NULL; }
+  if(aux_e3) { pbcext_element_GT_free(aux_e3); aux_e3 = NULL; }
+  if(aux_o1) { pbcext_element_GT_free(aux_o1); aux_o1 = NULL; }
 
   if(aux_bytes) { mem_free(aux_bytes); aux_bytes = NULL; }
   if(aux_c) { hash_free(aux_c); aux_c = NULL; }

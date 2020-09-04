@@ -119,8 +119,8 @@ int bbs04_open(identity_t *id, groupsig_proof_t *proof,
 
  bbs04_open_end:
 
-  if(A) { pbcext_element_G1_clear(A); A = NULL; }
-  if(aux) { pbcext_element_G1_clear(aux); aux = NULL; }
+  if(A) { pbcext_element_G1_free(A); A = NULL; }
+  if(aux) { pbcext_element_G1_free(aux); aux = NULL; }
 
   return rc;
   

@@ -252,20 +252,20 @@ int bbs04_verify(uint8_t *ok,
   if(aux_bytes) { mem_free(aux_bytes); aux_bytes = NULL; }
   if(aux_c) { hash_free(aux_c); aux_c = NULL; }
 
-  if(R1) { pbcext_element_G1_clear(R1); R1 = NULL; }
-  if(R2) { pbcext_element_G1_clear(R2); R2 = NULL; }
-  if(R4) { pbcext_element_G1_clear(R4); R4 = NULL; }
-  if(R5) { pbcext_element_G1_clear(R5); R5 = NULL; }
-  if(aux_G1) { pbcext_element_G1_clear(aux_G1); aux_G1 = NULL; }
-  if(aux_e5) { pbcext_element_G2_clear(aux_e5); aux_e5 = NULL; }
-  if(aux_G2) { pbcext_element_G2_clear(aux_G2); aux_G2 = NULL; }
-  if(R3) { pbcext_element_GT_clear(R3); R3 = NULL; }
-  if(aux_e1) { pbcext_element_GT_clear(aux_e1); aux_e1 = NULL; }
-  if(aux_e2) { pbcext_element_GT_clear(aux_e2); aux_e2 = NULL; }
-  if(aux_e3) { pbcext_element_GT_clear(aux_e3); aux_e3 = NULL; }
-  if(aux_e4) { pbcext_element_GT_clear(aux_e4); aux_e4 = NULL; }
-  if(c) { pbcext_element_Fr_clear(c); c = NULL; }
-  if(aux_neg) { pbcext_element_Fr_clear(aux_neg); aux_neg = NULL; }
+  if(R1) { pbcext_element_G1_free(R1); R1 = NULL; }
+  if(R2) { pbcext_element_G1_free(R2); R2 = NULL; }
+  if(R4) { pbcext_element_G1_free(R4); R4 = NULL; }
+  if(R5) { pbcext_element_G1_free(R5); R5 = NULL; }
+  if(aux_G1) { pbcext_element_G1_free(aux_G1); aux_G1 = NULL; }
+  if(aux_e5) { pbcext_element_G2_free(aux_e5); aux_e5 = NULL; }
+  if(aux_G2) { pbcext_element_G2_free(aux_G2); aux_G2 = NULL; }
+  if(R3) { pbcext_element_GT_free(R3); R3 = NULL; }
+  if(aux_e1) { pbcext_element_GT_free(aux_e1); aux_e1 = NULL; }
+  if(aux_e2) { pbcext_element_GT_free(aux_e2); aux_e2 = NULL; }
+  if(aux_e3) { pbcext_element_GT_free(aux_e3); aux_e3 = NULL; }
+  if(aux_e4) { pbcext_element_GT_free(aux_e4); aux_e4 = NULL; }
+  if(c) { pbcext_element_Fr_free(c); c = NULL; }
+  if(aux_neg) { pbcext_element_Fr_free(aux_neg); aux_neg = NULL; }
 
   return rc;
 
