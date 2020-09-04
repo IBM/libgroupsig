@@ -42,6 +42,3 @@ cmake in the prevous sequence of commands.)
 Tests can alternatively be run with `ctest` from the build directory, or with
 `ctest -T memcheck` to check memory-related bugs.
 
-As a result, a `coverage.html` file will be created. You can open it in any web 
-browser.
-
