@@ -124,28 +124,28 @@ int ps16_sign(groupsig_signature_t *sig, message_t *msg, groupsig_key_t *memkey,
 
  ps16_sign_end:
 
-  if (k) { pbcext_element_Fr_clear(k); k = NULL; }
-  if (t) { pbcext_element_Fr_clear(t); t = NULL; }
-  if (e) { pbcext_element_GT_clear(e); e = NULL; }
+  if (k) { pbcext_element_Fr_free(k); k = NULL; }
+  if (t) { pbcext_element_Fr_free(t); t = NULL; }
+  if (e) { pbcext_element_GT_free(e); e = NULL; }
   if (aux_c) { hash_free(aux_c); aux_c = NULL; }
   if (aux_bytes) { mem_free(aux_bytes); aux_bytes = NULL; }
 
   if (rc == IERROR) {
     
     if (ps16_sig->c) {
-      pbcext_element_Fr_clear(ps16_sig->c);
+      pbcext_element_Fr_free(ps16_sig->c);
       ps16_sig->c = NULL;
     }
     if (ps16_sig->s) {
-      pbcext_element_Fr_clear(ps16_sig->s);
+      pbcext_element_Fr_free(ps16_sig->s);
       ps16_sig->s = NULL;
     }
     if (ps16_sig->sigma1) {
-      pbcext_element_G1_clear(ps16_sig->sigma1);
+      pbcext_element_G1_free(ps16_sig->sigma1);
       ps16_sig->sigma1 = NULL;
     }
     if (ps16_sig->sigma2) {
-      pbcext_element_G1_clear(ps16_sig->sigma2);
+      pbcext_element_G1_free(ps16_sig->sigma2);
       ps16_sig->sigma2 = NULL;
     }
     

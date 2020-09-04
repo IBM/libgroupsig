@@ -164,23 +164,23 @@ int ps16_join_mem(message_t **mout, groupsig_key_t *memkey,
   if (rc == IERROR) {
     if (seq == 1) {
       if (ps16_memkey->sk) {
-	pbcext_element_Fr_clear(ps16_memkey->sk);
+	pbcext_element_Fr_free(ps16_memkey->sk);
 	ps16_memkey->sk = NULL;
       }
-      if (n) { pbcext_element_G1_clear(n); n = NULL; }
-      if (tau) { pbcext_element_G1_clear(tau); tau = NULL; }
-      if (ttau) { pbcext_element_G2_clear(ttau); ttau = NULL; }
-      if (bn) {	mem_free(bn); bn = NULL; }      
-      if (btau) { mem_free(btau); btau = NULL; }
-      if (bttau) { mem_free(bttau); bttau = NULL; }
-      if (bpi) { mem_free(bpi); bpi = NULL; }
-      if (bmsg) { mem_free(bmsg); bmsg = NULL; }
     }
   }
 
   if (_ps16_memkey) { ps16_mem_key_free(_ps16_memkey); _ps16_memkey = NULL; }
   if (pi) { spk_dlog_free(pi); pi = NULL; }
-  
+  if (n) { pbcext_element_G1_free(n); n = NULL; }
+  if (tau) { pbcext_element_G1_free(tau); tau = NULL; }
+  if (ttau) { pbcext_element_G2_free(ttau); ttau = NULL; }
+  if (bn) {	mem_free(bn); bn = NULL; }      
+  if (btau) { mem_free(btau); btau = NULL; }
+  if (bttau) { mem_free(bttau); bttau = NULL; }
+  if (bpi) { mem_free(bpi); bpi = NULL; }
+  if (bmsg) { mem_free(bmsg); bmsg = NULL; }
+    
   return rc;
 
 }

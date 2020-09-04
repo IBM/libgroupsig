@@ -82,7 +82,7 @@ int ps16_proof_get_size(groupsig_proof_t *proof) {
   if ((proof_len = spk_pairing_homomorphism_G2_get_size(ps16_proof)) == -1)
     return -1;
 
-  size = proof_len + sizeof(int)*1 + 1;
+  size = proof_len + /* sizeof(int)*1 */ + 1;
 
   if (size > INT_MAX) return -1;
   
@@ -97,7 +97,7 @@ int ps16_proof_export(byte_t **bytes, uint32_t *size, groupsig_proof_t *proof) {
   int rc, _size;
   uint64_t proof_len;
   uint8_t code;
-  
+
   if(!proof || proof->scheme != GROUPSIG_PS16_CODE) {
     LOG_EINVAL(&logger, __FILE__, "ps16_proof_export", __LINE__, LOGERROR);
     return IERROR;
@@ -113,13 +113,14 @@ int ps16_proof_export(byte_t **bytes, uint32_t *size, groupsig_proof_t *proof) {
   if (!(_bytes = mem_malloc(sizeof(byte_t)*_size))) {
     return IERROR;
   }  
-  
+
   /* Dump GROUPSIG_PS16_CODE */
   code = GROUPSIG_PS16_CODE;
   _bytes[0] = code;
 
   /* Export the SPK */
   __bytes = &_bytes[1];
+
   if (spk_pairing_homomorphism_G2_export(&__bytes,
 					 &proof_len,
 					 ps16_proof) == IERROR)
@@ -127,11 +128,11 @@ int ps16_proof_export(byte_t **bytes, uint32_t *size, groupsig_proof_t *proof) {
 
   /* Sanity check */
   if (_size != proof_len+1) {
-    LOG_ERRORCODE_MSG(&logger, __FILE__, "ps16_proof_export", __LINE__, 
-		      EDQUOT, "Unexpected size.", LOGERROR);
+    LOG_ERRORCODE_MSG(&logger, __FILE__, "ps16_proof_export", __LINE__,
+  		      EDQUOT, "Unexpected size.", LOGERROR);
     GOTOENDRC(IERROR, ps16_proof_export);
   }
-  
+
   /* Prepare the return */
   if(!*bytes) {
     *bytes = _bytes;
@@ -151,7 +152,6 @@ int ps16_proof_export(byte_t **bytes, uint32_t *size, groupsig_proof_t *proof) {
 groupsig_proof_t* ps16_proof_import(byte_t *source, uint32_t size) {
 
   groupsig_proof_t *proof;
-  ps16_proof_t *ps16_proof;
   uint64_t proof_len;
   int rc;
   uint8_t scheme;
@@ -167,8 +167,6 @@ groupsig_proof_t* ps16_proof_import(byte_t *source, uint32_t size) {
     return NULL;
   }
 
-  ps16_proof = proof->proof;
-  
   /* First byte: scheme */
   scheme = source[0];
   if (scheme != proof->scheme) {
@@ -177,7 +175,7 @@ groupsig_proof_t* ps16_proof_import(byte_t *source, uint32_t size) {
     GOTOENDRC(IERROR, ps16_proof_import);
   }
 
-  if (!(ps16_proof = spk_pairing_homomorphism_G2_import(&source[1],
+  if (!(proof->proof = spk_pairing_homomorphism_G2_import(&source[1],
 							&proof_len)))
     GOTOENDRC(IERROR, ps16_proof_import);
   

@@ -52,7 +52,7 @@ public class Proof {
 	       Exception
     {
 	byte[] b = Base64.getMimeDecoder().decode(str);
-	this.ptr = groupsig_proofImport(code, b, b.length); 
+	this.ptr = groupsig_proofImport(code, b, b.length);
 	this.code = code;
     }    
 

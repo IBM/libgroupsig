@@ -285,11 +285,7 @@ ps16_gml_entry_t* ps16_gml_entry_init() {
     return NULL;
   }
 
-  if(!(entry->id = identity_init(GROUPSIG_PS16_CODE))) {
-    identity_free(entry->id); entry->id = NULL;
-    mem_free(entry); entry = NULL;
-    return NULL;
-  }
+  entry->id = NULL;
   
   return entry;
 
@@ -305,8 +301,8 @@ int ps16_gml_entry_free(ps16_gml_entry_t *entry) {
   }
 
   if(entry->id) { identity_free(entry->id); entry->id = NULL; }
-  if(entry->tau) { pbcext_element_G1_clear(entry->tau); entry->tau = NULL; }
-  if(entry->ttau) { pbcext_element_G2_clear(entry->ttau); entry->ttau = NULL; }
+  if(entry->tau) { pbcext_element_G1_free(entry->tau); entry->tau = NULL; }
+  if(entry->ttau) { pbcext_element_G2_free(entry->ttau); entry->ttau = NULL; }
   mem_free(entry); entry = NULL;
   
   return IOK;

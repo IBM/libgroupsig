@@ -90,11 +90,11 @@ int ps16_setup(groupsig_key_t *grpkey,
  ps16_setup_end:
 
   if (rc == IERROR) {
-    if (mkey->x) { pbcext_element_Fr_clear(mkey->x); mkey->x = NULL; }
-    if (gkey->g) { pbcext_element_G1_clear(gkey->g); gkey->g = NULL; }
-    if (gkey->g) { pbcext_element_G2_clear(gkey->gg); gkey->gg = NULL; }
-    if (gkey->X) { pbcext_element_G2_clear(gkey->X); gkey->X = NULL; }
-    if (gkey->Y) { pbcext_element_G2_clear(gkey->Y); gkey->Y = NULL; }    
+    if (mkey->x) { pbcext_element_Fr_free(mkey->x); mkey->x = NULL; }
+    if (gkey->g) { pbcext_element_G1_free(gkey->g); gkey->g = NULL; }
+    if (gkey->g) { pbcext_element_G2_free(gkey->gg); gkey->gg = NULL; }
+    if (gkey->X) { pbcext_element_G2_free(gkey->X); gkey->X = NULL; }
+    if (gkey->Y) { pbcext_element_G2_free(gkey->Y); gkey->Y = NULL; }    
   }
 
   return rc;

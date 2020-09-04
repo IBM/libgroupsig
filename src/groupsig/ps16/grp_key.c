@@ -72,10 +72,10 @@ int ps16_grp_key_free(groupsig_key_t *key) {
 
   if(key->key) {
     ps16_key = key->key;
-    if(ps16_key->g) { pbcext_element_G1_clear(ps16_key->g); ps16_key->g = NULL; }
-    if(ps16_key->gg) { pbcext_element_G2_clear(ps16_key->gg); ps16_key->gg = NULL; }
-    if(ps16_key->X) { pbcext_element_G2_clear(ps16_key->X); ps16_key->X = NULL; }
-    if(ps16_key->Y) { pbcext_element_G2_clear(ps16_key->Y); ps16_key->Y = NULL; }
+    if(ps16_key->g) { pbcext_element_G1_free(ps16_key->g); ps16_key->g = NULL; }
+    if(ps16_key->gg) { pbcext_element_G2_free(ps16_key->gg); ps16_key->gg = NULL; }
+    if(ps16_key->X) { pbcext_element_G2_free(ps16_key->X); ps16_key->X = NULL; }
+    if(ps16_key->Y) { pbcext_element_G2_free(ps16_key->Y); ps16_key->Y = NULL; }
     mem_free(key->key); key->key = NULL;
   }
 
@@ -121,10 +121,10 @@ int ps16_grp_key_copy(groupsig_key_t *dst, groupsig_key_t *src) {
  ps16_grp_key_copy_end:
 
   if(rc == IERROR) {
-    if (ps16_dst->g) { pbcext_element_G1_clear(ps16_dst->g); ps16_dst->g = NULL; }
-    if (ps16_dst->gg) { pbcext_element_G2_clear(ps16_dst->gg); ps16_dst->gg = NULL; }
-    if (ps16_dst->X) { pbcext_element_G2_clear(ps16_dst->X); ps16_dst->X = NULL; }
-    if (ps16_dst->Y) { pbcext_element_G2_clear(ps16_dst->Y); ps16_dst->Y = NULL; }
+    if (ps16_dst->g) { pbcext_element_G1_free(ps16_dst->g); ps16_dst->g = NULL; }
+    if (ps16_dst->gg) { pbcext_element_G2_free(ps16_dst->gg); ps16_dst->gg = NULL; }
+    if (ps16_dst->X) { pbcext_element_G2_free(ps16_dst->X); ps16_dst->X = NULL; }
+    if (ps16_dst->Y) { pbcext_element_G2_free(ps16_dst->Y); ps16_dst->Y = NULL; }
   }
   
   return rc;

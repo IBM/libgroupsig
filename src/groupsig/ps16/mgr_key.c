@@ -69,8 +69,8 @@ int ps16_mgr_key_free(groupsig_key_t *key) {
 
   if(key->key) {
     ps16_key = key->key;
-    if(ps16_key->x) { pbcext_element_Fr_clear(ps16_key->x); ps16_key->x = NULL; }
-    if(ps16_key->y) { pbcext_element_Fr_clear(ps16_key->y); ps16_key->y = NULL; }
+    if(ps16_key->x) { pbcext_element_Fr_free(ps16_key->x); ps16_key->x = NULL; }
+    if(ps16_key->y) { pbcext_element_Fr_free(ps16_key->y); ps16_key->y = NULL; }
     mem_free(key->key); key->key = NULL;
   }
   
@@ -108,8 +108,8 @@ int ps16_mgr_key_copy(groupsig_key_t *dst, groupsig_key_t *src) {
  ps16_mgr_key_copy_end:
 
   if(rc == IERROR) {
-    if (ps16_dst->x) { pbcext_element_Fr_clear(ps16_dst->x); ps16_dst->x = NULL; }
-    if (ps16_dst->y) { pbcext_element_Fr_clear(ps16_dst->y); ps16_dst->y = NULL; }
+    if (ps16_dst->x) { pbcext_element_Fr_free(ps16_dst->x); ps16_dst->x = NULL; }
+    if (ps16_dst->y) { pbcext_element_Fr_free(ps16_dst->y); ps16_dst->y = NULL; }
   }
 
   return rc;

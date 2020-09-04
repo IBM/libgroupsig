@@ -60,7 +60,7 @@ int ps16_open_verify(uint8_t *ok,
   ps16_proof = proof->proof;
   rc = IOK;
   e1 = e2 = NULL;
-  
+
   if (!(e1 = pbcext_element_GT_init())) GOTOENDRC(IERROR, ps16_open_verify);
   if (pbcext_pairing(e1, ps16_sig->sigma2, ps16_grpkey->gg) == IERROR)
     GOTOENDRC(IERROR, ps16_open_verify);
@@ -86,10 +86,10 @@ int ps16_open_verify(uint8_t *ok,
 
  ps16_open_verify_end:
 
-  if (e1) { pbcext_element_GT_clear(e1); e1 = NULL; }
-  if (e2) { pbcext_element_GT_clear(e2); e2 = NULL; }
+  if (e1) { pbcext_element_GT_free(e1); e1 = NULL; }
+  if (e2) { pbcext_element_GT_free(e2); e2 = NULL; }
   if (bsig) { mem_free(bsig); bsig = NULL; }
-  
+
   return rc;
   
 }

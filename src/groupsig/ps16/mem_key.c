@@ -78,19 +78,19 @@ int ps16_mem_key_free(groupsig_key_t *key) {
   if(key->key) {
     ps16_key = key->key;
     if(ps16_key->sk) {
-      pbcext_element_Fr_clear(ps16_key->sk);
+      pbcext_element_Fr_free(ps16_key->sk);
       ps16_key->sk = NULL;
     }
     if(ps16_key->sigma1) {
-      pbcext_element_G1_clear(ps16_key->sigma1);
+      pbcext_element_G1_free(ps16_key->sigma1);
       ps16_key->sigma1 = NULL;
     }
     if(ps16_key->sigma2) {
-      pbcext_element_G1_clear(ps16_key->sigma2);
+      pbcext_element_G1_free(ps16_key->sigma2);
       ps16_key->sigma2 = NULL;
     }
     if(ps16_key->e) {
-      pbcext_element_GT_clear(ps16_key->e);
+      pbcext_element_GT_free(ps16_key->e);
       ps16_key->e = NULL;
     }
     mem_free(key->key); key->key = NULL;
@@ -151,19 +151,19 @@ int ps16_mem_key_copy(groupsig_key_t *dst, groupsig_key_t *src) {
 
   if(rc == IERROR) {
     if(ps16_dst->sk) {
-      pbcext_element_Fr_clear(ps16_dst->sk);
+      pbcext_element_Fr_free(ps16_dst->sk);
       ps16_dst->sk = NULL;
     }
     if(ps16_dst->sigma1) {
-      pbcext_element_G1_clear(ps16_dst->sigma1);
+      pbcext_element_G1_free(ps16_dst->sigma1);
       ps16_dst->sigma1 = NULL;
     }
     if(ps16_dst->sigma2) {
-      pbcext_element_G1_clear(ps16_dst->sigma2);
+      pbcext_element_G1_free(ps16_dst->sigma2);
       ps16_dst->sigma2 = NULL;
     }
     if(ps16_dst->e) {
-      pbcext_element_GT_clear(ps16_dst->e);
+      pbcext_element_GT_free(ps16_dst->e);
       ps16_dst->e = NULL;
     }
   }
@@ -198,8 +198,8 @@ int ps16_mem_key_get_size(groupsig_key_t *key) {
 }
 
 int ps16_mem_key_export(byte_t **bytes,
-			 uint32_t *size,
-			 groupsig_key_t *key) {
+			uint32_t *size,
+			groupsig_key_t *key) {
 
   ps16_mem_key_t *ps16_key;
   byte_t *_bytes, *__bytes;

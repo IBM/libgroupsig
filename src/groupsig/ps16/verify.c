@@ -125,11 +125,11 @@ int ps16_verify(uint8_t *ok,
 
  ps16_verify_end:
 
-  if (c) { pbcext_element_Fr_clear(c); c = NULL; }
-  if (aux_G1) { pbcext_element_G1_clear(aux_G1); aux_G1 = NULL; }
-  if (e1) { pbcext_element_GT_clear(e1); e1 = NULL; }
-  if (e2) { pbcext_element_GT_clear(e2); e2 = NULL; }
-  if (e3) { pbcext_element_GT_clear(e3); e3 = NULL; }
+  if (c) { pbcext_element_Fr_free(c); c = NULL; }
+  if (aux_G1) { pbcext_element_G1_free(aux_G1); aux_G1 = NULL; }
+  if (e1) { pbcext_element_GT_free(e1); e1 = NULL; }
+  if (e2) { pbcext_element_GT_free(e2); e2 = NULL; }
+  if (e3) { pbcext_element_GT_free(e3); e3 = NULL; }
   if (aux_c) { hash_free(aux_c); aux_c = NULL; }
   if (aux_bytes) { mem_free(aux_bytes); aux_bytes = NULL; }
 

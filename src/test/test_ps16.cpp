@@ -111,14 +111,17 @@ namespace groupsig {
 
 	rc = groupsig_join_mem(&m4, memkey[i], 3, m3, grpkey);
 	ASSERT_EQ(rc, IOK);
-		
+
+	if(m0) { message_free(m0); m0 = NULL; }
+	if(m1) { message_free(m1); m1 = NULL; }
+	if(m2) { message_free(m2); m2 = NULL; }
+	if(m3) { message_free(m3); m3 = NULL; }
+	if(m4) { message_free(m4); m4 = NULL; }
+	
       }
       
       this->n = n;
-
-      if(m1) { message_free(m1); m1 = NULL; }
-      if(m2) { message_free(m2); m2 = NULL; }
-
+      
     }
     
     // If the constructor and destructor are not enough for setting up
@@ -373,6 +376,8 @@ namespace groupsig {
 
     rc = groupsig_proof_free(proof);
     EXPECT_EQ(rc, IOK);
+
+    free(str);    
     
   }
 
@@ -448,7 +453,9 @@ namespace groupsig {
 
     rc = groupsig_proof_free(proof);
     EXPECT_EQ(rc, IOK);
-    
+
+    free(str);
+
   }  
 
   /** Group key tests **/
@@ -808,6 +815,9 @@ namespace groupsig {
     /* Import */
     imported = gml_import(GROUPSIG_PS16_CODE, GML_FILE, (void *) "gml");
     EXPECT_NE(imported, nullptr);
+
+    gml_free(imported);
+    imported = nullptr;
     
   }  
   

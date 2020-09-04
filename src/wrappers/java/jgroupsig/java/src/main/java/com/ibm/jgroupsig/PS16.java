@@ -457,12 +457,15 @@ public class PS16 implements GS {
 			      Signature sig)
 	throws IllegalArgumentException,
 	       Exception {
+
 	long idPtr = 0;
 	long proofPtr = 0;
+
 	if (idProof.getIdentity() != null)
 	    idPtr = idProof.getIdentity().getObject();
 	if (idProof.getProof() != null)
 	    proofPtr = idProof.getProof().getObject();
+	
         return groupsig_gsOpenVerify(idPtr,
 				     proofPtr,
 				     sig.getObject(),

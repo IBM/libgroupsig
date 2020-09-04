@@ -1884,7 +1884,6 @@ static jlong groupsig_proofImport(JNIEnv *env,
     return (jlong) 0;
   }
   free(_bytes); _bytes = NULL;
-  
   return (jlong) proof;
   
 }

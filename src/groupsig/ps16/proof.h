@@ -53,28 +53,6 @@ groupsig_proof_t* ps16_proof_init();
 int ps16_proof_free(groupsig_proof_t *proof);
 
 /** 
- * @fn int ps16_proof_init_set_c(ps16_proof_t *proof, bigz_t c)
- * Initializes the c field of the given proof and sets it to the specified value.
- * 
- * @param[in,out] proof The proof whose c field is to be initialized and set.
- * @param[in] c The value to copy into proof->c.
- * 
- * @return IOK or IERROR
- */
-int ps16_proof_init_set_c(ps16_proof_t *proof, bigz_t c);
-
-/** 
- * @fn int ps16_proof_init_set_s(ps16_proof_t *proof, bigz_t s)
- * Initializes the s field of the given proof and sets it to the specified value.
- * 
- * @param[in,out] proof The proof whose s field is to be initialized and set.
- * @param[in] s The value to copy into proof->s.
- * 
- * @return IOK or IERROR
- */
-int ps16_proof_init_set_s(ps16_proof_t *proof, bigz_t s);
-
-/** 
  * @fn void* ps16_proof_copy(void *proof)
  * @brief Copies the given proof into a new one.
  *

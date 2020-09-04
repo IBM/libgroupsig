@@ -55,15 +55,16 @@ int ps16_get_joinstart(uint8_t *start) {
  * @TODO: Refine this and document better.
  */
 int ps16_join_mgr(message_t **mout, gml_t *gml,
-		   groupsig_key_t *mgrkey,
-		   int seq, message_t *min,
-		   groupsig_key_t *grpkey) {
+		  groupsig_key_t *mgrkey,
+		  int seq, message_t *min,
+		  groupsig_key_t *grpkey) {
 
   groupsig_key_t *memkey;
   ps16_mem_key_t *ps16_memkey;
   ps16_mgr_key_t *ps16_mgrkey;
   ps16_grp_key_t *ps16_grpkey;
   ps16_gml_entry_t *ps16_entry;
+  identity_t *id;  
   pbcext_element_Fr_t *u;
   pbcext_element_G1_t *n, *tau, *aux;
   pbcext_element_G2_t *ttau;
@@ -87,12 +88,13 @@ int ps16_join_mgr(message_t **mout, gml_t *gml,
   ps16_mgrkey = (ps16_mgr_key_t *) mgrkey->key;
   ps16_grpkey = (ps16_grp_key_t *) grpkey->key;
   ps16_entry = NULL;
-  bn = NULL;
+  bn = bkey = NULL;
   u = NULL;
   n = tau = aux = NULL;
   ttau = NULL;
   e1 = e2 = NULL;
   pi = NULL;
+  memkey = NULL;
   rc = IOK;
   
   if (!seq) { /* First step */
@@ -163,7 +165,7 @@ int ps16_join_mgr(message_t **mout, gml_t *gml,
       GOTOENDRC(IERROR, ps16_join_mgr);
     if (pbcext_element_G1_mul(ps16_memkey->sigma1, ps16_grpkey->g, u) == IERROR)
       GOTOENDRC(IERROR, ps16_join_mgr);
-    
+
     if (!(ps16_memkey->sigma2 = pbcext_element_G1_init()))
       GOTOENDRC(IERROR, ps16_join_mgr);
     if (!(aux = pbcext_element_G1_init())) GOTOENDRC(IERROR, ps16_join_mgr);    
@@ -188,7 +190,10 @@ int ps16_join_mgr(message_t **mout, gml_t *gml,
       GOTOENDRC(IERROR, ps16_join_mgr);
     
     /* Currently, PS16 identities are just uint64_t's */
-    *(ps16_identity_t *) ps16_entry->id->id = gml->n;
+    if(!(id = ps16_identity_init())) GOTOENDRC(IERROR, ps16_join_mgr);
+    *(ps16_identity_t *) id->id = gml->n;
+
+    ps16_entry->id = id;
     ps16_entry->tau = tau;
     ps16_entry->ttau = ttau;
 
@@ -200,6 +205,7 @@ int ps16_join_mgr(message_t **mout, gml_t *gml,
       GOTOENDRC(IERROR, ps16_join_mgr);
 
     if(!*mout) {
+      
       if(!(_mout = message_from_bytes(bkey, size)))
 	GOTOENDRC(IERROR, ps16_join_mgr);
       *mout = _mout;
@@ -217,18 +223,20 @@ int ps16_join_mgr(message_t **mout, gml_t *gml,
  ps16_join_mgr_end:
 
   if (rc == IERROR) {
-    if (tau) { pbcext_element_G1_clear(tau); tau = NULL; }  
-    if (ttau) { pbcext_element_G2_clear(ttau); ttau = NULL; }
+    if (tau) { pbcext_element_G1_free(tau); tau = NULL; }  
+    if (ttau) { pbcext_element_G2_free(ttau); ttau = NULL; }
     if (ps16_entry) { ps16_gml_entry_free(ps16_entry); ps16_entry = NULL; }
   }
 
-  if (u) { pbcext_element_Fr_clear(u); u = NULL; }
-  if (n) { pbcext_element_G1_clear(n); n = NULL; }  
-  if (aux) { pbcext_element_G1_clear(aux); aux = NULL; }
-  if (e1) { pbcext_element_GT_clear(e1); e1 = NULL; }
-  if (e2) { pbcext_element_GT_clear(e2); e2 = NULL; }
+  if (u) { pbcext_element_Fr_free(u); u = NULL; }
+  if (n) { pbcext_element_G1_free(n); n = NULL; }  
+  if (aux) { pbcext_element_G1_free(aux); aux = NULL; }
+  if (e1) { pbcext_element_GT_free(e1); e1 = NULL; }
+  if (e2) { pbcext_element_GT_free(e2); e2 = NULL; }
   if (pi) { spk_dlog_free(pi); pi = NULL; }
   if (bn) { mem_free(bn); bn = NULL; }
+  if (bkey) { mem_free(bkey); bkey = NULL; }
+  if (memkey) { ps16_mem_key_free(memkey); memkey = NULL; }
   
   return rc;
 

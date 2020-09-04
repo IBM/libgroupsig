@@ -125,9 +125,9 @@ int ps16_open(identity_t *id, groupsig_proof_t *proof,
 
  ps16_open_end:
 
-  if (e1) { pbcext_element_GT_clear(e1); e1 = NULL; }
-  if (e2) { pbcext_element_GT_clear(e2); e2 = NULL; }
-  if (e3) { pbcext_element_GT_clear(e3); e3 = NULL; }
+  if (e1) { pbcext_element_GT_free(e1); e1 = NULL; }
+  if (e2) { pbcext_element_GT_free(e2); e2 = NULL; }
+  if (e3) { pbcext_element_GT_free(e3); e3 = NULL; }
   if (bsig) { mem_free(bsig); bsig = NULL; }
   
   if (rc == IERROR) {

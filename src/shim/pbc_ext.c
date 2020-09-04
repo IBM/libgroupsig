@@ -803,9 +803,9 @@ int pbcext_element_GT_pow(pbcext_element_GT_t *dst,
 }
 
 int pbcext_pairing(pbcext_element_GT_t *dst,
-			   pbcext_element_G1_t *e1,
-			   pbcext_element_G2_t *e2) {
-
+		   pbcext_element_G1_t *e1,
+		   pbcext_element_G2_t *e2) {
+  
   if (!dst || !e1 || !e2) {
     LOG_EINVAL(&logger, __FILE__, "pbcext_pairing", __LINE__, LOGERROR);
     return IERROR; 

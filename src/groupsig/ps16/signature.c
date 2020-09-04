@@ -74,19 +74,19 @@ int ps16_signature_free(groupsig_signature_t *sig) {
   if(sig->sig) {
     ps16_sig = sig->sig;
     if(ps16_sig->sigma1) {
-      pbcext_element_G1_clear(ps16_sig->sigma1);
+      pbcext_element_G1_free(ps16_sig->sigma1);
       ps16_sig->sigma1 = NULL;
     }
     if(ps16_sig->sigma2) {
-      pbcext_element_G1_clear(ps16_sig->sigma2);
+      pbcext_element_G1_free(ps16_sig->sigma2);
       ps16_sig->sigma2 = NULL;
     }
     if(ps16_sig->c) {
-      pbcext_element_Fr_clear(ps16_sig->c);
+      pbcext_element_Fr_free(ps16_sig->c);
       ps16_sig->c = NULL;
     }
     if(ps16_sig->s) {
-      pbcext_element_Fr_clear(ps16_sig->s);
+      pbcext_element_Fr_free(ps16_sig->s);
       ps16_sig->s = NULL;
     }
     mem_free(ps16_sig); ps16_sig = NULL;
@@ -135,19 +135,19 @@ int ps16_signature_copy(groupsig_signature_t *dst, groupsig_signature_t *src) {
 
   if(rc == IERROR) {
     if(ps16_dst->sigma1) {
-      pbcext_element_G1_clear(ps16_dst->sigma1);
+      pbcext_element_G1_free(ps16_dst->sigma1);
       ps16_dst->sigma1 = NULL;
     }
     if(ps16_dst->sigma2) {
-      pbcext_element_G1_clear(ps16_dst->sigma2);
+      pbcext_element_G1_free(ps16_dst->sigma2);
       ps16_dst->sigma2 = NULL;
     }
     if(ps16_dst->c) {
-      pbcext_element_Fr_clear(ps16_dst->c);
+      pbcext_element_Fr_free(ps16_dst->c);
       ps16_dst->c = NULL;
     }
     if(ps16_dst->s) {
-      pbcext_element_Fr_clear(ps16_dst->s);
+      pbcext_element_Fr_free(ps16_dst->s);
       ps16_dst->s = NULL;
     }
 

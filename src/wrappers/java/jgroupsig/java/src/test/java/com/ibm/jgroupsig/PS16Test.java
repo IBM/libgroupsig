@@ -232,11 +232,11 @@ public class PS16Test {
     	this.setupFull();
     	MemKey mem = this.addMember();
     	Signature sig = this.groupUser.sign("Hello, World!", mem);
-	IdProof idProof = this.groupMgr.open(sig);
-	String sproof = idProof.getProof().export();
-	Proof proof2 = new Proof(this.groupUser.getCode(), sproof);
-	IdProof idProof2 = new IdProof(proof2);
-	boolean b = this.groupUser.openVerify(idProof2, sig);
+    	IdProof idProof = this.groupMgr.open(sig);
+    	String sproof = idProof.getProof().export();
+    	Proof proof2 = new Proof(this.groupUser.getCode(), sproof);
+    	IdProof idProof2 = new IdProof(proof2);
+    	boolean b = this.groupUser.openVerify(idProof2, sig);
     	assertTrue(b, "Imported proof should verify correctly.");
     }    
     
