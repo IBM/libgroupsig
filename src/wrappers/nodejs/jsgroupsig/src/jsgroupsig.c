@@ -716,7 +716,7 @@ napi_value gs_join_mem
     
   /* Run groupsig_join_mem */
   mout = NULL;  
-  if (groupsig_join_mem(&mout, memkey, seq, min, grpkey) == IERROR) {
+  if (groupsig_join_mem(&mout, memkey, step, min, grpkey) == IERROR) {
     napi_throw_type_error(env, NULL, "Internal error.");
     return NULL;
   }
@@ -794,7 +794,7 @@ napi_value gs_join_mgr
     
   /* Run groupsig_join_mgr */
   mout = NULL;  
-  if (groupsig_join_mgr(&mout, gml, mgrkey, seq, min, grpkey) == IERROR) {
+  if (groupsig_join_mgr(&mout, gml, mgrkey, step, min, grpkey) == IERROR) {
     napi_throw_type_error(env, NULL, "Internal error.");
     return NULL;
   }
