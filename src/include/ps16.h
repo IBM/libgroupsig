@@ -67,36 +67,6 @@ static const groupsig_description_t ps16_description = {
 /* Number of exchanged messages */
 #define PS16_JOIN_SEQ 3
 
-/* /\* */
-/*  * @def PS16_CONFIG_SET_DEFAULTS */
-/*  * @brief Sets the configuration structure to the default values for */
-/*  *  PS16. */
-/*  *\/ */
-/* #define PS16_CONFIG_SET_DEFAULTS(cfg) \ */
-/*   ((groupsig_config_t *) cfg)->scheme = GROUPSIG_PS16_CODE;  \ */
-/*   ((groupsig_config_t *) cfg)->has_gml = 1;		     \ */
-/*   ((groupsig_config_t *) cfg)->has_crl = 0;		     \ */
-/*   ((groupsig_config_t *) cfg)->has_pbc = 1;		     \ */
-/*   ((groupsig_config_t *) cfg)->has_open_proof = 1; */
-  
-/* /\**  */
-/*  * @fn groupsig_config_t* ps16_config_init(void) */
-/*  * @brief Allocates memory for a PS16 config structure. */
-/*  *  */
-/*  * @return A pointer to the allocated structure or NULL if error. */
-/*  *\/ */
-/* groupsig_config_t* ps16_config_init(void); */
-
-/* /\**  */
-/*  * @fn int ps16_config_free(groupsig_config_t *cfg) */
-/*  * @brief Frees the memory of a PS16 config structure. */
-/*  *  */
-/*  * @param cfg The structure to free. */
-/*  * */
-/*  * @return A pointer to the allocated structure or NULL if error. */
-/*  *\/ */
-/* int ps16_config_free(groupsig_config_t *cfg); */
-
 /** 
  * @fn int ps16_init()
  * @brief Initializes the internal variables needed by PS16. In this case,
@@ -115,8 +85,9 @@ int ps16_init();
 int ps16_clear();
 
 /** 
- * @fn int ps16_setup(groupsig_key_t *grpkey, groupsig_key_t *mgrkey, 
- *                     gml_t *gml)
+ * @fn int ps16_setup(groupsig_key_t *grpkey, 
+ *                    groupsig_key_t *mgrkey, 
+ *                    gml_t *gml)
  * @brief The setup function for the PS16 scheme.
  *
  * @param[in,out] grpkey An initialized group key, will be updated with the newly
@@ -127,7 +98,9 @@ int ps16_clear();
  * 
  * @return IOK or IERROR.
  */
-int ps16_setup(groupsig_key_t *grpkey, groupsig_key_t *mgrkey, gml_t *gml);
+int ps16_setup(groupsig_key_t *grpkey,
+	       groupsig_key_t *mgrkey,
+	       gml_t *gml);
 
 /**
  * @fn int ps16_get_joinseq(uint8_t *seq)
@@ -151,8 +124,11 @@ int ps16_get_joinseq(uint8_t *seq);
 int ps16_get_joinstart(uint8_t *start);
 
 /** 
- * @fn int ps16_join_mem(message_t **mout, groupsig_key_t *memkey,
- *			  int seq, message_t *min, groupsig_key_t *grpkey)
+ * @fn int ps16_join_mem(message_t **mout, 
+ *                       groupsig_key_t *memkey,
+ *			 int seq, 
+ *                       message_t *min, 
+ *                       groupsig_key_t *grpkey)
  * @brief Executes the member-side join of the PS16 scheme.
  *
  * @param[in,out] mout Message to be produced by the current step of the
@@ -167,14 +143,19 @@ int ps16_get_joinstart(uint8_t *start);
  * 
  * @return IOK or IERROR.
  */
-int ps16_join_mem(message_t **mout, groupsig_key_t *memkey,
-		   int seq, message_t *min, groupsig_key_t *grpkey);
+int ps16_join_mem(message_t **mout,
+		  groupsig_key_t *memkey,
+		   int seq,
+		  message_t *min,
+		  groupsig_key_t *grpkey);
 
 /** 
- * @fn int ps16_join_mgr(message_t **mout, gml_t *gml,
- *                        groupsig_key_t *mgrkey,
- *                        int seq, message_t *min, 
- *			  groupsig_key_t *grpkey)
+ * @fn int ps16_join_mgr(message_t **mout, 
+ *                       gml_t *gml,
+ *                       groupsig_key_t *mgrkey,
+ *                       int seq, 
+ *                       message_t *min, 
+ *			 groupsig_key_t *grpkey)
  * @brief Executes the manager-side join of the join procedure.
  *
  * @param[in,out] mout Message to be produced by the current step of the join/
@@ -191,14 +172,19 @@ int ps16_join_mem(message_t **mout, groupsig_key_t *memkey,
  * 
  * @return IOK or IERROR.
  */
-int ps16_join_mgr(message_t **mout, gml_t *gml,
-		   groupsig_key_t *mgrkey,
-		   int seq, message_t *min,
-		   groupsig_key_t *grpkey);
+int ps16_join_mgr(message_t **mout,
+		  gml_t *gml,
+		  groupsig_key_t *mgrkey,
+		  int seq,
+		  message_t *min,
+		  groupsig_key_t *grpkey);
 
 /** 
- * @fn int ps16_sign(groupsig_signature_t *sig, message_t *msg, groupsig_key_t *memkey, 
- *	              groupsig_key_t *grpkey, unsigned int seed)
+ * @fn int ps16_sign(groupsig_signature_t *sig,
+ *                   message_t *msg, 
+ *                   groupsig_key_t *memkey, 
+ *	             groupsig_key_t *grpkey, 
+ *                   unsigned int seed)
  * @brief Issues PS16 group signatures.
  *
  * Using the specified member and group keys, issues a signature for the specified
@@ -215,12 +201,17 @@ int ps16_join_mgr(message_t **mout, gml_t *gml,
  * 
  * @return IOK or IERROR.
  */
-int ps16_sign(groupsig_signature_t *sig, message_t *msg, groupsig_key_t *memkey, 
-	       groupsig_key_t *grpkey, unsigned int seed);
+int ps16_sign(groupsig_signature_t *sig,
+	      message_t *msg,
+	      groupsig_key_t *memkey, 
+	      groupsig_key_t *grpkey,
+	      unsigned int seed);
 
 /** 
- * @fn int ps16_verify(uint8_t *ok, groupsig_signature_t *sig, message_t *msg, 
- *		        groupsig_key_t *grpkey);
+ * @fn int ps16_verify(uint8_t *ok, 
+ *                     groupsig_signature_t *sig, 
+ *                     message_t *msg, 
+ *		       groupsig_key_t *grpkey);
  * @brief Verifies a PS16 group signature.
  *
  * @param[in,out] ok Will be set to 1 if the verification succeeds, to 0 if
@@ -231,22 +222,22 @@ int ps16_sign(groupsig_signature_t *sig, message_t *msg, groupsig_key_t *memkey,
  * 
  * @return IOK or IERROR.
  */
-int ps16_verify(uint8_t *ok, groupsig_signature_t *sig, message_t *msg, 
-		 groupsig_key_t *grpkey);
+int ps16_verify(uint8_t *ok,
+		groupsig_signature_t *sig,
+		message_t *msg, 
+		groupsig_key_t *grpkey);
 
 /** 
- * @fn int ps16_open(identity_t *id, groupsig_proof_t *proof, crl_t *crl, 
+ * @fn int ps16_open(uint64_t *index, groupsig_proof_t *proof, crl_t *crl, 
  *                    groupsig_signature_t *sig, groupsig_key_t *grpkey, 
  *	              groupsig_key_t *mgrkey, gml_t *gml)
  * @brief Opens a PS16 group signature.
  * 
  * Opens the specified group signature, obtaining the signer's identity.
  *
- * @param[in,out] id An initialized identity. Will be updated with the signer's
- *  real identity.
+ * @param[in,out] index Will be updated with the signer's index in the GML.
  * @param[in,out] proof PS16 ignores this parameter.
- * @param[in,out] crl Optional. If not NULL, must be an initialized CRL, and will
- *  be updated with a new entry corresponding to the obtained trapdoor.
+ * @param[in,out] crl Unused. Ignore.
  * @param[in] sig The signature to open.
  * @param[in] grpkey The group key.
  * @param[in] mgrkey The manager's key.
@@ -255,13 +246,19 @@ int ps16_verify(uint8_t *ok, groupsig_signature_t *sig, message_t *msg,
  * @return IOK if it was possible to open the signature. IFAIL if the open
  *  trapdoor was not found, IERROR otherwise.
  */
-int ps16_open(identity_t *id, groupsig_proof_t *proof, crl_t *crl, groupsig_signature_t *sig,
-	       groupsig_key_t *grpkey, groupsig_key_t *mgrkey, gml_t *gml);
+int ps16_open(uint64_t *index,
+	      groupsig_proof_t *proof,
+	      crl_t *crl,
+	      groupsig_signature_t *sig,
+	      groupsig_key_t *grpkey,
+	      groupsig_key_t *mgrkey,
+	      gml_t *gml);
 
 /** 
- * @fn int ps16_open_verify(uint8_t *ok, identity_t *id,
+ * @fn int ps16_open_verify(uint8_t *ok,
  *                          groupsig_proof_t *proof, 
- *                          groupsig_signature_t *sig, groupsig_key_t *grpkey)
+ *                          groupsig_signature_t *sig,
+ *                          groupsig_key_t *grpkey)
  * 
  * @param[in,out] ok Will be set to 1 if the proof is correct, to 0 otherwise.
  *  signature.
@@ -272,8 +269,10 @@ int ps16_open(identity_t *id, groupsig_proof_t *proof, crl_t *crl, groupsig_sign
  * 
  * @return IOK or IERROR
  */
-int ps16_open_verify(uint8_t *ok, identity_t *id, groupsig_proof_t *proof, 
-		     groupsig_signature_t *sig, groupsig_key_t *grpkey);
+int ps16_open_verify(uint8_t *ok,
+		     groupsig_proof_t *proof, 
+		     groupsig_signature_t *sig,
+		     groupsig_key_t *grpkey);
   
 /**
  * @var ps16_groupsig_bundle
@@ -283,9 +282,6 @@ static const groupsig_t ps16_groupsig_bundle = {
  desc: &ps16_description, /**< Contains the PS16 scheme description. */
  init: &ps16_init, /**< Initializes the variables needed by PS16. */
  clear: &ps16_clear, /**< Frees the varaibles needed by PS16. */
- /* sysenv_update: NULL,//&ps16_sysenv_update, /\**< Sets the PBC params and pairing. *\/ */
- /* sysenv_get: NULL,  */
- /* sysenv_free: NULL, //&ps16_sysenv_free, /\**<  Frees the PBC params and pairing. *\/ */
  setup: &ps16_setup, /**< Sets up PS16 groups. */
  get_joinseq: &ps16_get_joinseq, /**< Returns the number of messages in the join 
 				     protocol. */

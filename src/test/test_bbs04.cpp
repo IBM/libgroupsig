@@ -306,8 +306,7 @@ namespace groupsig {
 
     groupsig_signature_t *sig;
     message_t *msg;
-    identity_t *id;
-    char *str;
+    uint64_t index;    
     int rc;
 
     rc = groupsig_setup(GROUPSIG_BBS04_CODE, grpkey, mgrkey, gml);
@@ -328,19 +327,12 @@ namespace groupsig {
     rc = groupsig_sign(sig, msg, memkey[0], grpkey, UINT_MAX);
     EXPECT_EQ(rc, IOK);
 
-    /* Open */
-    id = identity_init(GROUPSIG_BBS04_CODE);
-    EXPECT_NE(id, nullptr);
-    
-    rc = groupsig_open(id, nullptr, nullptr, sig, grpkey, mgrkey, gml);
+    /* Open */    
+    rc = groupsig_open(&index, nullptr, nullptr, sig, grpkey, mgrkey, gml);
     EXPECT_EQ(rc, IOK);
 
-    /* id must be 0 */
-    str = identity_to_string(id);
-    EXPECT_NE(str, nullptr);
-
-    rc = strcmp(str, "0");
-    EXPECT_EQ(rc, 0);
+    /* index must be 0 */
+    EXPECT_EQ(index, 0);
 
     /* Free stuff */
     rc = message_free(msg);
@@ -348,11 +340,6 @@ namespace groupsig {
     
     rc = groupsig_signature_free(sig);
     EXPECT_EQ(rc, IOK);
-
-    rc = identity_free(id);
-    EXPECT_EQ(rc, IOK);
-
-    free(str); str = nullptr;
     
   }  
 
@@ -697,8 +684,10 @@ namespace groupsig {
   /* Successfully exports and imports a GML */
   TEST_F(BBS04Test, GmlExportImport) {
 
+    byte_t *bytes;
     gml_t *imported;
     int rc;
+    uint32_t size;
 
     rc = groupsig_setup(GROUPSIG_BBS04_CODE, grpkey, mgrkey, gml);
     EXPECT_EQ(rc, IOK); 
@@ -707,15 +696,18 @@ namespace groupsig {
     addMembers(1);
 
     /* Export */
-    rc = gml_export(gml, (void *) "gml", GML_FILE);
+    bytes = NULL;
+    rc = gml_export(&bytes, &size, gml);
     EXPECT_EQ(rc, IOK);
 
     /* Import */
-    imported = gml_import(GROUPSIG_BBS04_CODE, GML_FILE, (void *) "gml");
+    imported = gml_import(GROUPSIG_BBS04_CODE, bytes, size);
     EXPECT_NE(imported, nullptr);
 
     rc = gml_free(imported);
-    EXPECT_NE(rc, IERROR);    
+    EXPECT_NE(rc, IERROR);
+
+    free(bytes); bytes = NULL;
     
   }  
   

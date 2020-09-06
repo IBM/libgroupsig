@@ -26,8 +26,6 @@
 #include "groupsig/bbs04/mgr_key.h"
 #include "groupsig/bbs04/mem_key.h"
 #include "groupsig/bbs04/gml.h"
-#include "groupsig/bbs04/identity.h"
-#include "groupsig/bbs04/trapdoor.h"
 #include "shim/pbc_ext.h"
 #include "sys/mem.h"
 
@@ -50,8 +48,7 @@ int bbs04_join_mgr(message_t **mout, gml_t *gml,
   bbs04_mem_key_t *bbs04_memkey;
   bbs04_mgr_key_t *bbs04_mgrkey;
   bbs04_grp_key_t *bbs04_grpkey;
-  bbs04_gml_entry_t *bbs04_entry;
-  bbs04_trapdoor_t *bbs04_trap;
+  gml_entry_t *bbs04_entry;
   pbcext_element_Fr_t *gammax;
   message_t *_mout;
   byte_t *bkey;
@@ -108,18 +105,11 @@ int bbs04_join_mgr(message_t **mout, gml_t *gml,
   if(!(bbs04_entry = bbs04_gml_entry_init()))
     GOTOENDRC(IERROR, bbs04_join_mgr);
 
-  if(!(bbs04_entry->trapdoor = trapdoor_init(GROUPSIG_BBS04_CODE)))
+  if(!(bbs04_entry->data = pbcext_element_G1_init()))
     GOTOENDRC(IERROR, bbs04_join_mgr);
-  bbs04_trap = (bbs04_trapdoor_t *) bbs04_entry->trapdoor->trap;
-  if(!(bbs04_trap->open = pbcext_element_G1_init()))
+  if(pbcext_element_G1_set(bbs04_entry->data, bbs04_memkey->A) == IERROR)
     GOTOENDRC(IERROR, bbs04_join_mgr);
-  if(pbcext_element_G1_set(bbs04_trap->open, bbs04_memkey->A) == IERROR)
-    GOTOENDRC(IERROR, bbs04_join_mgr);
-  
-  /* Currently, BBS04 identities are just uint64_t's */
-  if(!(bbs04_entry->id = identity_init(GROUPSIG_BBS04_CODE)))
-    GOTOENDRC(IERROR, bbs04_join_mgr);
-  *(bbs04_identity_t *) bbs04_entry->id->id = gml->n;
+  bbs04_entry->id = gml->n;
   
   if(gml_insert(gml, bbs04_entry) == IERROR) GOTOENDRC(IERROR, bbs04_join_mgr);
 

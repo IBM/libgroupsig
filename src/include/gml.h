@@ -27,23 +27,27 @@ extern "C" {
 #endif
 
 /**
- * @typedef gml_format_t
- * @brief Enumeration of known GML formats.
+ * @struct gml_entry_t
+ * @brief A generic structure for representing entries in GMLs.
+ * 
+ * It contains one concrete field, id, which will be the unique integer
+ * identifying each member in group signatures. The pointer to void can
+ * be used by the schemes to point to custom structures containing the
+ * trapdoor information they need.
  */
-typedef enum {
-  GML_FILE,
-  GML_DATABASE,
-} gml_format_t;
+typedef struct {
+  uint8_t scheme; /**< The scheme of which this GML entry is an instance of. */
+  uint64_t id; /**< The identity of the user represented by the entry. */
+  void *data; /**< Opaque pointer for schemes. */
+} gml_entry_t;
 
 /**
  * @struct gml_t
  * @brief A basic GML structure.
- *
- * @todo Improve the structure for O(1) insert and deletes!
  */
 typedef struct {
   uint8_t scheme; /**< The scheme of which this GML is an instance of. */
-  void **entries; /**< An array of pointers to the entries in the GML. */
+  gml_entry_t **entries; /**< An array of pointers to the entries in the GML. */
   uint64_t n; /**< The number of entries in the previous array. */
 } gml_t;
 
@@ -60,10 +64,10 @@ typedef gml_t* (*gml_init_f)(void);
 typedef int (*gml_free_f)(gml_t *gml);
 
 /** 
- * @typedef int (*gml_insert_f)(gml_t *gml, void *entry)
+ * @typedef int (*gml_insert_f)(gml_t *gml, gml_entry_t *entry)
  * @brief Type of functions for inserting new entries in GMLs.
  */
-typedef int (*gml_insert_f)(gml_t *gml, void *entry);
+typedef int (*gml_insert_f)(gml_t *gml, gml_entry_t *entry);
 
 /** 
  * @typedef int (*gml_remove_f)(gml_t *gml, uint64_t index)
@@ -72,28 +76,72 @@ typedef int (*gml_insert_f)(gml_t *gml, void *entry);
 typedef int (*gml_remove_f)(gml_t *gml, uint64_t index);
 
 /**
- * @typedef void* (*gml_get_f)(gml_t *gml, uint64_t index);
+ * @typedef gml_entry_t* (*gml_get_f)(gml_t *gml, uint64_t index);
  * @brief Type of functions for getting entries from GMLs.
  */
-typedef void* (*gml_get_f)(gml_t *gml, uint64_t index);
+typedef gml_entry_t* (*gml_get_f)(gml_t *gml, uint64_t index);
 
 /**
- * @typedef gml_t* (*gml_import_f)(gml_format_t format, void *src)
- * @brief Type of functions for importing GMLs from external sources.
+ * @typedef int (*gml_export_f)(byte_t **bytes, uint32_t *size, gml_t *gml)
+ * @brief Type of functions for exporting GMLs.
  */
-typedef gml_t* (*gml_import_f)(gml_format_t format, void *src);
+typedef int (*gml_export_f)(byte_t **bytes,
+			    uint32_t *size,
+			    gml_t *gml);
+  
+/**
+ * @typedef gml_t* (*gml_import_f)(byte_t *bytes, uint32_t size)
+ * @brief Type of functions for importing GMLs.
+ */
+typedef gml_t* (*gml_import_f)(byte_t *bytes, uint32_t size);
 
 /**
- * @typedef int (*gml_export_f)(gml_t *gml, void *dst, gml_format_t format)
- * @brief Type of functions for exporting for exporting GMLs.
- */
-typedef int (*gml_export_f)(gml_t *gml, void *dst, gml_format_t format);
+ * @typedef gml_entry_t* (*gml_entry_init_f)()
+ * @brief Type of functions for initializing individual entries of GMLs.
+ */  
+typedef gml_entry_t* (*gml_entry_init_f)();
 
 /**
- * @typedef int (*gml_export_new_entry_f)(void *entry, void *dst, gml_format_t format)
- * @brief Type of functions for adding new entries to exported GMLs.
- */
-typedef int (*gml_export_new_entry_f)(void *entry, void *dst, gml_format_t format);
+ * @typedef int (*gml_entry_free_f)(gml_entry_t *entry)
+ * @brief Type of functions for freeing individual entries of GMLs.
+ */  
+typedef int (*gml_entry_free_f)(gml_entry_t *entry);  
+  
+/**
+ * @typedef gml_t* (*gml_entry_import_f)(byte_t *bytes, uint32_t size)
+ * @brief Type of functions for importing individual GML entries.
+ */  
+typedef gml_entry_t* (*gml_entry_import_f)(byte_t *bytes, uint32_t size);    
+
+/**
+ * @typedef int (*gml_entry_get_size_f)(gml_get_sizet *entry)
+ * @brief Type of functions for returning the size in bytes that a given entry
+ *  would need to be represented as a byte array.
+ */  
+typedef int (*gml_entry_get_size_f)(gml_entry_t *entry);
+  
+/**
+ * @typedef int (*gml_entry_export_f)(byte_t **bytes, 
+ *                                    uint32_t *size, 
+ *                                    gml_entry_t *entry)
+ * @brief Type of functions for exporting individual entries of GMLs.
+ */  
+typedef int (*gml_entry_export_f)(byte_t **bytes,
+				  uint32_t *size,
+				  gml_entry_t *entry);
+
+/**
+ * @typedef gml_t* (*gml_entry_import_f)(byte_t *bytes, uint32_t size)
+ * @brief Type of functions for importing individual GML entries.
+ */  
+typedef gml_entry_t* (*gml_entry_import_f)(byte_t *bytes, uint32_t size);
+
+/**
+ * @typedef char* (*gml_entry_to_string_f)(gml_entry_t *entry)
+ * @brief Type of functions for producing human readable strings of GML
+ *  entries.
+ */  
+typedef char* (*gml_entry_to_string_f)(gml_entry_t *entry);  
 
 /**
  * @struct gml_handle_t
@@ -101,22 +149,28 @@ typedef int (*gml_export_new_entry_f)(void *entry, void *dst, gml_format_t forma
  */
 typedef struct {
   uint8_t scheme; /**< The GML scheme. */
-  gml_init_f gml_init; /**< Initializes GMLs. */
-  gml_free_f gml_free; /**< Frees GMLs. */
-  gml_insert_f gml_insert; /**< Inserts new entries in GMLs. */
-  gml_remove_f gml_remove; /**< Removes entries from GMLs. */
-  gml_get_f gml_get; /**< Gets entries (without removing them. From GMLs. */
-  gml_import_f gml_import; /**< Imports GMLs from external sources. */
-  gml_export_f gml_export; /**< Exports GMLs. */
-  gml_export_new_entry_f gml_export_new_entry; /**< Directly adds new entries to exported GMLs. */
+  gml_init_f init; /**< Initializes GMLs. */
+  gml_free_f free; /**< Frees GMLs. */
+  gml_insert_f insert; /**< Inserts new entries in GMLs. */
+  gml_remove_f remove; /**< Removes entries from GMLs. */
+  gml_get_f get; /**< Gets entries without removing them from GMLs. */
+  gml_import_f gimport; /**< Imports GMLs from external sources. */
+  gml_export_f gexport; /**< Exports GMLs. */
+  gml_entry_init_f entry_init; /**< Initializes an entry. */ 
+  gml_entry_free_f entry_free; /**< Frees an entry. */
+  gml_entry_get_size_f entry_get_size; /**< Gets the size in bytes of an entry. */  
+  gml_entry_export_f entry_export; /**< Exports an entry. */
+  gml_entry_import_f entry_import; /**< Imports an entry. */
+  gml_entry_to_string_f entry_to_string; /**< Returns a human readable string. */
 } gml_handle_t;
 
 /**
- * @def typedef int (*gml_cmp_entries_f)(void *entry1, void *entry2)
+ * @def typedef int (*gml_cmp_entries_f)(gml_entry_t *entry1, 
+ *                                       gml_entry_t *entry2)
  * Functions for comparing GML entries must follow this type.
  * Must set errno if an error occurs.
  */
-typedef int (*gml_cmp_entries_f)(void *entry1, void *entry2);
+typedef int (*gml_cmp_entries_f)(gml_entry_t *entry1, gml_entry_t *entry2);
 
 /** 
  * @fn const gml_handle_t* gml_handle_from_code(uint8_t code)
@@ -150,16 +204,16 @@ gml_t* gml_init(uint8_t scheme);
 int gml_free(gml_t *gml);
 
 /** 
- * @fn int gml_insert(gml_t *gml, void *entry)
- * @brief Inserts the given entry into the gml. The memory pointed by the new entry is
- * not duplicated.
+ * @fn int gml_insert(gml_t *gml, gml_entry_t *entry)
+ * @brief Inserts the given entry into the gml. The memory pointed by the new 
+ *  entry is not duplicated.
  *
  * @param[in,out] gml The GML.
  * @param[in] entry The entry to insert.
  * 
  * @return IOK or IERROR with errno updated.
  */
-int gml_insert(gml_t *gml, void *entry);
+int gml_insert(gml_t *gml, gml_entry_t *entry);
 
 /** 
  * @fn int gml_remove(gml_t *gml, uint64_t index)
@@ -174,7 +228,7 @@ int gml_insert(gml_t *gml, void *entry);
 int gml_remove(gml_t *gml, uint64_t index);
 
 /** 
- * @fn void* gml_get(gml_t *gml, uint64_t index)
+ * @fn gml_entry_t* gml_get(gml_t *gml, uint64_t index)
  * @brief Returns a pointer to the GML entry at the specified position.
  *
  * @param[in] gml The GML.
@@ -182,69 +236,102 @@ int gml_remove(gml_t *gml, uint64_t index);
  * 
  * @return A pointer to the specified entry or NULL if error.
  */
-void* gml_get(gml_t *gml, uint64_t index);
+gml_entry_t* gml_get(gml_t *gml, uint64_t index);
 
 /** 
- * @fn gml_t* gml_import(uint8_t code, gml_format_t format, void *source)
- * @brief Imports a GML of the specified scheme, from the given source of the specified
- * type.
+ * @fn int gml_export(byte_t **bytes, uint32_t *size, gml_t *gml)
+ * @brief Exports the given GML as an array of bytes.
  *
- * @param[in] code The type of GML. 
- * @param[in] format The type of source.
- * @param[in] source The source.
- * 
- * @return A pointer to the imported GML or NULL with errno set.
- */
-gml_t* gml_import(uint8_t code, gml_format_t format, void *source);
-
-/** 
- * @fn int gml_export(gml_t *gml, void *dst, gml_format_t format)
- * @brief Exports the given GML into the given destination.
- *
- * @param[in] gml The GML to export. 
- * @param[in] dst The destination. 
- * @param[in] format The type of destination.
+ * @param[in,out] bytes Will be updated with the exported GML. If *gml is NULL,
+ *  memory will be internally allocated. Otherwise, it must be big enough to
+ *  hold all the data.
+ * @param[in,out] size Will be updated with the number of bytes written into 
+ *  *bytes.
+ * @param[in] gml The GML structure to export.
  * 
  * @return IOK or IERROR with errno set.
  */
-int gml_export(gml_t *gml, void *dst, gml_format_t format);
+int gml_export(byte_t **bytes, uint32_t *size, gml_t *gml);
 
 /** 
- * @fn int gml_export_new_entry(uint8_t scheme, void *entry, void *dst, 
- *                              gml_format_t format)
- * @brief Given an *existing* GML stored in the dst, updates it adding the specified
- * entry.
+ * @fn gml_t* gml_import(uint8_t code, byte_t *bytes, uint32_t size)
+ * @brief Imports a GML of the specified scheme, from the given array of bytes.
  *
- * @param[in] scheme The scheme of the GML.
- * @param[in] entry The entry to add.
- * @param[in] dst The destination.
- * @param[in] format The format of the destination.
+ * @param[in] code The type of GML. 
+ * @param[in] bytes The bytes to read the GML from.
+ * @param[in] size The number of bytes to be read.
  * 
- * @return IOK or IERROR.
+ * @return A pointer to the imported GML or NULL with errno set.
  */
-int gml_export_new_entry(uint8_t scheme, void *entry, void *dst, 
-			 gml_format_t format);
+gml_t* gml_import(uint8_t code, byte_t *bytes, uint32_t size);
+
+/**
+ * @fn gml_entry_t* gml_entry_init(uint8_t code)
+ * @brief Initializes a GML entry of the given type.
+ *
+ * @param[in] code The type of GML.
+ * 
+ * @return A pointer to the new entry or NULL with errno set.
+ */  
+gml_entry_t* gml_entry_init(uint8_t code);
+
+/**
+ * @fn int gml_entry_free(gml_entry_t *entry)
+ * @brief Frees the memory allocated for the given GML entry.
+ *
+ * @param[in] entry The entry to free.
+ * 
+ * @return A pointer to the imported GML or NULL with errno set.
+ */  
+int gml_entry_free(gml_entry_t *entry);
+
+/**
+ * @fn int gml_entry_get_size(gml_entry_t *entry)
+ * @brief Returns the number of bytes needed to represent the given entry
+ *  as a byte array.
+ *
+ * @param[in] entry The entry.
+ * 
+ * @return The number of bytes needed to export the entry, or -1 if error.
+ */  
+int gml_entry_get_size(gml_entry_t *entry);
+
+/**
+ * @fn int gml_entry_export(byte_t **bytes, uint32_t *size, gml_entry_t *entry)
+ * @brief Exports a GML entry into an array of bytes.
+ *
+ * @param[in,out] bytes Will be updated with the exported entry. If *entry is 
+ *  NULL,  memory will be internally allocated. Otherwise, it must be big enough
+ *  to hold all the data.
+ * @param[in,out] size Will be updated with the number of bytes written into 
+ *  *bytes.
+ * @param[in] gml The GML structure to export.
+ * 
+ * @return IOK or IERROR with errno set.
+ */
+int gml_entry_export(byte_t **bytes, uint32_t *size, gml_entry_t *entry);
+  
+/** 
+ * @fn gml_t* gml_entry_import(uint8_t code, byte_t *bytes, uint32_t size)
+ * @brief Imports a GML of the specified scheme, from the given array of bytes.
+ *
+ * @param[in] code The type of GML. 
+ * @param[in] bytes The bytes to read the GML from.
+ * @param[in] size The number of bytes to be read.
+ * 
+ * @return A pointer to the imported GML or NULL with errno set.
+ */
+gml_entry_t* gml_entry_import(uint8_t code, byte_t *bytes, uint32_t size);
 
 /** 
- * @fn int gml_compare_entries(int *eq, void *entry1, void *entry2, 
- *                             gml_cmp_entries_f cmp)
- * @brief Compares GML entries using the specified comparison function. 
+ * @fn char* gml_entry_to_string(gml_entry_t *entry);
+ * @brief Returns a human readable string representing the given entry.
  *
- * Uses the given comparison function to return a measure of similarity between
- * the received entries. If 0, they are equal, if != 0, they are different.
- * This is not part of a GML handle, since one might want to compare entries
- * of different types (using a all-in-one conversion and comparision function).
- * Thus, this function is not linked to any specific GML type.
- *
- * @param[in,out] eq The result of the comparison.
- * @param[in] entry1 One entry to compare.
- * @param[in] entry2 The other entry to compare.
- * @param[in] cmp A pointer to the comparison function.
+ * @param[in] entry The GML entry.
  * 
- * @return 0 if both entries are equal according to the given cmp function, 
- * 1 if not.
+ * @return The human readable string, or NULL if error.
  */
-int gml_compare_entries(int *eq, void *entry1, void *entry2, gml_cmp_entries_f cmp);
+char* gml_entry_to_string(gml_entry_t *entry);
 
 #ifdef __cplusplus
 }

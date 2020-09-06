@@ -28,13 +28,10 @@
 #include "crypto/spk.h"
 #include "groupsig/ps16/proof.h"
 #include "groupsig/ps16/grp_key.h"
-#include "groupsig/ps16/mgr_key.h"
 #include "groupsig/ps16/signature.h"
 #include "groupsig/ps16/gml.h"
-#include "groupsig/ps16/identity.h"
 
 int ps16_open_verify(uint8_t *ok,
-		     identity_t *id,
 		     groupsig_proof_t *proof, 
 		     groupsig_signature_t *sig,
 		     groupsig_key_t *grpkey) {

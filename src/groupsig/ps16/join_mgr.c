@@ -26,7 +26,6 @@
 #include "groupsig/ps16/mgr_key.h"
 #include "groupsig/ps16/mem_key.h"
 #include "groupsig/ps16/gml.h"
-#include "groupsig/ps16/identity.h"
 #include "crypto/spk.h"
 #include "shim/pbc_ext.h"
 #include "sys/mem.h"
@@ -54,17 +53,18 @@ int ps16_get_joinstart(uint8_t *start) {
  *
  * @TODO: Refine this and document better.
  */
-int ps16_join_mgr(message_t **mout, gml_t *gml,
+int ps16_join_mgr(message_t **mout,
+		  gml_t *gml,
 		  groupsig_key_t *mgrkey,
-		  int seq, message_t *min,
+		  int seq,
+		  message_t *min,
 		  groupsig_key_t *grpkey) {
 
   groupsig_key_t *memkey;
   ps16_mem_key_t *ps16_memkey;
   ps16_mgr_key_t *ps16_mgrkey;
   ps16_grp_key_t *ps16_grpkey;
-  ps16_gml_entry_t *ps16_entry;
-  identity_t *id;  
+  gml_entry_t *ps16_entry;
   pbcext_element_Fr_t *u;
   pbcext_element_G1_t *n, *tau, *aux;
   pbcext_element_G2_t *ttau;
@@ -190,12 +190,11 @@ int ps16_join_mgr(message_t **mout, gml_t *gml,
       GOTOENDRC(IERROR, ps16_join_mgr);
     
     /* Currently, PS16 identities are just uint64_t's */
-    if(!(id = ps16_identity_init())) GOTOENDRC(IERROR, ps16_join_mgr);
-    *(ps16_identity_t *) id->id = gml->n;
-
-    ps16_entry->id = id;
-    ps16_entry->tau = tau;
-    ps16_entry->ttau = ttau;
+    ps16_entry->id = gml->n;
+    if (!(ps16_entry->data = mem_malloc(sizeof(ps16_gml_entry_data_t *))))
+      GOTOENDRC(IERROR, ps16_join_mgr);
+    ((ps16_gml_entry_data_t *) ps16_entry->data)->tau = tau;
+    ((ps16_gml_entry_data_t *) ps16_entry->data)->ttau = ttau;
 
     if(gml_insert(gml, ps16_entry) == IERROR) GOTOENDRC(IERROR, ps16_join_mgr);
 

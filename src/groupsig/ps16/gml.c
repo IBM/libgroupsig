@@ -29,339 +29,7 @@
 #include "sys/mem.h"
 #include "ps16.h"
 #include "groupsig/ps16/gml.h"
-#include "groupsig/ps16/identity.h"
-
-/* Private functions */
-static int _is_supported_format(gml_format_t format) {
-  
-  uint32_t i;
-  
-  for(i=0; i<PS16_SUPPORTED_GML_FORMATS_N; i++) {
-    if(format == PS16_SUPPORTED_GML_FORMATS[i]) return 1;
-  }
-  
-  return 0;
-  
-}
-
-static ps16_gml_entry_t* _gml_entry_import_file(FILE *fd, gml_format_t format,
-						 uint8_t *eof) {
-
-  /* identity_t *id; */
-  /* trapdoor_t *trap; */
-  ps16_gml_entry_t *entry;
-  char *line, *sid, *stau, *sttau;
-  int rc;
-    
-  if(!fd || !eof) {
-    LOG_EINVAL(&logger, __FILE__, "_gml_entry_import_file",
- 	       __LINE__, LOGERROR);
-    return NULL;
-  }
-
-  entry = NULL; line = NULL; stau = NULL; sttau = NULL;
-  rc = IOK;
-
-  /* Read until the next '\n': this function is crafted to read entries converted
-     using gml_entry_to_string, so we know lines will end that way. If that changes,
-     this function should be adapted consequently. */
-  line = NULL;
-  if(misc_read_file_line(fd, &line) == IERROR) {
-    return NULL;
-  }
-
-  /* Check if we have reached EOF */
-  if(feof(fd)) {
-    *eof = 1;
-    if(line) { free(line); line = NULL; }
-    return NULL;
-  }
-
-  /* To be on the safe side, we make sid and strapdoor as long as line */
-  if(!(sid = (char *) malloc(sizeof(char)*strlen(line)+1))) {
-    LOG_ERRORCODE(&logger, __FILE__, "_gml_entry_import_file", __LINE__,
-		  errno, LOGERROR);
-    GOTOENDRC(IERROR, _gml_entry_import_file);
-  }
-  memset(sid, 0, strlen(line)+1);
-
-  if(!(stau = (char *) malloc(sizeof(char)*strlen(line)+1))) {
-    LOG_ERRORCODE(&logger, __FILE__, "_gml_entry_import_file", __LINE__,
-		  errno, LOGERROR);
-    GOTOENDRC(IERROR, _gml_entry_import_file);
-  }
-  memset(stau, 0, strlen(line)+1);
-
-  if(!(sttau = (char *) malloc(sizeof(char)*strlen(line)+1))) {
-    LOG_ERRORCODE(&logger, __FILE__, "_gml_entry_import_file", __LINE__,
-		  errno, LOGERROR);
-    GOTOENDRC(IERROR, _gml_entry_import_file);
-  }
-  memset(sttau, 0, strlen(line)+1);  
-
-  /* The lines have the format "<id>\t<tau>\t<ttau>" */
-  if((rc = sscanf(line, "%s\t%s\t%s", sid, stau, sttau)) == EOF) {
-    LOG_ERRORCODE(&logger, __FILE__, "_gml_entry_import_file", __LINE__,
-		  errno, LOGERROR);
-    GOTOENDRC(IERROR, _gml_entry_import_file);
-  }
-
-  if(rc != 3) {
-    LOG_ERRORCODE_MSG(&logger, __FILE__, "_gml_entry_import_file", __LINE__,
-		      EDQUOT, "Corrupted GML file.", LOGERROR);
-    GOTOENDRC(IERROR, _gml_entry_import_file);
-  }
-
-  /* Create the entry and fill it */
-  if(!(entry = ps16_gml_entry_init()))
-    GOTOENDRC(IERROR, _gml_entry_import_file);
-  
-  if(!(entry->id = identity_from_string(GROUPSIG_PS16_CODE, sid))) {
-    LOG_ERRORCODE_MSG(&logger, __FILE__, "_gml_entry_import_file", __LINE__,
-		      EDQUOT, "Corrupted GML file.", LOGERROR);
-    GOTOENDRC(IERROR, _gml_entry_import_file);    
-  }
-  
-  if(!(entry->tau = pbcext_element_G1_init()))
-    GOTOENDRC(IERROR, _gml_entry_import_file);
-  if(pbcext_element_G1_from_b64(entry->tau, stau) == IERROR) {
-    identity_free(entry->id); entry->id = NULL;
-    GOTOENDRC(IERROR, _gml_entry_import_file);
-  }
-
-  if(!(entry->ttau = pbcext_element_G2_init()))
-    GOTOENDRC(IERROR, _gml_entry_import_file);
-  if(pbcext_element_G2_from_b64(entry->ttau, sttau) == IERROR) {
-    identity_free(entry->id); entry->id = NULL;
-    GOTOENDRC(IERROR, _gml_entry_import_file);
-  }  
-
- _gml_entry_import_file_end:
-
-  if(line) { mem_free(line); line = NULL; }
-  if(sid) { mem_free(sid); sid = NULL; }
-  if(stau) { mem_free(stau); stau = NULL; }
-  if(sttau) { mem_free(sttau); sttau = NULL; }
-
-  if(rc == IERROR) {
-    if(entry){
-      ps16_gml_entry_free(entry); entry = NULL;
-    }
-  }
-  
-  return entry;
-
-}
-
-static gml_t* _gml_import_file(char *filename) {
-
-  gml_t *gml;
-  ps16_gml_entry_t *entry;
-  FILE *fd;
-  uint8_t eof;
-
-  if(!filename) {
-    LOG_EINVAL(&logger, __FILE__, "_gml_import_file", __LINE__, LOGERROR);
-    return NULL;
-  }
-
-  /* Open the file for reading... */
-  if(!(fd = fopen(filename, "r") )) {
-    LOG_ERRORCODE(&logger, __FILE__, "_gml_import_file", __LINE__, errno, LOGERROR);
-    return NULL;
-  }
-
-  if(!(gml = ps16_gml_init())) {
-    fclose(fd);
-    return NULL;
-  }
-  
-  /* Read the GML entries */
-  eof = 0;
-  while(!eof) {
-    
-    /** @todo GML entry type fixed to "string"  */
-    /* Parse the next member key */
-
-    eof = 0;
-
-    /* We have an error if we receive NULL withouth reaching EOF */
-    if(!(entry = _gml_entry_import_file(fd, GML_FILE, &eof)) && !eof) {
-      gml_free(gml); gml = NULL;
-      fclose(fd);
-      return NULL;
-    }
-
-    /* If we got one, store it in the GML structure */
-    if(entry) {
-      if(gml_insert(gml,entry) == IERROR) {
-        gml_free(gml); gml = NULL;
-        fclose(fd);
-        return NULL;
-      }
-    }
-  }
-
-  fclose(fd); fd = NULL;
-  return gml;
-
-}
-
-static int _gml_export_new_entry_file(ps16_gml_entry_t *entry, char *filename) {
-
-  FILE *fd;
-  char *sentry;
-
-  if(!entry || !filename) {
-    LOG_EINVAL(&logger, __FILE__, "_gml_export_new_entry_file", __LINE__, LOGERROR);
-    return IERROR;
-  }
-  
-  if(!(fd = fopen(filename, "a"))) {
-    LOG_ERRORCODE(&logger, __FILE__, "_gml_export_new_entry_file", __LINE__, errno, LOGERROR);
-    return IERROR;
-  }
-  
-  if(!(sentry = ps16_gml_entry_to_string(entry))) {
-    fclose(fd); fd = NULL;
-    return IERROR;
-  }
-
-  fprintf(fd, "%s\n", sentry);
-  free(sentry); sentry = NULL;
-
-  fclose(fd);
-
-  return IOK;
-
-}
-
-static int _gml_export_file(gml_t *gml, char *filename) {
-
-  uint64_t i;
-  FILE *fd;
-  char *sentry;
-
-  if(!gml || !filename) {
-    LOG_EINVAL(&logger, __FILE__, "_gml_export_file", __LINE__, LOGERROR);
-    return IERROR;
-  }
-
-  if(!(fd = fopen(filename, "w"))) {
-    LOG_ERRORCODE(&logger, __FILE__, "_gml_export_file", __LINE__,
-		  errno, LOGERROR);
-    return IERROR;
-  }
-
-  /* Dump all the entries */
-  /** @todo The entries are dumped just as "tabbed tostringed-numbers" (perhaps
-      several formats should be supported)*/
-  for(i=0; i<gml->n; i++) {
-    if(!(sentry = ps16_gml_entry_to_string((ps16_gml_entry_t *) gml->entries[i]))) {
-      fclose(fd); fd = NULL;
-      return IERROR;
-    }
-    fprintf(fd, "%s\n", sentry);
-    free(sentry); sentry = NULL;
-  }
-
-  fclose(fd); fd = NULL;
-
-  return IOK;
-
-}
-
-/* Public functions */
-
-/* entry functions  */
-
-ps16_gml_entry_t* ps16_gml_entry_init() {
-
-  ps16_gml_entry_t *entry;
-
-  if(!(entry = (ps16_gml_entry_t *) malloc(sizeof(ps16_gml_entry_t)))) {
-    LOG_ERRORCODE(&logger, __FILE__, "ps16_gml_entry_init", __LINE__,
-		  errno, LOGERROR);
-    return NULL;
-  }
-
-  entry->id = NULL;
-  
-  return entry;
-
-}
-
-
-int ps16_gml_entry_free(ps16_gml_entry_t *entry) {
-
-  if(!entry) {
-    LOG_EINVAL_MSG(&logger, __FILE__, "ps16_gml_entry_free", __LINE__,
-		   "Nothing to free.", LOGWARN);
-    return IOK;
-  }
-
-  if(entry->id) { identity_free(entry->id); entry->id = NULL; }
-  if(entry->tau) { pbcext_element_G1_free(entry->tau); entry->tau = NULL; }
-  if(entry->ttau) { pbcext_element_G2_free(entry->ttau); entry->ttau = NULL; }
-  mem_free(entry); entry = NULL;
-  
-  return IOK;
-
-}
-
-char* ps16_gml_entry_to_string(ps16_gml_entry_t *entry) {
-
-  char *stau, *sttau, *sid, *sentry;
-  uint64_t sentry_len;
-
-  if(!entry) {
-    LOG_EINVAL(&logger, __FILE__, "ps16_gml_entry_to_string", __LINE__, LOGERROR);
-    return NULL;
-  }
-
-  /* A string representation of a GML entry will be: 
-     <id>\t<tau>\t<ttau> */
-
-  /* Get the string representations of the entry's fields */
-  if(!(sid = identity_to_string(entry->id))) {
-    return NULL;
-  }
-
-  if(!(stau = pbcext_element_G1_to_b64(entry->tau))) {
-    mem_free(sid); sid = NULL;
-    return NULL;
-  }
-
-  if(!(sttau = pbcext_element_G2_to_b64(entry->ttau))) {
-    mem_free(sid); sid = NULL;
-    mem_free(stau); stau = NULL;
-    return NULL;
-  }  
-
-  /* Calculate the length of the entry, adding a tab and a \n */
-  sentry_len = strlen(sid)+strlen(stau)+strlen(sttau)+2;
-
-  if(!(sentry = (char *) malloc(sizeof(char)*(sentry_len+1)))) {
-    LOG_ERRORCODE(&logger, __FILE__, "ps16_gml_entry_to_string", __LINE__, errno,
-		  LOGERROR);
-    mem_free(sid); sid = NULL;    
-    mem_free(stau); stau = NULL;
-    mem_free(sttau); sttau = NULL;
-    return NULL;
-  }
-
-  memset(sentry, 0, sizeof(char)*(sentry_len+1));
-  sprintf(sentry, "%s\t%s\t%s", sid, stau, sttau);
-
-  mem_free(sid); sid = NULL;
-  mem_free(stau); stau = NULL;
-  mem_free(sttau); sttau = NULL;
-
-  return sentry;
- 
-}
-
-/* list functions */
+#include "shim/pbc_ext.h"
 
 gml_t* ps16_gml_init() {
 
@@ -401,16 +69,18 @@ int ps16_gml_free(gml_t *gml) {
 
 }
 
-int ps16_gml_insert(gml_t *gml, void *entry) {
+int ps16_gml_insert(gml_t *gml, gml_entry_t *entry) {
 
-  if(!gml || gml->scheme != GROUPSIG_PS16_CODE) {
+  if(!gml || gml->scheme != GROUPSIG_PS16_CODE ||
+     gml->scheme != entry->scheme) {
     LOG_EINVAL(&logger, __FILE__, "ps16_gml_insert", __LINE__, LOGERROR);
     return IERROR;
   }
 
-  if(!(gml->entries = (void **) 
-       realloc(gml->entries, sizeof(ps16_gml_entry_t *)*(gml->n+1)))) {
-    LOG_ERRORCODE(&logger, __FILE__, "ps16_gml_insert", __LINE__, errno, LOGERROR);
+  if(!(gml->entries = (gml_entry_t **) 
+       realloc(gml->entries, sizeof(gml_entry_t *)*(gml->n+1)))) {
+    LOG_ERRORCODE(&logger, __FILE__, "ps16_gml_insert", __LINE__, errno,
+		  LOGERROR);
     return IERROR;
   }
 
@@ -429,8 +99,8 @@ int ps16_gml_remove(gml_t *gml, uint64_t index) {
   }
 
   if(index >= gml->n) {
-    LOG_EINVAL_MSG(&logger, __FILE__, "ps16_gml_remove", __LINE__, "Invalid index.",
-  		   LOGERROR);
+    LOG_EINVAL_MSG(&logger, __FILE__, "ps16_gml_remove", __LINE__,
+		   "Invalid index.", LOGERROR);
     return IERROR;
   }
 
@@ -445,7 +115,7 @@ int ps16_gml_remove(gml_t *gml, uint64_t index) {
 
 }
 
-void* ps16_gml_get(gml_t *gml, uint64_t index) {
+gml_entry_t* ps16_gml_get(gml_t *gml, uint64_t index) {
 
   if(!gml || gml->scheme != GROUPSIG_PS16_CODE) {
     LOG_EINVAL(&logger, __FILE__, "ps16_gml_get", __LINE__, LOGERROR);
@@ -462,85 +132,334 @@ void* ps16_gml_get(gml_t *gml, uint64_t index) {
   
 }
 
-gml_t* ps16_gml_import(gml_format_t format, void *src) {
+int ps16_gml_export(byte_t **bytes, uint32_t *size, gml_t *gml) {
 
-  if(!src) {
-    LOG_EINVAL(&logger, __FILE__, "ps16_gml_import", __LINE__, LOGERROR);
-    return NULL;
-  }
-
-  if(!_is_supported_format(format)) {
-    LOG_EINVAL_MSG(&logger, __FILE__, "ps16_gml_import", __LINE__,
-  		   "Unsupported GML type.", LOGERROR);
-    return NULL;
-  }
-
-  /* If the received source is empty, means that we have to
-     return an empty (new) GML */
-
-  switch(format) {
-  case GML_FILE:
-    return _gml_import_file((char *) src);
-  default:
-    LOG_EINVAL_MSG(&logger, __FILE__, "ps16_gml_import", __LINE__,
-  		   "Unsupported GML format.", LOGERROR);
-    return NULL;
-  }
-
-  return NULL;
- 
-}
-
-int ps16_gml_export(gml_t *gml, void *dst, gml_format_t format) {
-
-  if(!gml || gml->scheme != GROUPSIG_PS16_CODE || !dst) {
+  byte_t *bentry, *_bytes;
+  uint64_t i;
+  int rc;  
+  uint32_t total_size, entry_size;
+  
+  if (!bytes || !size || !gml || gml->scheme != GROUPSIG_PS16_CODE) {
     LOG_EINVAL(&logger, __FILE__, "ps16_gml_export", __LINE__, LOGERROR);
     return IERROR;
   }
 
-  if(!_is_supported_format(format)) {
-    LOG_EINVAL_MSG(&logger, __FILE__, "ps16_gml_export", __LINE__,
-  		   "Unsupported GML format.", LOGERROR);
-    return IERROR;
+  rc = IOK;
+  total_size = entry_size = 0;
+  bentry = _bytes = NULL;
+
+  /* Dump the number of entries */
+  if (!(_bytes = mem_malloc(sizeof(uint64_t))))
+    GOTOENDRC(IERROR, ps16_gml_export);
+  memcpy(_bytes, &gml->n, sizeof(uint64_t));
+  total_size = sizeof(uint64_t);
+
+  /* Export the entries one by one */
+  for (i=0; i<gml->n; i++) {
+    if (gml_entry_export(&bentry, &entry_size, gml->entries[i]) == IERROR)
+      GOTOENDRC(IERROR, ps16_gml_export);
+    total_size += entry_size;
+    if (!(_bytes = mem_realloc(_bytes, total_size)))
+      GOTOENDRC(IERROR, ps16_gml_export);
+    memcpy(&_bytes[total_size-entry_size], bentry, entry_size);
+    mem_free(bentry); bentry = NULL;
   }
 
-  switch(format) {
-  case GML_FILE:
-    return _gml_export_file(gml, (char *) dst);
-  default:
-    LOG_EINVAL_MSG(&logger, __FILE__, "ps16_gml_export", __LINE__,
-  		   "Unsupported GML format.", LOGERROR);
-    return IERROR;
+  if (!*bytes) {
+    *bytes = _bytes;
+  } else {
+    memcpy(*bytes, _bytes, total_size);
+    mem_free(_bytes); _bytes = NULL;
   }
 
-  return IERROR;
+  *size = total_size;
+
+ ps16_gml_export_end:
+
+  if (rc == IERROR) {
+    if (_bytes) { mem_free(_bytes); _bytes = NULL; }
+  }
+
+  if (bentry) { mem_free(bentry); bentry = NULL; }
+  
+  return rc;
 
 }
 
-int ps16_gml_export_new_entry(void *entry, void *dst, gml_format_t format) {
+gml_t* ps16_gml_import(byte_t *bytes, uint32_t size) {
 
-  if(!entry || !dst) {
-    LOG_EINVAL(&logger, __FILE__, "ps16_gml_export_new_entry", __LINE__, LOGERROR);
-    return IERROR;
+  gml_t *gml;
+  uint64_t i;
+  uint32_t read;
+  int entry_size;
+  int rc;
+  
+  if(!bytes || !size) {
+    LOG_EINVAL(&logger, __FILE__, "ps16_gml_import", __LINE__, LOGERROR);
+    return NULL;
   }
 
-  if(!_is_supported_format(format)) {
-    LOG_EINVAL_MSG(&logger, __FILE__, "ps16_gml_export_new_entry", __LINE__,
-  		   "Unsupported GML format.", LOGERROR);
-    return IERROR;
+  read = 0;
+  gml = NULL;
+  rc = IOK;
+  
+  if (!(gml = ps16_gml_init())) GOTOENDRC(IERROR, ps16_gml_import);
+
+  /* Read the nubmer of entries to process */
+  memcpy(&gml->n, bytes, sizeof(uint64_t));
+  read += sizeof(uint64_t);
+
+  if (!(gml->entries = mem_malloc(sizeof(gml_entry_t *)*gml->n)))
+    GOTOENDRC(IERROR, ps16_gml_import);
+
+  /* Import the entries one by one */
+  for (i=0; i<gml->n; i++) {
+    
+    if (!(gml->entries[i] = ps16_gml_entry_import(&bytes[read], size-read)))
+      GOTOENDRC(IERROR, ps16_gml_import);
+    
+    if ((entry_size = ps16_gml_entry_get_size(gml->entries[i])) == -1)
+      GOTOENDRC(IERROR, ps16_gml_import);
+
+    read += entry_size;
+    
   }
 
-  switch(format) {
-  case GML_FILE:
-    return _gml_export_new_entry_file(entry, (char *) dst);
-  default:
-    LOG_EINVAL_MSG(&logger, __FILE__, "ps16_gml_export_new_entry", __LINE__,
-  		   "Unsupported GML format.", LOGERROR);
-    return IERROR;
+ ps16_gml_import_end:
+  
+  if (rc == IERROR) {
+    ps16_gml_free(gml);
+    gml = NULL;
+  }
+  
+  return gml;
+ 
+}
+
+gml_entry_t* ps16_gml_entry_init() {
+
+  gml_entry_t *entry;
+
+  if(!(entry = (gml_entry_t *) malloc(sizeof(gml_entry_t)))) {
+    LOG_ERRORCODE(&logger, __FILE__, "ps16_gml_entry_init", __LINE__,
+		  errno, LOGERROR);
+    return NULL;
   }
 
-  return IERROR;  
+  entry->scheme = GROUPSIG_PS16_CODE;
+  entry->id = UINT64_MAX;
+  entry->data = NULL;
+  
+  return entry;
 
 }
 
-/* ps16_gml.c ends here */
+
+int ps16_gml_entry_free(gml_entry_t *entry) {
+
+  int rc;
+  
+  if(!entry) {
+    LOG_EINVAL_MSG(&logger, __FILE__, "ps16_gml_entry_free", __LINE__,
+		   "Nothing to free.", LOGWARN);
+    return IOK;
+  }
+
+  rc = IOK;
+
+  if(entry->data) {
+    rc = pbcext_element_G1_free(((ps16_gml_entry_data_t *) entry->data)->tau);
+    rc = pbcext_element_G2_free(((ps16_gml_entry_data_t *) entry->data)->ttau);
+    entry->data = NULL;
+  }
+  
+  mem_free(entry); 
+  
+  return rc;
+
+}
+
+int ps16_gml_entry_get_size(gml_entry_t *entry) {
+
+  uint64_t sG1, sG2;
+  
+  if (!entry) {
+    LOG_EINVAL(&logger, __FILE__, "ps16_gml_entry_get_size", __LINE__, LOGERROR);
+    return -1;
+  }
+
+  if (pbcext_element_G1_byte_size(&sG1) == -1)
+    return -1;
+  
+  if (pbcext_element_G2_byte_size(&sG2) == -1)
+    return -1;
+
+  if (sG1 + sG2 > INT_MAX) return -1;
+
+  return (int) sG1 + sG2;
+  
+}
+
+int ps16_gml_entry_export(byte_t **bytes,
+			  uint32_t *size,
+			  gml_entry_t *entry) {
+
+  byte_t *_bytes, *__bytes;
+  uint64_t _size, len;
+  
+  if (!bytes || !size || !entry) {
+    LOG_EINVAL(&logger, __FILE__, "ps16_gml_entry_export", __LINE__, LOGERROR);
+    return IERROR;    
+  }
+
+  /* Calculate size */
+  if ((_size = ps16_gml_entry_get_size(entry)) == -1) return IERROR;
+  _size += sizeof(int) + sizeof(uint64_t);
+  
+  if (!(_bytes = mem_malloc(sizeof(byte_t)*_size))) return IERROR;
+
+  /* First, dump the identity */
+  memcpy(_bytes, &entry->id, sizeof(uint64_t));
+
+  /* Next, dump the data, which for PS16 is tau (G1 element) and 
+     ttau (G2 element) */
+  __bytes = &_bytes[sizeof(uint64_t)];
+  if (pbcext_dump_element_G1_bytes(&__bytes,
+				   &len,
+				   ((ps16_gml_entry_data_t *) entry->data)->tau) == IERROR) {
+    mem_free(_bytes); _bytes = NULL;
+    return IERROR;
+  }
+
+  __bytes = &_bytes[sizeof(uint64_t)+len];  
+  if (pbcext_dump_element_G2_bytes(&__bytes,
+				   &len,
+				   ((ps16_gml_entry_data_t *) entry->data)->ttau) == IERROR) {
+    mem_free(_bytes); _bytes = NULL;
+    return IERROR;
+  }  
+
+  /* Prepare exit */
+  if (!*bytes) {
+    *bytes = _bytes;
+  } else {
+    memcpy(*bytes, _bytes, _size);
+    mem_free(_bytes); _bytes = NULL;
+  }
+
+  *size = _size;
+
+  return IOK;
+  
+}
+
+gml_entry_t* ps16_gml_entry_import(byte_t *bytes, uint32_t size) {
+
+  gml_entry_t *entry;
+  uint64_t len;
+
+  if (!bytes || !size || !entry) {
+    LOG_EINVAL(&logger, __FILE__, "ps16_gml_entry_import", __LINE__, LOGERROR);
+    return NULL;    
+  }
+
+  if (!(entry = ps16_gml_entry_init())) return NULL;
+
+  /* First, read the identity */
+  memcpy(&entry->id, bytes, sizeof(uint64_t));
+
+  /* Next, read the data */
+  if(!(((ps16_gml_entry_data_t *)entry->data)->tau = pbcext_element_G1_init())) {
+    ps16_gml_entry_free(entry); entry = NULL;
+    return NULL;
+  }
+
+  if (pbcext_get_element_G1_bytes(((ps16_gml_entry_data_t *)entry->data)->tau,
+				  &len,
+				  &bytes[sizeof(uint64_t)]) == IERROR) {
+    ps16_gml_entry_free(entry); entry = NULL;
+    return NULL;    
+  }
+  
+  if (!len) {
+    ps16_gml_entry_free(entry); entry = NULL;
+    return NULL;    
+  }
+
+  if(!(((ps16_gml_entry_data_t *)entry->data)->ttau = pbcext_element_G2_init())) {
+    ps16_gml_entry_free(entry); entry = NULL;
+    return NULL;
+  }
+
+  if (pbcext_get_element_G2_bytes(((ps16_gml_entry_data_t *)entry->data)->ttau,
+				  &len,
+				  &bytes[sizeof(uint64_t)]) == IERROR) {
+    ps16_gml_entry_free(entry); entry = NULL;
+    return NULL;    
+  }
+  
+  if (!len) {
+    ps16_gml_entry_free(entry); entry = NULL;
+    return NULL;    
+  }  
+
+  return entry;
+  
+}
+
+char* ps16_gml_entry_to_string(gml_entry_t *entry) {
+
+  char *stau, *sttau, *sid, *sentry;
+  uint64_t stau_len, sttau_len, sentry_len;
+
+  if(!entry) {
+    LOG_EINVAL(&logger, __FILE__, "ps16_gml_entry_to_string", __LINE__, LOGERROR);
+    return NULL;
+  }
+
+  /* A string representation of a GML entry will be: 
+     <id>\t<tau>\t<ttau> */
+
+  /* Get the string representations of the entry's fields */
+  if(!(sid = misc_uint642string(entry->id))) {
+    return NULL;
+  }
+
+  stau = NULL;
+  if(pbcext_element_G1_to_string(&stau,
+				 &stau_len,
+				 ((ps16_gml_entry_data_t *)entry->data)->tau) == IERROR) {
+    mem_free(sid); sid = NULL;
+    return NULL;
+  }
+
+  if(pbcext_element_G2_to_string(&sttau,
+				 &sttau_len,
+				 ((ps16_gml_entry_data_t *)entry->data)->ttau) == IERROR) {
+    mem_free(sid); sid = NULL;
+    mem_free(stau); stau = NULL;    
+    return NULL;
+  }
+
+  sentry_len = strlen(sid)+stau_len+sttau_len+2;
+
+  if(!(sentry = (char *) mem_malloc(sizeof(char)*sentry_len+1))) {
+    LOG_ERRORCODE(&logger, __FILE__, "ps16_gml_entry_to_string", __LINE__, errno,
+		  LOGERROR);
+    free(stau); stau = NULL;
+    free(sttau); sttau = NULL;
+    mem_free(sid); sid = NULL;
+    return NULL;
+  }
+
+  sprintf(sentry, "%s\t%s\t%s", sid, stau, sttau);
+
+  mem_free(sid); sid = NULL;
+  mem_free(stau); stau = NULL;
+  mem_free(sttau); sttau = NULL;
+
+  return sentry;
+ 
+}
+
+/* gml.c ends here */

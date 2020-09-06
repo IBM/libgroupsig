@@ -71,62 +71,6 @@ static const groupsig_description_t gl19_description = {
 /* Number of exchanged messages */
 #define GL19_JOIN_SEQ 3
 
-/* /\* */
-/*  * @def GL19_CONFIG_SET_DEFAULTS */
-/*  * @brief Sets the configuration structure to the default values for */
-/*  *  GL19. */
-/*  *\/ */
-/* #define GL19_CONFIG_SET_DEFAULTS(cfg) \ */
-/*   ((groupsig_config_t *) cfg)->scheme = GROUPSIG_GL19_CODE;	\ */
-/*   ((groupsig_config_t *) cfg)->has_gml = 0;			\ */
-/*   ((groupsig_config_t *) cfg)->has_crl = 0;			\ */
-/*   ((groupsig_config_t *) cfg)->has_pbc = 1;			\ */
-/*   ((groupsig_config_t *) cfg)->has_open_proof = 0; */
-
-/* /\**  */
-/*  * @fn groupsig_config_t* gl19_config_init(void) */
-/*  * @brief Allocates memory for a GL19 config structure. */
-/*  *  */
-/*  * @return A pointer to the allocated structure or NULL if error. */
-/*  *\/ */
-/* groupsig_config_t* gl19_config_init(void); */
-
-/* /\**  */
-/*  * @fn int gl19_config_free(groupsig_config_t *cfg) */
-/*  * @brief Frees the memory of a GL19 config structure. */
-/*  *  */
-/*  * @param cfg The structure to free. */
-/*  * */
-/*  * @return A pointer to the allocated structure or NULL if error. */
-/*  *\/ */
-/* int gl19_config_free(groupsig_config_t *cfg); */
-
-/* /\**  */
-/*  * @fn int gl19_sysenv_update(void *data) */
-/*  * @brief Sets the GL19 internal environment data, i.e., the PBC params and pairings. */
-/*  * */
-/*  * @param data A gl19_sysenv_t structure containing the PBC params and pairings. */
-/*  *  */
-/*  * @return IOK or IERROR. */
-/*  *\/ */
-/* int gl19_sysenv_update(void *data); */
-
-/* /\**  */
-/*  * @fn void* gl19_sysenv_get(void) */
-/*  * @brief Returns the GL19 specific environment data. */
-/*  *  */
-/*  * @return A pointer to the GL19 specific environment data or NULL if error. */
-/*  *\/ */
-/* void* gl19_sysenv_get(void); */
-
-/* /\**  */
-/*  * @fn int gl19_sysenv_free(void) */
-/*  * @brief Frees the GL19 internal environment. */
-/*  *  */
-/*  * @return IOK or IERROR. */
-/*  *\/ */
-/* int gl19_sysenv_free(void); */
-
 /** 
  * @fn int gl19_init()
  * @brief Initializes the internal variables needed by GL19. In this case,
@@ -145,8 +89,9 @@ int gl19_init();
 int gl19_clear();  
 
 /** 
- * @fn int gl19_setup(groupsig_key_t *grpkey, groupsig_key_t *mgrkey, 
- *                     gml_t *gml)
+ * @fn int gl19_setup(groupsig_key_t *grpkey, 
+ *                    groupsig_key_t *mgrkey, 
+ *                    gml_t *gml)
  * @brief The setup function for the GL19 scheme. Used to generate group public
  *  key and the managers keys.
  * 
@@ -175,7 +120,9 @@ int gl19_clear();
  * 
  * @return IOK or IERROR.
  */
-int gl19_setup(groupsig_key_t *grpkey, groupsig_key_t *mgrkey, gml_t *gml);
+int gl19_setup(groupsig_key_t *grpkey,
+	       groupsig_key_t *mgrkey,
+	       gml_t *gml);
 
 /**
  * @fn int gl19_get_joinseq(uint8_t *seq)
@@ -215,14 +162,19 @@ int gl19_get_joinstart(uint8_t *start);
  * 
  * @return IOK or IERROR.
  */
-int gl19_join_mem(message_t **mout, groupsig_key_t *memkey,
-		  int seq, message_t *min, groupsig_key_t *grpkey);
+int gl19_join_mem(message_t **mout,
+		  groupsig_key_t *memkey,
+		  int seq,
+		  message_t *min,
+		  groupsig_key_t *grpkey);
 
 /** 
- * @fn int gl19_join_mgr(message_t **mout, gml_t *gml,
- *                            groupsig_key_t *mgrkey,
- *                            int seq, message_t *min, 
- *			      groupsig_key_t *grpkey)
+ * @fn int gl19_join_mgr(message_t **mout, 
+ *                       gml_t *gml,
+ *                       groupsig_key_t *mgrkey,
+ *                       int seq, 
+ *                       message_t *min, 
+ *			 groupsig_key_t *grpkey)
  * @brief Executes the manager-side join of the join procedure.
  *
  * @param[in,out] mout Message to be produced by the current step of the join/
@@ -239,13 +191,19 @@ int gl19_join_mem(message_t **mout, groupsig_key_t *memkey,
  * 
  * @return IOK or IERROR.
  */
-int gl19_join_mgr(message_t **mout, gml_t *gml,
+int gl19_join_mgr(message_t **mout,
+		  gml_t *gml,
 		  groupsig_key_t *mgrkey,
-		  int seq, message_t *min, groupsig_key_t *grpkey);
+		  int seq,
+		  message_t *min,
+		  groupsig_key_t *grpkey);
 
 /** 
- * @fn int gl19_sign(groupsig_signature_t *sig, message_t *msg, groupsig_key_t *memkey, 
- *	              groupsig_key_t *grpkey, unsigned int seed)
+ * @fn int gl19_sign(groupsig_signature_t *sig, 
+ *                   message_t *msg, 
+ *                   groupsig_key_t *memkey, 
+ *	             groupsig_key_t *grpkey, 
+ *                   unsigned int seed)
  * @brief Issues GL19 group signatures.
  *
  * Using the specified member and group keys, issues a signature for the specified
@@ -262,12 +220,17 @@ int gl19_join_mgr(message_t **mout, gml_t *gml,
  * 
  * @return IOK or IERROR.
  */
-int gl19_sign(groupsig_signature_t *sig, message_t *msg, groupsig_key_t *memkey, 
-	       groupsig_key_t *grpkey, unsigned int seed);
+int gl19_sign(groupsig_signature_t *sig,
+	      message_t *msg,
+	      groupsig_key_t *memkey, 
+	      groupsig_key_t *grpkey,
+	      unsigned int seed);
 
 /** 
- * @fn int gl19_verify(uint8_t *ok, groupsig_signature_t *sig, message_t *msg, 
- *		        groupsig_key_t *grpkey);
+ * @fn int gl19_verify(uint8_t *ok, 
+ *                     groupsig_signature_t *sig, 
+ *                     message_t *msg, 
+ *		       groupsig_key_t *grpkey);
  * @brief Verifies a GL19 group signature.
  *
  * @param[in,out] ok Will be set to 1 if the verification succeeds, to 0 if
@@ -278,12 +241,16 @@ int gl19_sign(groupsig_signature_t *sig, message_t *msg, groupsig_key_t *memkey,
  * 
  * @return IOK or IERROR.
  */
-int gl19_verify(uint8_t *ok, groupsig_signature_t *sig, message_t *msg, 
-		 groupsig_key_t *grpkey);
+int gl19_verify(uint8_t *ok,
+		groupsig_signature_t *sig,
+		message_t *msg, 
+		groupsig_key_t *grpkey);
 
 /** 
- * @fn int gl19_blind(groupsig_blindsig_t *bsig, groupsig_key_t *bldkey, 
- *                    groupsig_key_t *grpkey, message_t *msg, 
+ * @fn int gl19_blind(groupsig_blindsig_t *bsig, 
+ *                    groupsig_key_t *bldkey, 
+ *                    groupsig_key_t *grpkey, 
+ *                    message_t *msg, 
  *                    groupsig_signature_t *sig)
  * @brief Blinding of group signatures.
  *
@@ -296,16 +263,21 @@ int gl19_verify(uint8_t *ok, groupsig_signature_t *sig, message_t *msg,
  * 
  * @return IOK or IERROR.
  */
-int gl19_blind(groupsig_blindsig_t *bsig, groupsig_key_t **bldkey,
-	       groupsig_key_t *grpkey, groupsig_signature_t *sig,
+int gl19_blind(groupsig_blindsig_t *bsig,
+	       groupsig_key_t **bldkey,
+	       groupsig_key_t *grpkey,
+	       groupsig_signature_t *sig,
 	       message_t *msg);
 
 
 /** 
  * @fn int gl19_convert(groupsig_blindsig_t **csig,
- *                      groupsig_blindsig_t **bsig, uint32_t n_bsigs,
- *	                groupsig_key_t *grpkey, groupsig_key_t *mgrkey,
- *                      groupsig_key_t *bldkey, message_t *msg)
+ *                      groupsig_blindsig_t **bsig, 
+ *                      uint32_t n_bsigs,
+ *	                groupsig_key_t *grpkey, 
+ *                      groupsig_key_t *mgrkey,
+ *                      groupsig_key_t *bldkey, 
+ *                      message_t *msg)
  * @brief Converts blinded group signatures.
  *
  * @param[in,out] csig Array to store the converted signatures.
@@ -320,14 +292,19 @@ int gl19_blind(groupsig_blindsig_t *bsig, groupsig_key_t **bldkey,
  * @return IOK or IERROR.
  */
 int gl19_convert(groupsig_blindsig_t **csig,
-		 groupsig_blindsig_t **bsig, uint32_t n_bsigs,
-		 groupsig_key_t *grpkey, groupsig_key_t *mgrkey,
-		 groupsig_key_t *bldkey, message_t *msg);
+		 groupsig_blindsig_t **bsig,
+		 uint32_t n_bsigs,
+		 groupsig_key_t *grpkey,
+		 groupsig_key_t *mgrkey,
+		 groupsig_key_t *bldkey,
+		 message_t *msg);
 
 /**
- * @fn int gl19_unblind(identity_t *nym, groupsig_signature_t *sig,
+ * @fn int gl19_unblind(identity_t *nym, 
+ *                      groupsig_signature_t *sig,
  *                      groupsig_blindsig_t *bsig,
- *                      groupsig_key_t *grpkey, groupsig_key_t *bldkey,
+ *                      groupsig_key_t *grpkey, 
+ *                      groupsig_key_t *bldkey,
  *                      message_t *msg)
  * @brief Unblinds the nym in a GL19 group signature.
  *
@@ -341,9 +318,11 @@ int gl19_convert(groupsig_blindsig_t **csig,
  * 
  * @return IOK or IERROR.
  */
-int gl19_unblind(identity_t *nym, groupsig_signature_t *sig,
+int gl19_unblind(identity_t *nym,
+		 groupsig_signature_t *sig,
 		 groupsig_blindsig_t *bsig,
-		 groupsig_key_t *grpkey, groupsig_key_t *bldkey,
+		 groupsig_key_t *grpkey,
+		 groupsig_key_t *bldkey,
 		 message_t *msg);
 
 /**
@@ -354,11 +333,6 @@ static const groupsig_t gl19_groupsig_bundle = {
  desc: &gl19_description, /**< Contains the GL19 scheme description. */
  init: &gl19_init, /**< Initializes the variables needed by GL19. */
  clear: &gl19_clear, /**< Frees the varaibles needed by GL19. */  
-  /* &gl19_config_init, /\**< Initializes a GL19 config structure. *\/ */
-  /* &gl19_config_free, /\**< Frees a GL19 config structure. *\/ */
-  /* &gl19_sysenv_update, /\**< Updates GL19's environment data, if any. *\/ */
-  /* &gl19_sysenv_get, /\**< Gets GL19's environment data, if any. *\/ */
-  /* &gl19_sysenv_free, /\**< Frees GL19's environment data, if any. *\/ */
  setup: &gl19_setup, /**< Sets up GL19 groups. */
  get_joinseq: &gl19_get_joinseq, /**< Returns the number of messages in the join 
 			protocol. */
