@@ -191,7 +191,7 @@ int ps16_join_mgr(message_t **mout,
     
     /* Currently, PS16 identities are just uint64_t's */
     ps16_entry->id = gml->n;
-    if (!(ps16_entry->data = mem_malloc(sizeof(ps16_gml_entry_data_t *))))
+    if (!(ps16_entry->data = mem_malloc(sizeof(ps16_gml_entry_data_t))))
       GOTOENDRC(IERROR, ps16_join_mgr);
     ((ps16_gml_entry_data_t *) ps16_entry->data)->tau = tau;
     ((ps16_gml_entry_data_t *) ps16_entry->data)->ttau = ttau;

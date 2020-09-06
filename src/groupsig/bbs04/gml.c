@@ -291,7 +291,7 @@ int bbs04_gml_entry_get_size(gml_entry_t *entry) {
 
   if (sG1 > INT_MAX) return -1;
 
-  return (int) sG1;
+  return (int) sG1 + sizeof(int);
   
   
 }

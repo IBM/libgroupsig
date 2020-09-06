@@ -70,7 +70,7 @@ uint64_t index);
 
 ffibuilder.cdef("""
 typedef int (*open_f)(
-identity_t *id, 
+uint64_t *index, 
 groupsig_proof_t *proof, 
 crl_t *crl, 
 groupsig_signature_t *sig, 
@@ -82,7 +82,6 @@ gml_t *gml);
 ffibuilder.cdef("""
 typedef int (*open_verify_f)(
 uint8_t *ok, 
-identity_t *id, 
 groupsig_proof_t *proof, 
 groupsig_signature_t *sig, 
 groupsig_key_t *grpkey);

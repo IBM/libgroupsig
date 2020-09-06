@@ -68,7 +68,7 @@ groupsig_key_t *grpkey);
 
 ffibuilder.cdef("""
 int bbs04_open(
-identity_t *id, 
+uint64_t *index, 
 groupsig_proof_t *proof,
 crl_t *crl, 
 groupsig_signature_t *sig, 

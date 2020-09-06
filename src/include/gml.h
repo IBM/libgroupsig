@@ -106,12 +106,6 @@ typedef gml_entry_t* (*gml_entry_init_f)();
  * @brief Type of functions for freeing individual entries of GMLs.
  */  
 typedef int (*gml_entry_free_f)(gml_entry_t *entry);  
-  
-/**
- * @typedef gml_t* (*gml_entry_import_f)(byte_t *bytes, uint32_t size)
- * @brief Type of functions for importing individual GML entries.
- */  
-typedef gml_entry_t* (*gml_entry_import_f)(byte_t *bytes, uint32_t size);    
 
 /**
  * @typedef int (*gml_entry_get_size_f)(gml_get_sizet *entry)

@@ -58,11 +58,13 @@ int ps16_gml_free(gml_t *gml) {
     return IOK;
   }
 
-  for(i=0; i<gml->n; i++) {
-    ps16_gml_entry_free(gml->entries[i]); gml->entries[i] = NULL;
+  if (gml->entries) {
+    for(i=0; i<gml->n; i++) {
+      ps16_gml_entry_free(gml->entries[i]); gml->entries[i] = NULL;
+    }
+    mem_free(gml->entries); gml->entries = NULL;    
   }
 
-  mem_free(gml->entries); gml->entries = NULL;
   mem_free(gml); gml = NULL;
 
   return IOK;
@@ -193,6 +195,7 @@ gml_t* ps16_gml_import(byte_t *bytes, uint32_t size) {
   uint32_t read;
   int entry_size;
   int rc;
+  FILE *fd;
   
   if(!bytes || !size) {
     LOG_EINVAL(&logger, __FILE__, "ps16_gml_import", __LINE__, LOGERROR);
@@ -202,7 +205,7 @@ gml_t* ps16_gml_import(byte_t *bytes, uint32_t size) {
   read = 0;
   gml = NULL;
   rc = IOK;
-  
+
   if (!(gml = ps16_gml_init())) GOTOENDRC(IERROR, ps16_gml_import);
 
   /* Read the nubmer of entries to process */
@@ -214,10 +217,10 @@ gml_t* ps16_gml_import(byte_t *bytes, uint32_t size) {
 
   /* Import the entries one by one */
   for (i=0; i<gml->n; i++) {
-    
+
     if (!(gml->entries[i] = ps16_gml_entry_import(&bytes[read], size-read)))
       GOTOENDRC(IERROR, ps16_gml_import);
-    
+
     if ((entry_size = ps16_gml_entry_get_size(gml->entries[i])) == -1)
       GOTOENDRC(IERROR, ps16_gml_import);
 
@@ -257,6 +260,7 @@ gml_entry_t* ps16_gml_entry_init() {
 
 int ps16_gml_entry_free(gml_entry_t *entry) {
 
+  ps16_gml_entry_data_t *data;
   int rc;
   
   if(!entry) {
@@ -266,15 +270,17 @@ int ps16_gml_entry_free(gml_entry_t *entry) {
   }
 
   rc = IOK;
+  data = (ps16_gml_entry_data_t *) entry->data;
 
-  if(entry->data) {
-    rc = pbcext_element_G1_free(((ps16_gml_entry_data_t *) entry->data)->tau);
-    rc = pbcext_element_G2_free(((ps16_gml_entry_data_t *) entry->data)->ttau);
-    entry->data = NULL;
+  if (data) {
+    if (data->tau) { rc = pbcext_element_G1_free(data->tau); data->tau = NULL; }
+    if (data->ttau) { rc += pbcext_element_G2_free(data->ttau); data->ttau = NULL; }
+    mem_free(entry->data); entry->data = NULL;
   }
   
-  mem_free(entry); 
-  
+  mem_free(entry); entry = NULL;
+
+  if (rc) rc = IERROR;
   return rc;
 
 }
@@ -296,7 +302,7 @@ int ps16_gml_entry_get_size(gml_entry_t *entry) {
 
   if (sG1 + sG2 > INT_MAX) return -1;
 
-  return (int) sG1 + sG2;
+  return (int) sG1 + sG2 + sizeof(int)*2;
   
 }
 
@@ -357,6 +363,7 @@ gml_entry_t* ps16_gml_entry_import(byte_t *bytes, uint32_t size) {
 
   gml_entry_t *entry;
   uint64_t len;
+  FILE *fd;
 
   if (!bytes || !size || !entry) {
     LOG_EINVAL(&logger, __FILE__, "ps16_gml_entry_import", __LINE__, LOGERROR);
@@ -369,6 +376,12 @@ gml_entry_t* ps16_gml_entry_import(byte_t *bytes, uint32_t size) {
   memcpy(&entry->id, bytes, sizeof(uint64_t));
 
   /* Next, read the data */
+
+  if (!(entry->data = mem_malloc(sizeof(ps16_gml_entry_data_t)))) {
+    ps16_gml_entry_free(entry); entry = NULL;
+    return NULL;
+  }
+  
   if(!(((ps16_gml_entry_data_t *)entry->data)->tau = pbcext_element_G1_init())) {
     ps16_gml_entry_free(entry); entry = NULL;
     return NULL;
@@ -380,7 +393,7 @@ gml_entry_t* ps16_gml_entry_import(byte_t *bytes, uint32_t size) {
     ps16_gml_entry_free(entry); entry = NULL;
     return NULL;    
   }
-  
+
   if (!len) {
     ps16_gml_entry_free(entry); entry = NULL;
     return NULL;    
@@ -393,11 +406,11 @@ gml_entry_t* ps16_gml_entry_import(byte_t *bytes, uint32_t size) {
 
   if (pbcext_get_element_G2_bytes(((ps16_gml_entry_data_t *)entry->data)->ttau,
 				  &len,
-				  &bytes[sizeof(uint64_t)]) == IERROR) {
+				  &bytes[sizeof(uint64_t)+len]) == IERROR) {
     ps16_gml_entry_free(entry); entry = NULL;
     return NULL;    
   }
-  
+
   if (!len) {
     ps16_gml_entry_free(entry); entry = NULL;
     return NULL;    
