@@ -6,7 +6,6 @@ on:
   pull_request:
     branches: [ master, develop ]
 
-#on: [push, pull_request]
 jobs:
   test-core:
     runs-on: ${{ matrix.os }}
