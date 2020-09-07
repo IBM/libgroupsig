@@ -31,7 +31,7 @@
  * 
  * @return A pointer to the resulting Base64 string, or NULL if error.
  */
-char* base64_encode(const unsigned char *in, uint64_t length);
+char* base64_encode(const unsigned char *in, uint64_t length, uint8_t nl);
 
 /** 
  * @fn unsigned char* base64_decode(const char *in, uint64_t *length_dec)

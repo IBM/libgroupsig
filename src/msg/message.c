@@ -287,7 +287,7 @@ char* message_to_base64(message_t *msg) {
     return NULL;
   }
 
-  return base64_encode(msg->bytes, msg->length);
+  return base64_encode(msg->bytes, msg->length, 0);
 
 }
 
