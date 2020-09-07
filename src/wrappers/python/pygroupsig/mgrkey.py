@@ -10,6 +10,7 @@ def mgrkey_export(mgrkey):
     if lib.groupsig_mgr_key_export(bkey, size, mgrkey) == constants.IERROR:
         raise Exception('Error exporting manager key.')
     b64key = base64.b64encode(ffi.buffer(bkey[0],size[0]))
+    b64key = b64key.decode('utf-8').replace('\n', '')    
 #    lib.free(bkey[0])
     return b64key
 

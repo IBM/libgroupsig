@@ -9,7 +9,8 @@ def grpkey_export(grpkey):
     size = ffi.new("uint32_t *")
     if lib.groupsig_grp_key_export(bkey, size, grpkey) == constants.IERROR:
         raise Exception('Error exporting group key.')
-    b64 = base64.b64encode(ffi.buffer(bkey[0],size[0]))    
+    b64 = base64.b64encode(ffi.buffer(bkey[0],size[0]))
+    b64 = b64.decode('utf-8').replace('\n', '')
     #    lib.free(bkey[0])
     return b64
 

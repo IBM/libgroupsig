@@ -10,7 +10,8 @@ def blindsig_export(sig):
     if lib.groupsig_blindsig_export(bsig, size, sig) == constants.IERROR:
         raise Exception('Error exporting blindsig.')
     b64sig = base64.b64encode(ffi.buffer(bsig[0],size[0]))
-#    lib.free(bsig[0])
+    b64sig = b64sig.decode('utf-8').replace('\n', '')
+    #    lib.free(bsig[0])
     return b64sig
 
 def blindsig_import(code, b64sig):
