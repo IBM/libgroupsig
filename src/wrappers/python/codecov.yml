@@ -1,0 +1,3 @@
+coverage:
+  fixes:
+    - "pygroupsig/::src/groupsig/wrappers/python/pygroupsig/"
