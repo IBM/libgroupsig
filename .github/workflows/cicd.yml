@@ -37,7 +37,7 @@ jobs:
         working-directory: ${{ github.workspace }}/build
         run: |
           ctest --output-on-failure .
-          ctest -VV --output-on-failure -T memcheck .
+#          ctest -VV --output-on-failure -T memcheck .
       - name: Process coverage
         working-directory: ${{ github.workspace }}/build
         run: | 
