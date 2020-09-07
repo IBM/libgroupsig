@@ -1557,7 +1557,7 @@ napi_value gs_grp_key_export
   status = groupsig_grp_key_export(&bytes, (uint32_t *) &size, key);
   assert (status == napi_ok);
 
-  if(!(str = base64_encode(bytes, size))) {
+  if(!(str = base64_encode(bytes, size, 0))) {
     napi_throw_type_error(env, NULL, "Internal error");	       
     return NULL;
   }
@@ -1894,7 +1894,7 @@ napi_value gs_mgr_key_export
   status = groupsig_mgr_key_export(&bytes, (uint32_t *) &size, key);
   assert (status == napi_ok);
 
-  if(!(str = base64_encode(bytes, size))) {
+  if(!(str = base64_encode(bytes, size, 0))) {
     napi_throw_type_error(env, NULL, "Internal error");	       
     return NULL;
   }
@@ -2231,7 +2231,7 @@ napi_value gs_mem_key_export
   status = groupsig_mem_key_export(&bytes, (uint32_t *) &size, key);
   assert (status == napi_ok);   
 
-  if(!(str = base64_encode(bytes, size))) {
+  if(!(str = base64_encode(bytes, size, 0))) {
     napi_throw_type_error(env, NULL, "Internal error");	       
     return NULL;
   }
@@ -2608,7 +2608,7 @@ napi_value gs_bld_key_export
   status = groupsig_bld_key_export(&bytes, (uint32_t *) &size, key);
   assert (status == napi_ok);   
 
-  if(!(str = base64_encode(bytes, size))) {
+  if(!(str = base64_encode(bytes, size, 0))) {
     napi_throw_type_error(env, NULL, "Internal error");	       
     return NULL;
   }
@@ -2654,7 +2654,7 @@ napi_value gs_bld_key_export_pub
   status = groupsig_bld_key_export_pub(&bytes, (uint32_t *) &size, key);
   assert (status == napi_ok);   
 
-  if(!(str = base64_encode(bytes, size))) {
+  if(!(str = base64_encode(bytes, size, 0))) {
     napi_throw_type_error(env, NULL, "Internal error");	       
     return NULL;
   }
@@ -2992,7 +2992,7 @@ napi_value gs_signature_export
   status = groupsig_signature_export(&bytes, (uint32_t *) &size, sig);
   assert (status == napi_ok);   
 
-  if(!(str = base64_encode(bytes, size))) {
+  if(!(str = base64_encode(bytes, size, 0))) {
     napi_throw_type_error(env, NULL, "Internal error");	       
     return NULL;
   }
@@ -3330,7 +3330,7 @@ napi_value gs_blindsig_export
   status = groupsig_blindsig_export(&bytes, (uint32_t *) &size, sig);
   assert (status == napi_ok);   
 
-  if(!(str = base64_encode(bytes, size))) {
+  if(!(str = base64_encode(bytes, size, 0))) {
     napi_throw_type_error(env, NULL, "Internal error");	       
     return NULL;
   }

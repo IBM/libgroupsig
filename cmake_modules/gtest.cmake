@@ -1,42 +1,21 @@
-set(CMAKE_CXX_COMPILER_ID "GNU")
-set(CMAKE_CXX_STANDARD 17)
+include(ExternalProject)
+set(EXTERNAL_INSTALL_LOCATION ${CMAKE_BINARY_DIR}/external)
+
+ExternalProject_Add(gtest-project
+  GIT_REPOSITORY https://github.com/google/googletest.git
+  CMAKE_ARGS
+  -DCMAKE_INSTALL_PREFIX=${EXTERNAL_INSTALL_LOCATION}
+  -DCMAKE_INSTALL_RPATH=${EXTERNAL_INSTALL_LOCATION}/lib
+  -DCMAKE_CXX_FLAGS=-fPIC
+  INSTALL_COMMAND make install
+)
+
+install(DIRECTORY "${EXTERNAL_INSTALL_LOCATION}/include" DESTINATION ${CMAKE_INSTALL_PREFIX})
+install(DIRECTORY "${EXTERNAL_INSTALL_LOCATION}/lib" DESTINATION ${CMAKE_INSTALL_PREFIX})
 
 SET(GCC_TEST_COMPILE_FLAGS "-g -O0 -fprofile-arcs -ftest-coverage")
 SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -O0 -fprofile-arcs -ftest-coverage")
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GCC_TEST_COMPILE_FLAGS}" )
 
-#	# Download and unpack googletest at configure time
-#	configure_file(CMakeLists.txt.in googletest-download/CMakeLists.txt)
-#	execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
-#  		RESULT_VARIABLE result
-#  		WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/googletest-download )
-#	if(result)
-#  		message(FATAL_ERROR "CMake step for googletest failed: ${result}")
-#	endif()
-#	execute_process(COMMAND ${CMAKE_COMMAND} --build .
-#  		RESULT_VARIABLE result
-# 		 WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/googletest-download )
-#	if(result)
-#  		message(FATAL_ERROR "Build step for googletest failed: ${result}")
-#	endif()
-#
-#	# Prevent overriding the parent project's compiler/linker
-#	# settings on Windows
-#	set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-#
-#	# Add googletest directly to our build. This defines
-#	# the gtest and gtest_main targets.
-#	add_subdirectory(${CMAKE_CURRENT_BINARY_DIR}/googletest-src
-#        	         ${CMAKE_CURRENT_BINARY_DIR}/googletest-build
-#                	 EXCLUDE_FROM_ALL)
-#
-#	# The gtest/gtest_main targets carry header search path
-#	# dependencies automatically when using CMake 2.8.11 or
-#	# later. Otherwise we have to add them here ourselves.
-#	if (CMAKE_VERSION VERSION_LESS 2.8.11)
-#	  include_directories("${gtest_SOURCE_DIR}/include")
-#	endif()
-#	
 enable_testing()
-
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/test)

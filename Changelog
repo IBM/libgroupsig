@@ -1,0 +1,28 @@
+# Changelog
+
+20200730: First release
+
+  Summary:
+
+  First release.   
+
+  Versions:
+
+  - Core: 0.1.0
+  - Python: 0.1.4
+  - NodeJS: 0.1.3
+  - Java: 0.1.0
+
+20200908: Hotfix
+
+  Summary: 
+
+  Fixed a bug in the Base64 encoding of the Python and NodeJS wrappers.
+  Added basic CICD workflow to the master and develop branches. Will be improved
+  in the next release.
+
+  Versions:
+  - Core: 0.1.1
+  - Python: 0.1.5
+  - NodeJS: 0.1.3
+  - Java: 0.1.0
