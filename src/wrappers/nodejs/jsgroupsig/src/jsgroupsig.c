@@ -391,128 +391,6 @@ napi_value gs_has_open_proof
   
 }
 
-/* napi_value gs_sysenv_update */
-/* ( */
-/*  napi_env env, */
-/*  napi_callback_info info */
-/*  ) { */
-  
-/*   napi_status status; */
-/*   napi_value args[2]; */
-/*   sysenv_t *senv; */
-/*   uint32_t code; */
-/*   size_t argc; */
-
-/*   argc = 2; */
-/*   status = napi_get_cb_info(env, info, &argc, args, NULL, NULL); */
-/*   assert(status == napi_ok); */
-
-/*   if (argc != 2) { */
-/*     napi_throw_type_error(env, NULL, "Wrong number of arguments"); */
-/*     return NULL; */
-/*   } */
-  
-/*   NAPI_GET_ARG_UINT32(env, args[0], code); */
-
-/*   /\* groupsig_is_supported_scheme actually expects an uint8_t *\/ */
-/*   if (code > UINT8_MAX) { */
-/*     napi_throw_type_error(env, NULL, "Wrong arguments (overflow)"); */
-/*     return NULL; */
-/*   } */
-
-/*   if (napi_get_value_external(env, args[1], (void **) &senv) != napi_ok) {  */
-/*     napi_throw_type_error(env, "EINVAL", "Expected external");	        */
-/*     return NULL; */
-/*   } */
-  
-/*   /\* Run groupsig_sysenv_update *\/ */
-/*   status = groupsig_sysenv_update((uint8_t) code, senv); */
-/*   assert (status == napi_ok); */
-
-/*   return NULL; */
-  
-/* } */
-
-/* napi_value gs_sysenv_get */
-/* ( */
-/*  napi_env env, */
-/*  napi_callback_info info */
-/*  ) { */
-  
-/*   napi_status status; */
-/*   napi_value args[1], external; */
-/*   sysenv_t *senv; */
-/*   uint32_t code; */
-/*   size_t argc; */
-
-/*   argc = 1; */
-/*   status = napi_get_cb_info(env, info, &argc, args, NULL, NULL); */
-/*   assert(status == napi_ok); */
-
-/*   if (argc != 1) { */
-/*     napi_throw_type_error(env, NULL, "Wrong number of arguments"); */
-/*     return NULL; */
-/*   } */
-  
-/*   NAPI_GET_ARG_UINT32(env, args[0], code); */
-
-/*   /\* groupsig_is_supported_scheme actually expects an uint8_t *\/ */
-/*   if (code > UINT8_MAX) { */
-/*     napi_throw_type_error(env, NULL, "Wrong arguments (overflow)"); */
-/*     return NULL; */
-/*   } */
-    
-/*   /\* Run groupsig_sysenv_get *\/ */
-/*   senv = groupsig_sysenv_get((uint8_t) code); */
-  
-/*   if (!senv) { */
-/*     napi_throw_error(env, NULL, "Error getting system environment."); */
-/*     return NULL; */
-/*   } */
-
-/*   status = napi_create_external(env, senv, NULL, NULL, &external); */
-/*   assert (status == napi_ok); */
-
-/*   return external; */
-  
-/* } */
-
-/* napi_value gs_senv_free */
-/* ( */
-/*  napi_env env, */
-/*  napi_callback_info info */
-/*  ) { */
-  
-/*   napi_status status; */
-/*   napi_value args[1]; */
-/*   uint32_t code; */
-/*   size_t argc; */
-
-/*   argc = 1; */
-/*   status = napi_get_cb_info(env, info, &argc, args, NULL, NULL); */
-/*   assert(status == napi_ok); */
-
-/*   if (argc != 1) { */
-/*     napi_throw_type_error(env, NULL, "Wrong number of arguments"); */
-/*     return NULL; */
-/*   } */
-  
-/*   NAPI_GET_ARG_UINT32(env, args[0], code); */
-
-/*   /\* groupsig_is_supported_scheme actually expects an uint8_t *\/ */
-/*   if (code > UINT8_MAX) { */
-/*     napi_throw_type_error(env, NULL, "Wrong arguments (overflow)"); */
-/*     return NULL; */
-/*   } */
-    
-/*   /\* Run groupsig_sysenv_get *\/ */
-/*   status = groupsig_sysenv_free((uint8_t) code);   */
-/*   assert (status == napi_ok); */
-
-/*   return NULL; */
-  
-/* } */
-
 napi_value gs_setup
 (
  napi_env env,
@@ -960,11 +838,11 @@ napi_value gs_open
  ) {
   
   napi_status status;
-  napi_value args[5], external;
+  napi_value args[5], nindex;
   groupsig_signature_t *sig;
   groupsig_key_t *grpkey, *mgrkey;
   groupsig_proof_t *proof;
-  identity_t *id;
+  uint64_t index;
   crl_t *crl;
   gml_t *gml;
   size_t argc, result;
@@ -1040,23 +918,16 @@ napi_value gs_open
     
   }
 
-  /* Initialize identity */
-  if(!(id = identity_init(grpkey->scheme))) {
-    napi_throw_error(env, NULL, "Internal error.");
-    return NULL;
-  }
-
   /* Run groupsig_open */
-  if (groupsig_open(id, proof, crl, sig, grpkey, mgrkey, gml) == IERROR) {
-    identity_free(id); id = NULL;
+  if (groupsig_open(&index, proof, crl, sig, grpkey, mgrkey, gml) == IERROR) {
     napi_throw_error(env, NULL, "Internal error.");    
     return NULL;
   }
-  
-  status = napi_create_external(env, id, NULL, NULL, &external);
-  assert (status == napi_ok);
-  
-  return external;
+
+  status = napi_create_uint32(env, (uint32_t) index, &nindex);
+  assert(status == napi_ok);
+
+  return nindex;
     
 }
 
@@ -1071,17 +942,16 @@ napi_value gs_open_verify
   groupsig_signature_t *sig;
   groupsig_key_t *grpkey;
   groupsig_proof_t *proof;
-  identity_t *id;
   size_t argc, result;
   uint8_t ok;
   bool b;
 
-  argc = 4;
+  argc = 3;
   status = napi_get_cb_info(env, info, &argc, args, NULL, NULL);
   assert(status == napi_ok);
-  id = NULL; proof = NULL; sig = NULL; grpkey = NULL;
+  proof = NULL; sig = NULL; grpkey = NULL;
   
-  if (argc < 3 || argc > 4) {
+  if (argc != 3) {
     napi_throw_type_error(env, NULL, "Wrong number of arguments");
     return NULL;
   }
@@ -1103,23 +973,9 @@ napi_value gs_open_verify
     napi_throw_type_error(env, "EINVAL", "Expected external");
     return NULL;
   }
-
-  /* Get identity */
-  if (argc > 3) {
-    
-    NAPI_IS_NULL(env, args[3], &b);
-
-    if (!b) {
-      if (napi_get_value_external(env, args[3], (void **) &id) != napi_ok) { 
-	napi_throw_type_error(env, "EINVAL", "Expected external");
-	return NULL;
-      }
-    }
-    
-  }
     
   /* Run groupsig_open_verify */
-  if (groupsig_open_verify(&ok, id, proof, sig, grpkey) == IERROR) {
+  if (groupsig_open_verify(&ok, proof, sig, grpkey) == IERROR) {
     napi_throw_type_error(env, NULL, "Internal error.");
     return NULL;
   }
@@ -4412,24 +4268,25 @@ napi_value gs_gml_free
   
 }
 
-napi_value gs_gml_export_file
+napi_value gs_gml_export
 (
  napi_env env,
  napi_callback_info info
  ) {
 
   napi_status status;
-  napi_value args[3];
+  napi_value args[2], result;
   gml_t *gml;
-  uint32_t format;
-  char *dst;
+  byte_t *bytes;
+  char *str;
+  uint64_t size;  
   size_t argc;
 
-  argc = 3;
+  argc = 2;
   status = napi_get_cb_info(env, info, &argc, args, NULL, NULL);
   assert(status == napi_ok);
 
-  if (argc != 3) {
+  if (argc != 2) {
     napi_throw_type_error(env, NULL, "Wrong number of arguments");
     return NULL;
   }
@@ -4439,16 +4296,23 @@ napi_value gs_gml_export_file
     return NULL;
   }
 
-  NAPI_GET_ARG_UINT32(env, args[1], format);
-
-  NAPI_GET_STRING_UTF8(env, args[2], dst);
-  
-  if (gml_export(gml, dst, format) == IERROR) {
+  bytes = NULL; size = 0;
+  if (gml_export(&bytes, (uint32_t *) &size, gml) == IERROR) {
     napi_throw_type_error(env, NULL, "Internal error.");
     return NULL;
   }
 
-  return NULL;  
+  if(!(str = base64_encode(bytes, size))) {
+    napi_throw_type_error(env, NULL, "Internal error");	       
+    return NULL;
+  }
+
+  free(bytes); bytes = NULL;  
+
+  status = napi_create_string_utf8(env, str, strlen(str), &result);
+  assert (status == napi_ok);
+
+  return result;  
   
 }
 
@@ -4459,17 +4323,19 @@ napi_value gs_gml_import
  ) {
 
   napi_status status;
-  napi_value args[3], external;
+  napi_value args[2], external;
   char *src;
+  byte_t *bytes;
   gml_t *gml;
-  uint32_t format, code;
+  uint64_t size;
+  uint32_t code;
   size_t argc;
 
-  argc = 3;
+  argc = 2;
   status = napi_get_cb_info(env, info, &argc, args, NULL, NULL);
   assert(status == napi_ok);
 
-  if (argc != 3) {
+  if (argc != 2) {
     napi_throw_type_error(env, NULL, "Wrong number of arguments");
     return NULL;
   }
@@ -4482,20 +4348,25 @@ napi_value gs_gml_import
     return NULL;
   }
 
-  NAPI_GET_ARG_UINT32(env, args[1], format);
+  NAPI_GET_STRING_UTF8(env, args[1], src);
 
-  NAPI_GET_STRING_UTF8(env, args[2], src); 
-  
-  gml = gml_import((uint8_t ) code, format, src);
-  if (!gml) {
-    napi_throw_error(env, NULL, "Error importing gml.");
+  if(!(bytes = base64_decode(src, &size))) {
+    napi_throw_type_error(env, NULL, "Internal error.");
     return NULL;
   }
+
+  gml = gml_import((uint8_t ) code, bytes, (uint32_t) size);
+  if (!gml) {
+    napi_throw_error(env, NULL, "Error importing GML.");
+    return NULL;
+  }
+
+  free(bytes); bytes = NULL;  
 
   status = napi_create_external(env, gml, NULL, NULL, &external);
   assert (status == napi_ok);
   
-  return external;  
+  return external;
   
 }
 
@@ -4853,7 +4724,7 @@ napi_value Init
 
   /* int groupsig_reveal(trapdoor_t *trap, crl_t *crl, gml_t *gml, uint64_t index); */
 
-  /* int groupsig_open(identity_t *id, groupsig_proof_t *proof, crl_t *crl,  */
+  /* int groupsig_open(uint64_t *index, groupsig_proof_t *proof, crl_t *crl,  */
   /* groupsig_signature_t *sig, groupsig_key_t *grpkey,  */
   /* groupsig_key_t *mgrkey, gml_t *gml); */
   napi_property_descriptor desc_gs_open =
@@ -4861,7 +4732,7 @@ napi_value Init
   status = napi_define_properties(env, exports, 1, &desc_gs_open);
   assert(status == napi_ok);  
   
-  /* int groupsig_open_verify(uint8_t *ok, identity_t *id, */
+  /* int groupsig_open_verify(uint8_t *ok, */
   /* groupsig_proof_t *proof,  */
   /* groupsig_signature_t *sig,  */
   /* groupsig_key_t *grpkey); */
@@ -5356,9 +5227,9 @@ napi_value Init
   /* void* gml_get(gml_t *gml, uint64_t index); */
 
   /* int gml_export(gml_t *gml, void *dst, gml_format_t format); */
-  napi_property_descriptor desc_gs_gml_export_file =
-    DECLARE_NAPI_METHOD("gs_gml_export_file", gs_gml_export_file);
-  status = napi_define_properties(env, exports, 1, &desc_gs_gml_export_file);
+  napi_property_descriptor desc_gs_gml_export =
+    DECLARE_NAPI_METHOD("gs_gml_export", gs_gml_export);
+  status = napi_define_properties(env, exports, 1, &desc_gs_gml_export);
   assert(status == napi_ok);  
 
   /* gml_t* gml_import(uint8_t code, gml_format_t format, void *source); */  

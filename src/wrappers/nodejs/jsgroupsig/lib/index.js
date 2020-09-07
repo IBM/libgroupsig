@@ -276,20 +276,19 @@ module.exports = {
      * @param {native}   [gml]         A Group Membership List.
      * @param {native}   [crl]         A Certificate Revocation List.
      *
-     * @return {object} An object containing an 'id' field with a native data
-     *  structure representing the identity of the signer, and a 'proof' field
+     * @return {object} An object containing an 'index' field with an integer
+     *  that equals the index of the signer in the GML, and a 'proof' field
      *  that, for schemes that support verifiable opening, contains a native
-     *  structure with the opening proof..
+     *  structure with the opening proof.
      */        
     open: function (sig, grpkey, mgrkey, gml = null, crl = null) {
-	let id = null;
 	let proof = null;
 	let code = jsgroupsig.gs_signature_get_code(sig);
 	if (jsgroupsig.gs_has_open_proof(code) == 1) {
 	    proof = jsgroupsig.gs_proof_init(code);
 	}
-	id = jsgroupsig.gs_open(sig, grpkey, mgrkey, gml, proof);
-	return { "id": id, "proof": proof }; 
+	index = jsgroupsig.gs_open(sig, grpkey, mgrkey, gml, proof);
+	return { "index": index, "proof": proof }; 
     },
 
     /**
@@ -304,13 +303,11 @@ module.exports = {
      * @param {native}   proof         The opening proof to verify.
      * @param {native}   sig           The group signature to open.
      * @param {native}   grpkey        The group key.
-     * @param {native}   [id]          The signer identity produced by the open
-     *                                 algorithm.
      *
      * @return {boolean} true if the proof is valid, false otherwise.
      */        
-    open_verify: function (proof, sig, grpkey, id = null) {
-	return jsgroupsig.gs_open_verify(proof, sig, grpkey, id);
+    open_verify: function (proof, sig, grpkey) {
+	return jsgroupsig.gs_open_verify(proof, sig, grpkey);
     },
 
     /**
@@ -1211,30 +1208,27 @@ module.exports = {
     gml_free: jsgroupsig.gs_gml_free,
 
     /**
-     * Exports a GML to the given file.
+     * Exports a GML to a Base64 string.
      *
      * @since      0.1.0
      *
      * @fires   On error, throws a TypeError.
      *
      * @param {native}   gml           The GML to export.
-     * @param {int}   format           The format to use for exporting. Currently,
-     *  must be GML_FILE, but this will be changed in the future (issue-12).
-     * @param {native}   gml           The GML to export.
+     *
+     * @return {string} The Base64 string with the exported GML.
      */        
-    gml_export: jsgroupsig.gs_gml_export_file,
+    gml_export: jsgroupsig.gs_gml_export,
 
     /**
-     * Imports a GML from the given file.
+     * Imports a GML from a Base64 string.
      *
      * @since      0.1.0
      *
      * @fires   On error, throws a TypeError.
-     *
-     * @param {int}   code             The GML's scheme.
-     * @param {int}   format           The format to use for importing. Currently,
-     *  must be GML_FILE, but this will be changed in the future (issue-12).
-     * @param {string}   src           The file name.
+     *  
+     * @param {int}     code         The scheme's code.
+     * @param {string}   str         The string with the exported GML.
      *
      * @return {native} A GML native structure.
      */            

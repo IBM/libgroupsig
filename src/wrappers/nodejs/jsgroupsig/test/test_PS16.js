@@ -105,26 +105,6 @@ describe('PS16 Signature operations', function() {
     
 });
 
-describe('PS16 Identity operations', function() {
-
-    it('initializes an identity.', function() {
-	jsgroupsig.init(jsgroupsig.PS16, 0);
-	let id = jsgroupsig.identity_init(jsgroupsig.PS16);
-	assert.notEqual(id, null);
-    });
-
-    it('can be represented as a string.', function() {
-	let ps16 = setupFull();
-	let memkey = addMember(ps16.mgrkey, ps16.grpkey, ps16.gml);
-	let sig = jsgroupsig.sign("Hello, World!", memkey, ps16.grpkey);
-	let { id, proof } = jsgroupsig.open(sig, ps16.grpkey, ps16.mgrkey, ps16.gml);
-	let idstr = jsgroupsig.identity_to_string(id);
-	expect(idstr).to.be.a('string');
-    });
-    
-});
-
-
 describe('PS16 Group operations', function() {
     
     it('sets up group and manager keys.', function() {
@@ -170,9 +150,8 @@ describe('PS16 Group operations', function() {
 	let memkey = addMember(ps16.mgrkey, ps16.grpkey, ps16.gml);
 	let memkey2 = addMember(ps16.mgrkey, ps16.grpkey, ps16.gml);
 	let sig = jsgroupsig.sign("Hello, World!", memkey2, ps16.grpkey);
-	let { id, proof } = jsgroupsig.open(sig, ps16.grpkey, ps16.mgrkey, ps16.gml);
-	let idstr = jsgroupsig.identity_to_string(id);
-	assert.equal(idstr, "1");
+	let { index, proof } = jsgroupsig.open(sig, ps16.grpkey, ps16.mgrkey, ps16.gml);
+	assert.equal(index, 1);
 	let b = jsgroupsig.open_verify(proof, sig, ps16.grpkey);
 	assert.equal(b, true);
     });
