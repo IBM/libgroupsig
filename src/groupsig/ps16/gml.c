@@ -365,7 +365,7 @@ gml_entry_t* ps16_gml_entry_import(byte_t *bytes, uint32_t size) {
   uint64_t len;
   FILE *fd;
 
-  if (!bytes || !size || !entry) {
+  if (!bytes || !size) {
     LOG_EINVAL(&logger, __FILE__, "ps16_gml_entry_import", __LINE__, LOGERROR);
     return NULL;    
   }

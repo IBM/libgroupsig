@@ -345,7 +345,7 @@ gml_entry_t* bbs04_gml_entry_import(byte_t *bytes, uint32_t size) {
   gml_entry_t *entry;
   uint64_t len;
 
-  if (!bytes || !size || !entry) {
+  if (!bytes || !size) {
     LOG_EINVAL(&logger, __FILE__, "bbs04_gml_entry_import", __LINE__, LOGERROR);
     return NULL;    
   }
