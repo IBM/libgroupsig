@@ -19,7 +19,6 @@
 
 #include <stdlib.h>
 #include <limits.h>
-#include <openssl/sha.h> /** @todo This should not be! */
 
 #include "gl19.h"
 #include "logger.h"
@@ -112,8 +111,6 @@ int gl19_sign(groupsig_signature_t *sig, message_t *msg, groupsig_key_t *memkey,
 
   /* ehy2 = epk^alpha2*h^y */
   if(!(gl19_sig->ehy2 = pbcext_element_G1_init()))
-    GOTOENDRC(IERROR, gl19_sign);
-  if(!(aux = pbcext_element_G1_init()))
     GOTOENDRC(IERROR, gl19_sign);
   if(pbcext_element_G1_mul(gl19_sig->ehy2, gl19_grpkey->epk, alpha2) == IERROR)
     GOTOENDRC(IERROR, gl19_sign);
@@ -246,6 +243,7 @@ int gl19_sign(groupsig_signature_t *sig, message_t *msg, groupsig_key_t *memkey,
  gl19_sign_end:
 
   if(alpha) { pbcext_element_Fr_free(alpha); alpha = NULL; }
+  if(alpha2) { pbcext_element_Fr_free(alpha2); alpha2 = NULL; }
   if(r1) { pbcext_element_Fr_free(r1); r1 = NULL; }
   if(r2) { pbcext_element_Fr_free(r2); r2 = NULL; }
   if(r3) { pbcext_element_Fr_free(r3); r3 = NULL; }
