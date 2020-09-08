@@ -438,8 +438,9 @@ int main(int argc, char **argv) {
   groupsig_key_t *grpkey, *mgrkey, *mgrkey2;
   const groupsig_t *gs;
   gml_t *gml;
-  byte_t *b_mgrkey, *b_grpkey;
-  uint32_t b_len;
+  byte_t *b_mgrkey, *b_grpkey, *b_gml;
+  FILE *fd;
+  uint32_t b_len, gml_len;
 #ifdef PROFILE
   uint64_t i;
   profile_t *prof;
@@ -633,12 +634,25 @@ int main(int argc, char **argv) {
 	return IERROR;
       }
       
-      if(gml_export(gml, keyfile, GML_FILE) == IERROR) {
+      /* Dump the GML into a byte array */
+      b_gml = NULL;
+      if(gml_export(&b_gml, &gml_len, gml) == IERROR) {
 	return IERROR;
       }
 
-      mem_free(keyfile); keyfile = NULL;
+      /* Write the byte array into a file */
+      if(!(fd = fopen(keyfile, "w"))) {
+	return IERROR;
+      }
 
+      if (fwrite(b_gml, gml_len, 1, fd) != 1) {
+	fclose(fd); fd = NULL;
+	return IERROR;
+      }
+      
+      fclose(fd); fd = NULL;    
+      mem_free(keyfile); keyfile = NULL;
+      
     }
 
     /* 3. Done. Free stuff. */

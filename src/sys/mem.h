@@ -38,7 +38,7 @@ void* mem_malloc(size_t size);
  * Actually... @todo
  *
  * @param[in,out] ptr A pointer to the memory to reallocate.
- * @param size The new size.
+ * @param[in] size The new size.
  * 
  * @return A pointer to the reallocated memory.
  */

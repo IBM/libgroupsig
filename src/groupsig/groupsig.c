@@ -87,7 +87,8 @@ const groupsig_t* groupsig_get_groupsig_from_code(uint8_t code) {
 
 }
 
-int groupsig_init(uint8_t code, unsigned int seed) {
+int groupsig_init(uint8_t code,
+		  unsigned int seed) {
 
   const groupsig_t *gs;
   
@@ -121,21 +122,8 @@ int groupsig_clear(uint8_t code) {
 
 }
 
-/* groupsig_config_t* groupsig_config_init(uint8_t code) { */
-
-/*   const groupsig_t *gs; */
-
-/*   /\* Get the group signature scheme from its code *\/ */
-/*   if(!(gs = groupsig_get_groupsig_from_code(code))) { */
-/*     return NULL; */
-/*   }   */
-
-/*   /\* Run the CONFIG INIT action *\/ */
-/*   return gs->config_init(); */
-
-/* } */
-
-int groupsig_get_joinseq(uint8_t code, uint8_t *seq) {
+int groupsig_get_joinseq(uint8_t code,
+			 uint8_t *seq) {
 
   const groupsig_t *gs;
   
@@ -149,7 +137,8 @@ int groupsig_get_joinseq(uint8_t code, uint8_t *seq) {
   
 }
 
-int groupsig_get_joinstart(uint8_t code, uint8_t *start) {
+int groupsig_get_joinstart(uint8_t code,
+			   uint8_t *start) {
 
   const groupsig_t *gs;
   
@@ -163,113 +152,10 @@ int groupsig_get_joinstart(uint8_t code, uint8_t *start) {
   
 }
 
-/* int groupsig_config_free(groupsig_config_t *cfg) { */
-
-/*   const groupsig_t *gs; */
-
-/*   if(!cfg) { */
-/*     return IOK; */
-/*   } */
-
-/*   /\* Get the group signature scheme from its code *\/ */
-/*   if(!(gs = groupsig_get_groupsig_from_code(cfg->scheme))) { */
-/*     return IERROR; */
-/*   }   */
-
-/*   /\* Run the CONFIG INIT action *\/ */
-/*   return gs->config_free(cfg); */
-
-/* } */
-
-/* int groupsig_sysenv_update(uint8_t code, void *data) { */
-
-/*   const groupsig_t *gs; */
-
-/*   if(!data) { */
-/*     LOG_EINVAL(&logger, __FILE__, "groupsig_sysenv_update", __LINE__, LOGERROR); */
-/*     return IERROR; */
-/*   } */
-
-/*   /\* Get the group signature scheme from its code *\/ */
-/*   if(!(gs = groupsig_get_groupsig_from_code(code))) { */
-/*     return IERROR; */
-/*   } */
-
-/*   /\* For some schemes, there might not be and env_update action set. *\/ */
-/*   if(!gs->sysenv_update) { */
-/*     LOG_EINVAL_MSG(&logger, __FILE__, "groupsig_sysenv_update", __LINE__, */
-/* 		   "It is not possible to update the environment for this scheme.", */
-/* 		   LOGERROR); */
-/*     return IERROR; */
-/*   } */
-
-/*   /\* Run the CONFIG INIT action *\/ */
-/*   return gs->sysenv_update(data); */
-
-/* } */
-
-/* void* groupsig_sysenv_get(uint8_t code) { */
-
-/*   const groupsig_t *gs; */
-
-/*   /\* Get the group signature scheme from its code *\/ */
-/*   if(!(gs = groupsig_get_groupsig_from_code(code))) { */
-/*     return NULL; */
-/*   } */
-
-/*   /\* For some schemes, there might not be and env_update action set. *\/ */
-/*   if(!gs->sysenv_get) { */
-/*     LOG_EINVAL_MSG(&logger, __FILE__, "groupsig_sysenv_get", __LINE__, */
-/* 		   "It is not possible to get the environment for this scheme.", */
-/* 		   LOGERROR); */
-/*     return NULL; */
-/*   } */
-
-/*   /\* Run the CONFIG INIT action *\/ */
-/*   return gs->sysenv_get(); */
-
-/* } */
-
-/* int groupsig_sysenv_free(uint8_t code) { */
-
-/*   const groupsig_t *gs; */
-
-/*   /\* Get the group signature scheme from its code *\/ */
-/*   if(!(gs = groupsig_get_groupsig_from_code(code))) { */
-/*     return IERROR; */
-/*   } */
-
-/*   if(!sysenv) { */
-/*     return IOK; */
-/*   } */
-
-/*   /\* For some schemes, there might not be and env_free action set. *\/ */
-/*   if(!gs->sysenv_free) { */
-/*     LOG_EINVAL_MSG(&logger, __FILE__, "groupsig_sysenv_free", __LINE__, */
-/* 		   "It is not possible to update the environment for this scheme.", */
-/* 		   LOGWARN); */
-/*   } else { */
-
-/*     if(gs->sysenv_free() == IERROR) { */
-/*       return IERROR; */
-/*     } */
-
-/*   } */
-
-/*   if(sysenv) { */
-/*     if(sysenv_free(sysenv) == IERROR) { */
-/*       sysenv = NULL; */
-/*       return IERROR; */
-/*     } */
-/*     sysenv = NULL; */
-/*   } */
-
-/*   return IOK; */
-
-/* } */
-
-int groupsig_setup(uint8_t code, groupsig_key_t *grpkey, 
-		   groupsig_key_t *mgrkey, gml_t *gml) {
+int groupsig_setup(uint8_t code,
+		   groupsig_key_t *grpkey, 
+		   groupsig_key_t *mgrkey,
+		   gml_t *gml) {
 
   const groupsig_t *gs;
 
@@ -290,8 +176,11 @@ int groupsig_setup(uint8_t code, groupsig_key_t *grpkey,
 
 }
 
-int groupsig_join_mem(message_t **mout, groupsig_key_t *memkey,
-		      int seq, message_t *min, groupsig_key_t *grpkey) {
+int groupsig_join_mem(message_t **mout,
+		      groupsig_key_t *memkey,
+		      int seq,
+		      message_t *min,
+		      groupsig_key_t *grpkey) {
 
   const groupsig_t *gs;
 
@@ -311,8 +200,11 @@ int groupsig_join_mem(message_t **mout, groupsig_key_t *memkey,
 
 }
 
-int groupsig_join_mgr(message_t **mout, gml_t *gml, groupsig_key_t *mgrkey,
-		      int seq, message_t *min, groupsig_key_t *grpkey) {
+int groupsig_join_mgr(message_t **mout,
+		      gml_t *gml,
+		      groupsig_key_t *mgrkey,
+		      int seq,
+		      message_t *min, groupsig_key_t *grpkey) {
 
   const groupsig_t *gs;
 
@@ -334,8 +226,11 @@ int groupsig_join_mgr(message_t **mout, gml_t *gml, groupsig_key_t *mgrkey,
 
 }
 
-int groupsig_sign(groupsig_signature_t *sig, message_t *msg, groupsig_key_t *memkey, 
-		  groupsig_key_t *grpkey, unsigned int seed) {
+int groupsig_sign(groupsig_signature_t *sig,
+		  message_t *msg,
+		  groupsig_key_t *memkey, 
+		  groupsig_key_t *grpkey,
+		  unsigned int seed) {
 
   const groupsig_t *gs;
 
@@ -355,7 +250,10 @@ int groupsig_sign(groupsig_signature_t *sig, message_t *msg, groupsig_key_t *mem
 
 }
 
-int groupsig_verify(uint8_t *ok, groupsig_signature_t *sig, message_t *msg, groupsig_key_t *grpkey) {
+int groupsig_verify(uint8_t *ok,
+		    groupsig_signature_t *sig,
+		    message_t *msg,
+		    groupsig_key_t *grpkey) {
 
   const groupsig_t *gs;
 
@@ -375,16 +273,20 @@ int groupsig_verify(uint8_t *ok, groupsig_signature_t *sig, message_t *msg, grou
 
 }
 
-int groupsig_open(identity_t *id, groupsig_proof_t *proof, crl_t *crl, 
-		  groupsig_signature_t *sig, groupsig_key_t *grpkey, 
-		  groupsig_key_t *mgrkey, gml_t *gml) {
+int groupsig_open(uint64_t *index,
+		  groupsig_proof_t *proof,
+		  crl_t *crl, 
+		  groupsig_signature_t *sig,
+		  groupsig_key_t *grpkey, 
+		  groupsig_key_t *mgrkey,
+		  gml_t *gml) {
 
   const groupsig_t *gs;
   
   /* All the parameters are mandatory except the gml, which will depend on the
      specific scheme. Also, the type of ID will probably depend both on the
      scheme and the external application using the library. */
-  if(!id || !sig || !grpkey || !mgrkey ||
+  if(!index || !sig || !grpkey || !mgrkey ||
      sig->scheme != grpkey->scheme || grpkey->scheme != mgrkey->scheme) {
     LOG_EINVAL(&logger, __FILE__, "groupsig_open", __LINE__, LOGERROR);
     return IERROR;
@@ -396,11 +298,11 @@ int groupsig_open(identity_t *id, groupsig_proof_t *proof, crl_t *crl,
   }  
 
   /* Run the OPEN action */
-  return gs->open(id, proof, crl, sig, grpkey, mgrkey, gml);
+  return gs->open(index, proof, crl, sig, grpkey, mgrkey, gml);
 
 }
 
-int groupsig_open_verify(uint8_t *ok, identity_t *id,
+int groupsig_open_verify(uint8_t *ok, 
 			 groupsig_proof_t *proof, 
 			 groupsig_signature_t *sig, 
 			 groupsig_key_t *grpkey) {
@@ -420,11 +322,14 @@ int groupsig_open_verify(uint8_t *ok, identity_t *id,
   }  
   
   /* Run the OPEN VERIFY action */
-  return gs->open_verify(ok, id, proof, sig, grpkey);
+  return gs->open_verify(ok, proof, sig, grpkey);
 
 }
 
-int groupsig_reveal(trapdoor_t *trap, crl_t *crl, gml_t *gml, uint64_t index) {
+int groupsig_reveal(trapdoor_t *trap,
+		    crl_t *crl,
+		    gml_t *gml,
+		    uint64_t index) {
 
   const groupsig_t *gs;
 
@@ -446,9 +351,12 @@ int groupsig_reveal(trapdoor_t *trap, crl_t *crl, gml_t *gml, uint64_t index) {
 
 }
 
-int groupsig_trace(uint8_t *ok, groupsig_signature_t *sig, 
-		   groupsig_key_t *grpkey, crl_t *crl,
-		   groupsig_key_t *mgrkey, gml_t *gml) {
+int groupsig_trace(uint8_t *ok,
+		   groupsig_signature_t *sig, 
+		   groupsig_key_t *grpkey,
+		   crl_t *crl,
+		   groupsig_key_t *mgrkey,
+		   gml_t *gml) {
 
   const groupsig_t *gs;
 
@@ -476,8 +384,10 @@ int groupsig_trace(uint8_t *ok, groupsig_signature_t *sig,
 
 }
 
-int groupsig_claim(groupsig_proof_t *proof, groupsig_key_t *memkey, 
-		   groupsig_key_t *grpkey, groupsig_signature_t *sig) {
+int groupsig_claim(groupsig_proof_t *proof,
+		   groupsig_key_t *memkey, 
+		   groupsig_key_t *grpkey,
+		   groupsig_signature_t *sig) {
 
   const groupsig_t *gs;
 
@@ -499,8 +409,10 @@ int groupsig_claim(groupsig_proof_t *proof, groupsig_key_t *memkey,
 
 }
 
-int groupsig_claim_verify(uint8_t *ok, groupsig_proof_t *proof, 
-			  groupsig_signature_t *sig, groupsig_key_t *grpkey) {
+int groupsig_claim_verify(uint8_t *ok,
+			  groupsig_proof_t *proof, 
+			  groupsig_signature_t *sig,
+			  groupsig_key_t *grpkey) {
 
   const groupsig_t *gs;
 
@@ -521,8 +433,11 @@ int groupsig_claim_verify(uint8_t *ok, groupsig_proof_t *proof,
 
 }
 
-int groupsig_prove_equality(groupsig_proof_t *proof, groupsig_key_t *memkey, 
-			    groupsig_key_t *grpkey, groupsig_signature_t **sigs, uint16_t n_sigs) {
+int groupsig_prove_equality(groupsig_proof_t *proof,
+			    groupsig_key_t *memkey, 
+			    groupsig_key_t *grpkey,
+			    groupsig_signature_t **sigs,
+			    uint16_t n_sigs) {
 
   const groupsig_t *gs;
 
@@ -543,15 +458,19 @@ int groupsig_prove_equality(groupsig_proof_t *proof, groupsig_key_t *memkey,
 
 }
 
-int groupsig_prove_equality_verify(uint8_t *ok, groupsig_proof_t *proof, groupsig_key_t *grpkey,
-				   groupsig_signature_t **sigs, uint16_t n_sigs) {
+int groupsig_prove_equality_verify(uint8_t *ok,
+				   groupsig_proof_t *proof,
+				   groupsig_key_t *grpkey,
+				   groupsig_signature_t **sigs,
+				   uint16_t n_sigs) {
 
   const groupsig_t *gs;
 
   /* All parameters are mandatory */
   if(!ok || !proof || !grpkey || !sigs || !n_sigs ||
      proof->scheme != grpkey->scheme) {
-    LOG_EINVAL(&logger, __FILE__, "groupsig_prove_equality_verify", __LINE__, LOGERROR);
+    LOG_EINVAL(&logger, __FILE__, "groupsig_prove_equality_verify",
+	       __LINE__, LOGERROR);
     return IERROR;
   }
 
@@ -565,8 +484,10 @@ int groupsig_prove_equality_verify(uint8_t *ok, groupsig_proof_t *proof, groupsi
 
 }
 
-int groupsig_blind(groupsig_blindsig_t *bsig, groupsig_key_t **bldkey,
-		   groupsig_key_t *grpkey, groupsig_signature_t *sig,
+int groupsig_blind(groupsig_blindsig_t *bsig,
+		   groupsig_key_t **bldkey,
+		   groupsig_key_t *grpkey,
+		   groupsig_signature_t *sig,
 		   message_t *msg) {
 
   const groupsig_t *gs;
@@ -588,9 +509,12 @@ int groupsig_blind(groupsig_blindsig_t *bsig, groupsig_key_t **bldkey,
 }
 
 int groupsig_convert(groupsig_blindsig_t **csigs,
-		     groupsig_blindsig_t **bsigs, uint32_t n_bsigs,
-		     groupsig_key_t *grpkey, groupsig_key_t *mgrkey,
-		     groupsig_key_t *bldkey, message_t *msg) {
+		     groupsig_blindsig_t **bsigs,
+		     uint32_t n_bsigs,
+		     groupsig_key_t *grpkey,
+		     groupsig_key_t *mgrkey,
+		     groupsig_key_t *bldkey,
+		     message_t *msg) {
 
   const groupsig_t *gs;
 
@@ -610,9 +534,11 @@ int groupsig_convert(groupsig_blindsig_t **csigs,
   
 }
 
-int groupsig_unblind(identity_t *nym, groupsig_signature_t *sig,
+int groupsig_unblind(identity_t *nym,
+		     groupsig_signature_t *sig,
 		     groupsig_blindsig_t *bsig,
-		     groupsig_key_t *grpkey, groupsig_key_t *bldkey,
+		     groupsig_key_t *grpkey,
+		     groupsig_key_t *bldkey,
 		     message_t *msg) {
 
   const groupsig_t *gs;
@@ -762,7 +688,8 @@ int groupsig_verify_seqlink(uint8_t *ok,
   
 }
 
-int groupsig_get_code_from_str(uint8_t *code, char *name) {
+int groupsig_get_code_from_str(uint8_t *code,
+			       char *name) {
 
   uint8_t i;
 
@@ -781,46 +708,5 @@ int groupsig_get_code_from_str(uint8_t *code, char *name) {
   return IFAIL;
 
 }
-
-/* void* groupsig_options_parse(uint8_t gs_code, uint8_t action, int argc, char **argv) { */
-
-/*   const groupsig_t *gs; */
-/*   void *opt; */
-
-/*   if(!argv) { */
-/*     LOG_EINVAL(&logger, __FILE__, "groupsig_options_parse", __LINE__, LOGERROR); */
-/*     return NULL; */
-/*   } */
-
-/*   /\* Get the group signature scheme from its code *\/ */
-/*   if(!(gs = groupsig_get_groupsig_from_code(gs_code))) { */
-/*     return NULL; */
-/*   } */
-
-/*   opt = gs->parse_options(action, argc, argv); */
-
-/*   return opt; */
-
-/* } */
-
-/* int groupsig_options_free(void *opt, uint8_t gs_code) { */
-
-/*   if(!opt) { */
-/*     LOG_EINVAL(&logger, __FILE__, "groupsig_options_free", __LINE__, LOGERROR); */
-/*     return IERROR; */
-/*   } */
-
-/*   switch(gs_code) { */
-/*   case GROUPSIG_KTY04_CODE: */
-/*     return kty04_options_free(opt); */
-/*   default: */
-/*     LOG_EINVAL_MSG(&logger, __FILE__, "groupsig_options_free", __LINE__, */
-/* 		   "Unknown groupsig.", LOGERROR); */
-/*     return IERROR; */
-/*   } */
-  
-/*   return IERROR; */
-  
-/* } */
 
 /* groupsig.c ends here */

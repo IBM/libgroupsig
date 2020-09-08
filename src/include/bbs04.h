@@ -68,54 +68,6 @@ static const groupsig_description_t bbs04_description = {
 /* Number of exchanged messages */
 #define BBS04_JOIN_SEQ 1
 
-/* /\* */
-/*  * @def BBS04_CONFIG_SET_DEFAULTS */
-/*  * @brief Sets the configuration structure to the default values for */
-/*  *  BBS04. */
-/*  *\/ */
-/* #define BBS04_CONFIG_SET_DEFAULTS(cfg) \ */
-/*   ((groupsig_config_t *) cfg)->scheme = GROUPSIG_BBS04_CODE; \ */
-/*   ((groupsig_config_t *) cfg)->has_gml = 1;		     \ */
-/*   ((groupsig_config_t *) cfg)->has_crl = 1;		     \ */
-/*   ((groupsig_config_t *) cfg)->has_pbc = 1;		     \ */
-/*   ((groupsig_config_t *) cfg)->has_open_proof = 0;   */
-  
-/* /\**  */
-/*  * @fn groupsig_config_t* bbs04_config_init(void) */
-/*  * @brief Allocates memory for a BBS04 config structure. */
-/*  *  */
-/*  * @return A pointer to the allocated structure or NULL if error. */
-/*  *\/ */
-/* groupsig_config_t* bbs04_config_init(void); */
-
-/* /\**  */
-/*  * @fn int bbs04_config_free(groupsig_config_t *cfg) */
-/*  * @brief Frees the memory of a BBS04 config structure. */
-/*  *  */
-/*  * @param cfg The structure to free. */
-/*  * */
-/*  * @return A pointer to the allocated structure or NULL if error. */
-/*  *\/ */
-/* int bbs04_config_free(groupsig_config_t *cfg); */
-
-/* /\**  */
-/*  * @fn int bbs04_sysenv_update(void *data) */
-/*  * @brief Sets the BBS04 internal environment data, i.e., the PBC params and pairings. */
-/*  * */
-/*  * @param data A bbs04_sysenv_t structure containing the PBC params and pairings. */
-/*  *  */
-/*  * @return IOK or IERROR. */
-/*  *\/ */
-/* int bbs04_sysenv_update(void *data); */
-
-/* /\**  */
-/*  * @fn int bbs04_sysenv_free(void) */
-/*  * @brief Frees the BBS04 internal environment. */
-/*  *  */
-/*  * @return IOK or IERROR. */
-/*  *\/ */
-/* int bbs04_sysenv_free(void); */
-
 /** 
  * @fn int bbs04_init()
  * @brief Initializes the internal variables needed by BBS04. In this case,
@@ -134,7 +86,8 @@ int bbs04_init();
 int bbs04_clear();
   
 /** 
- * @fn int bbs04_setup(groupsig_key_t *grpkey, groupsig_key_t *mgrkey, 
+ * @fn int bbs04_setup(groupsig_key_t *grpkey,
+ *                     groupsig_key_t *mgrkey, 
  *                     gml_t *gml)
  * @brief The setup function for the BBS04 scheme.
  *
@@ -146,7 +99,9 @@ int bbs04_clear();
  * 
  * @return IOK or IERROR.
  */
-int bbs04_setup(groupsig_key_t *grpkey, groupsig_key_t *mgrkey, gml_t *gml);
+int bbs04_setup(groupsig_key_t *grpkey,
+		groupsig_key_t *mgrkey,
+		gml_t *gml);
 
 /**
  * @fn int bbs04_get_joinseq(uint8_t *seq)
@@ -170,8 +125,10 @@ int bbs04_get_joinseq(uint8_t *seq);
 int bbs04_get_joinstart(uint8_t *start);
 
 /** 
- * @fn int bbs04_join_mem(message_t **mout, groupsig_key_t *memkey,
- *			  int seq, message_t *min, groupsig_key_t *grpkey)
+ * @fn int bbs04_join_mem(message_t **mout,
+ *                        groupsig_key_t *memkey,
+ *			  int seq, message_t *min,
+ *                        groupsig_key_t *grpkey)
  * @brief Executes the member-side join of the BBS04 scheme.
  *
  * @param[in,out] mout Message to be produced by the current step of the
@@ -186,13 +143,18 @@ int bbs04_get_joinstart(uint8_t *start);
  * 
  * @return IOK or IERROR.
  */
-int bbs04_join_mem(message_t **mout, groupsig_key_t *memkey,
-		   int seq, message_t *min, groupsig_key_t *grpkey);
+int bbs04_join_mem(message_t **mout,
+		   groupsig_key_t *memkey,
+		   int seq,
+		   message_t *min,
+		   groupsig_key_t *grpkey);
 
 /** 
- * @fn int bbs04_join_mgr(message_t **mout, gml_t *gml,
+ * @fn int bbs04_join_mgr(message_t **mout, 
+ *                        gml_t *gml,
  *                        groupsig_key_t *mgrkey,
- *                        int seq, message_t *min, 
+ *                        int seq, 
+ *                        message_t *min, 
  *			  groupsig_key_t *grpkey)
  * @brief Executes the manager-side join of the join procedure.
  *
@@ -210,14 +172,19 @@ int bbs04_join_mem(message_t **mout, groupsig_key_t *memkey,
  * 
  * @return IOK or IERROR.
  */
-int bbs04_join_mgr(message_t **mout, gml_t *gml,
+int bbs04_join_mgr(message_t **mout,
+		   gml_t *gml,
 		   groupsig_key_t *mgrkey,
-		   int seq, message_t *min,
+		   int seq,
+		   message_t *min,
 		   groupsig_key_t *grpkey);
 
 /** 
- * @fn int bbs04_sign(groupsig_signature_t *sig, message_t *msg, groupsig_key_t *memkey, 
- *	              groupsig_key_t *grpkey, unsigned int seed)
+ * @fn int bbs04_sign(groupsig_signature_t *sig, 
+ *                    message_t *msg, 
+ *                    groupsig_key_t *memkey, 
+ *	              groupsig_key_t *grpkey, 
+ *                    unsigned int seed)
  * @brief Issues BBS04 group signatures.
  *
  * Using the specified member and group keys, issues a signature for the specified
@@ -234,11 +201,16 @@ int bbs04_join_mgr(message_t **mout, gml_t *gml,
  * 
  * @return IOK or IERROR.
  */
-int bbs04_sign(groupsig_signature_t *sig, message_t *msg, groupsig_key_t *memkey, 
-	       groupsig_key_t *grpkey, unsigned int seed);
+int bbs04_sign(groupsig_signature_t *sig,
+	       message_t *msg,
+	       groupsig_key_t *memkey, 
+	       groupsig_key_t *grpkey,
+	       unsigned int seed);
 
 /** 
- * @fn int bbs04_verify(uint8_t *ok, groupsig_signature_t *sig, message_t *msg, 
+ * @fn int bbs04_verify(uint8_t *ok, 
+ *                      groupsig_signature_t *sig, 
+ *                      message_t *msg, 
  *		        groupsig_key_t *grpkey);
  * @brief Verifies a BBS04 group signature.
  *
@@ -250,13 +222,19 @@ int bbs04_sign(groupsig_signature_t *sig, message_t *msg, groupsig_key_t *memkey
  * 
  * @return IOK or IERROR.
  */
-int bbs04_verify(uint8_t *ok, groupsig_signature_t *sig, message_t *msg, 
+int bbs04_verify(uint8_t *ok,
+		 groupsig_signature_t *sig,
+		 message_t *msg, 
 		 groupsig_key_t *grpkey);
 
 /** 
- * @fn int bbs04_open(identity_t *id, groupsig_proof_t *proof, crl_t *crl, 
- *                    groupsig_signature_t *sig, groupsig_key_t *grpkey, 
- *	              groupsig_key_t *mgrkey, gml_t *gml)
+ * @fn int bbs04_open(uint64_t *index, 
+ *                    groupsig_proof_t *proof, 
+ *                    crl_t *crl, 
+ *                    groupsig_signature_t *sig, 
+ *                    groupsig_key_t *grpkey, 
+ *	              groupsig_key_t *mgrkey, 
+ *                    gml_t *gml)
  * @brief Opens a BBS04 group signature.
  * 
  * Opens the specified group signature, obtaining the signer's identity.
@@ -264,8 +242,7 @@ int bbs04_verify(uint8_t *ok, groupsig_signature_t *sig, message_t *msg,
  * @param[in,out] id An initialized identity. Will be updated with the signer's
  *  real identity.
  * @param[in,out] proof BBS04 ignores this parameter.
- * @param[in,out] crl Optional. If not NULL, must be an initialized CRL, and will
- *  be updated with a new entry corresponding to the obtained trapdoor.
+ * @param[in,out] crl Unused. Ignore.
  * @param[in] sig The signature to open.
  * @param[in] grpkey The group key.
  * @param[in] mgrkey The manager's key.
@@ -274,8 +251,13 @@ int bbs04_verify(uint8_t *ok, groupsig_signature_t *sig, message_t *msg,
  * @return IOK if it was possible to open the signature. IFAIL if the open
  *  trapdoor was not found, IERROR otherwise.
  */
-int bbs04_open(identity_t *id, groupsig_proof_t *proof, crl_t *crl, groupsig_signature_t *sig, 
-	       groupsig_key_t *grpkey, groupsig_key_t *mgrkey, gml_t *gml);
+int bbs04_open(uint64_t *index,
+	       groupsig_proof_t *proof,
+	       crl_t *crl,
+	       groupsig_signature_t *sig, 
+	       groupsig_key_t *grpkey,
+	       groupsig_key_t *mgrkey,
+	       gml_t *gml);
 
 /**
  * @var bbs04_groupsig_bundle
@@ -285,11 +267,6 @@ static const groupsig_t bbs04_groupsig_bundle = {
  desc: &bbs04_description, /**< Contains the BBS04 scheme description. */
  init: &bbs04_init, /**< Initializes the variables needed by BBS04. */
  clear: &bbs04_clear, /**< Frees the varaibles needed by BBS04. */ 
- /* config_init: &bbs04_config_init, /\**< Initializes a BBS04 config structure. *\/ */
- /* config_free: &bbs04_config_free, /\**< Frees a BBS04 config structure. *\/ */
- /* sysenv_update: NULL,//&bbs04_sysenv_update, /\**< Sets the PBC params and pairing. *\/ */
- /* sysenv_get: NULL,  */
- /* sysenv_free: NULL, //&bbs04_sysenv_free, /\**<  Frees the PBC params and pairing. *\/ */
  setup: &bbs04_setup, /**< Sets up BBS04 groups. */
  get_joinseq: &bbs04_get_joinseq, /**< Returns the number of messages in the join 
 				     protocol. */

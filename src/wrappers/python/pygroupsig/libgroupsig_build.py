@@ -56,11 +56,15 @@ groupsig_key_t *grpkey, unsigned int seed);
 int groupsig_verify(uint8_t *ok, groupsig_signature_t *sig, message_t *msg, 
 groupsig_key_t *grpkey);
 
-int groupsig_open(identity_t *id, groupsig_proof_t *proof, crl_t *crl, 
-groupsig_signature_t *sig, groupsig_key_t *grpkey, 
-groupsig_key_t *mgrkey, gml_t *gml);
+int groupsig_open(uint64_t *index,
+groupsig_proof_t *proof,
+crl_t *crl, 
+groupsig_signature_t *sig,
+groupsig_key_t *grpkey, 
+groupsig_key_t *mgrkey,
+gml_t *gml);
 
-int groupsig_open_verify(uint8_t *ok, identity_t *id,
+int groupsig_open_verify(uint8_t *ok, 
 groupsig_proof_t *proof, 
 groupsig_signature_t *sig, 
 groupsig_key_t *grpkey);

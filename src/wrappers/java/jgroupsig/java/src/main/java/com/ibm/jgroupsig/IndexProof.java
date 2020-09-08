@@ -6,7 +6,7 @@ package com.ibm.jgroupsig;
  * Offers several interfaces to create and operate with identities.
  * It is part of the groupsig package.
  */
-public class IdProof {
+public class IndexProof {
 
     /**
      * The GS scheme code.
@@ -14,66 +14,63 @@ public class IdProof {
     private int code = -1;
 
     /**
-     * The identity object.
-     */        
-    private Identity id = null;
+     * The index of the signer within a GML.
+     */
+    private long index = -1;
 
     /**
      * The proof object.
      */        
     private Proof proof = null;
 
-    public IdProof() {}
+    public IndexProof() {}
 
     /**
-     * Creates a new instance of IdProof for the given scheme, wrapping
-     * the specified Identity and Proof objects.
+     * Creates a new instance of IndexProof for the given scheme, wrapping
+     * the specified index and Proof object.
      *
-     * @param id The identity to add to the wrapper object.
+     * @param index The index to add to the wrapper object.
      * @param proof The proof to add to the wrapper object.
      * @exception IllegalArgumentException
      * @exception Exception
      */       
-    public IdProof(Identity id, Proof proof)
+    public IndexProof(long index, Proof proof)
 	throws IllegalArgumentException,
 	       Exception
     {
-	if (id.getCode() != proof.getCode()) {
-	    throw new IllegalArgumentException("Invalid code.");
-	}
-	    
-	this.code = id.getCode();
-	this.id = id;
+    
+	this.code = proof.getCode();
+	this.index = index;
 	this.proof = proof;
 	return;
     }
 
     /**
-     * Creates a new instance of IdProof for the given scheme, using.
-     * the specified Identity object and setting the internal proof to null.
+     * Creates a new instance of IndexProof for the given scheme, using.
+     * the specified index and setting the internal proof to null.
      *
-     * @param id The identity to add to the wrapper object.
+     * @param index The index to add to the wrapper object.
      * @exception IllegalArgumentException
      * @exception Exception
      */       
-    public IdProof(Identity id)
+    public IndexProof(int code, long index)
 	throws IllegalArgumentException,
 	       Exception
     {    
-	this.code = id.getCode();
-	this.id = id;
+	this.code = code;
+	this.index = index;
 	return;
     }
 
     /**
-     * Creates a new instance of IdProof for the given scheme, using.
+     * Creates a new instance of IndexProof for the given scheme, using.
      * the specified Identity object and setting the internal proof to null.
      *
      * @param proof The proof to add to the wrapper object.
      * @exception IllegalArgumentException
      * @exception Exception
      */       
-    public IdProof(Proof proof)
+    public IndexProof(Proof proof)
 	throws IllegalArgumentException,
 	       Exception
     {
@@ -83,10 +80,9 @@ public class IdProof {
     }        
 
     /**
-     * Frees the memory allocated for the current IdProof.
+     * Frees the memory allocated for the current IndexProof.
      */     
     protected void finalize() {
-	groupsig_identityFree(this.id.getObject());
 	groupsig_proofFree(this.proof.getObject());	
     }
 
@@ -98,11 +94,11 @@ public class IdProof {
     public int getCode() { return this.code; }
 
     /**
-     * Returns the internal identity object.
+     * Returns the internal index
      *
-     * @return The identity object.
+     * @return The index.
      */
-    public Identity getIdentity() { return this.id; }
+    public long getIndex() { return this.index; }
 
     /**
      * Returns the internal rpoof object.
@@ -113,7 +109,6 @@ public class IdProof {
 
     static { System.loadLibrary("jnigroupsig"); }
 
-    private static native int groupsig_identityFree(long ptr);
     private static native int groupsig_proofFree(long ptr);
     
 }

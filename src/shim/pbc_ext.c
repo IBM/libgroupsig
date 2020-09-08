@@ -1304,154 +1304,6 @@ int pbcext_element_Fp_from_unformat_bytes(pbcext_element_Fp_t *e,
 
 }
 
-/* int pbcext_element_Fp_length_in_bytes(uint64_t *len, */
-/* 				      pbcext_element_Fp_t *e) { */
-
-/*   // @TODO The serialize/deserialize functions are probably more efficient. */
-/*   // But the documentation is not good no this. Until I have the time to check, */
-/*   // just go for {to,from}String methods. */
-  
-/*   byte_t bytes[MAX_Fp_SIZE_STR+1]; */
-/*   int _len; */
-  
-/*   if (!len || !e) { */
-/*     LOG_EINVAL(&logger, __FILE__, "pbcext_element_Fp_length_in_bytes", */
-/* 	       __LINE__, LOGERROR); */
-/*     return IERROR;  */
-/*   } */
- 
-/*   memset(bytes, 0, MAX_Fp_SIZE_STR+1); */
-
-/*   if(!(_len = mclBnFp_getStr(bytes, MAX_Fp_SIZE_STR, e, 16))) { */
-/*     LOG_ERRORCODE(&logger, __FILE__, "pbcext_element_Fp_to_bytes", */
-/* 		  __LINE__, errno, LOGERROR); */
-/*     return IERROR; */
-/*   } */
-
-/*   *len = _len; */
-  
-/*   return IOK; */
-  
-/* } */
-
-/* int pbcext_element_Fr_length_in_bytes(uint64_t *len, */
-/* 				      pbcext_element_Fr_t *e) { */
-
-/*     // @TODO The serialize/deserialize functions are probably more efficient. */
-/*   // But the documentation is not good no this. Until I have the time to check, */
-/*   // just go for {to,from}String methods. */
-  
-/*   byte_t bytes[MAX_Fr_SIZE_STR+1]; */
-/*   int _len; */
-  
-/*   if (!len || !e) { */
-/*     LOG_EINVAL(&logger, __FILE__, "pbcext_element_Fr_length_in_bytes", */
-/* 	       __LINE__, LOGERROR); */
-/*     return IERROR;  */
-/*   } */
- 
-/*   memset(bytes, 0, MAX_Fr_SIZE_STR+1); */
-
-/*   if(!(_len = mclBnFr_getStr(bytes, MAX_Fr_SIZE_STR, e, 16))) { */
-/*     LOG_ERRORCODE(&logger, __FILE__, "pbcext_element_Fr_to_bytes", */
-/* 		  __LINE__, errno, LOGERROR); */
-/*     return IERROR; */
-/*   } */
-
-/*   *len = _len; */
-  
-/*   return IOK; */
-
-/* } */
-
-/* int pbcext_element_G1_length_in_bytes(uint64_t *len, */
-/* 				      pbcext_element_G1_t *e) { */
-
-/*     // @TODO The serialize/deserialize functions are probably more efficient. */
-/*   // But the documentation is not good no this. Until I have the time to check, */
-/*   // just go for {to,from}String methods. */
-  
-/*   byte_t bytes[MAX_G1_SIZE_STR+1]; */
-/*   int _len; */
-  
-/*   if (!len || !e) { */
-/*     LOG_EINVAL(&logger, __FILE__, "pbcext_element_G1_length_in_bytes", */
-/* 	       __LINE__, LOGERROR); */
-/*     return IERROR;  */
-/*   } */
- 
-/*   memset(bytes, 0, MAX_G1_SIZE_STR+1); */
-
-/*   if(!(_len = mclBnG1_getStr(bytes, MAX_G1_SIZE_STR, e, 16))) { */
-/*     LOG_ERRORCODE(&logger, __FILE__, "pbcext_element_G1_to_bytes", */
-/* 		  __LINE__, errno, LOGERROR); */
-/*     return IERROR; */
-/*   } */
-
-/*   *len = _len; */
-  
-/*   return IOK; */
-
-/* } */
-
-/* int pbcext_element_G2_length_in_bytes(uint64_t *len, */
-/* 				      pbcext_element_G2_t *e) { */
-/*     // @TODO The serialize/deserialize functions are probably more efficient. */
-/*   // But the documentation is not good no this. Until I have the time to check, */
-/*   // just go for {to,from}String methods. */
-  
-/*   byte_t bytes[MAX_G2_SIZE_STR+1]; */
-/*   int _len; */
-  
-/*   if (!len || !e) { */
-/*     LOG_EINVAL(&logger, __FILE__, "pbcext_element_G2_length_in_bytes", */
-/* 	       __LINE__, LOGERROR); */
-/*     return IERROR;  */
-/*   } */
- 
-/*   memset(bytes, 0, MAX_G2_SIZE_STR+1); */
-
-/*   if(!(_len = mclBnG2_getStr(bytes, MAX_G2_SIZE_STR, e, 16))) { */
-/*     LOG_ERRORCODE(&logger, __FILE__, "pbcext_element_G2_to_bytes", */
-/* 		  __LINE__, errno, LOGERROR); */
-/*     return IERROR; */
-/*   } */
-
-/*   *len = _len; */
-  
-/*   return IOK; */
-
-/* } */
-
-/* int pbcext_element_GT_length_in_bytes(uint64_t *len, */
-/* 				      pbcext_element_GT_t *e) { */
-/*     // @TODO The serialize/deserialize functions are probably more efficient. */
-/*   // But the documentation is not good no this. Until I have the time to check, */
-/*   // just go for {to,from}String methods. */
-  
-/*   byte_t bytes[MAX_GT_SIZE_STR+1]; */
-/*   int _len; */
-  
-/*   if (!len || !e) { */
-/*     LOG_EINVAL(&logger, __FILE__, "pbcext_element_GT_length_in_bytes", */
-/* 	       __LINE__, LOGERROR); */
-/*     return IERROR;  */
-/*   } */
- 
-/*   memset(bytes, 0, MAX_GT_SIZE_STR+1); */
-
-/*   if(!(_len = mclBnGT_getStr(bytes, MAX_GT_SIZE_STR, e, 16))) { */
-/*     LOG_ERRORCODE(&logger, __FILE__, "pbcext_element_GT_to_bytes", */
-/* 		  __LINE__, errno, LOGERROR); */
-/*     return IERROR; */
-/*   } */
-
-/*   *len = _len; */
-  
-/*   return IOK; */
-
-/* } */
-
 int pbcext_element_Fr_from_hash(pbcext_element_Fr_t *dst,
 				byte_t *h,
 				uint64_t len) {
@@ -2743,6 +2595,40 @@ int pbcext_element_G1_to_string(char **str,
   } else {
     
     mclBnG1_getStr(*str, *len, e, 16);
+
+  }
+
+  return IOK;
+
+}
+
+int pbcext_element_G2_to_string(char **str,
+				uint64_t *len,
+				pbcext_element_G2_t *e) {
+
+  if(!str || !e) {
+    LOG_EINVAL(&logger, __FILE__, "pbcext_element_G2_to_string",
+	       __LINE__, LOGERROR);
+    return IERROR;
+  }
+	 
+  if(!(*str)) {
+
+    if(!(*str = mem_malloc(sizeof(char) * 2048))) {
+      return IERROR;
+    }
+
+    if(!mclBnG2_getStr(*str, 2048, e, 16)) {
+      LOG_ERRORCODE(&logger, __FILE__, "pbcext_element_G2_to_string",
+		    __LINE__, ENOLINK, LOGERROR);
+      return IERROR;
+    }
+
+    *len = strlen(*str);
+
+  } else {
+    
+    mclBnG2_getStr(*str, *len, e, 16);
 
   }
 

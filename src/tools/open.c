@@ -43,9 +43,7 @@ int main(int argc, char *argv[]) {
   gml_t *gml;
   crl_t *crl;
   groupsig_signature_t *sig;
-  identity_t *id;
-  trapdoor_t *trap;
-  byte_t *b_grpkey, *b_mgrkey, *b_sig;
+  byte_t *b_grpkey, *b_mgrkey, *b_sig, *b_gml;
 #ifdef PROFILE
   profile_t *prof_open, *prof_reveal;
   struct timeval tv_begin, tv_end;
@@ -55,7 +53,8 @@ int main(int argc, char *argv[]) {
   uint8_t profile_skip;
   char *s_sig_i;
 #endif
-  uint64_t b_len;
+  uint64_t b_len, index;
+  uint32_t gml_len;
   int rc;
   uint8_t scheme;
 
@@ -125,7 +124,14 @@ int main(int argc, char *argv[]) {
   mem_free(b_mgrkey); b_mgrkey = NULL; 
 
   /* Import the GML */
-  if(!(gml = gml_import(scheme, GML_FILE, s_gml))) {
+  b_gml = NULL;
+  if(misc_read_file_to_bytestring(s_gml, &b_gml, (uint64_t *) &gml_len) == IERROR) {
+    fprintf(stderr, "Error: Could not read GML file %s\n", s_gml);
+    return IERROR;
+  }
+  
+  /* Import the GML from the bytes */
+  if(!(gml = gml_import(scheme, b_gml, gml_len))) {
     fprintf(stderr, "Error: invalid GML %s.\n", s_gml);
     return IERROR;
   }
@@ -176,11 +182,6 @@ int main(int argc, char *argv[]) {
     mem_free(b_sig); b_sig = NULL;
     
 #endif
-
-    if(!(id = identity_init(scheme))) {
-      fprintf(stderr, "Error creating identity.\n");
-      return IERROR;
-    }
   
 #ifdef PROFILE
     if(profile_get_time(&tv_begin, &clck_begin, &cycle_begin) == IERROR) {
@@ -190,7 +191,7 @@ int main(int argc, char *argv[]) {
     }
 #endif
 
-    if((rc = groupsig_open(id, NULL, NULL, sig, grpkey, mgrkey, gml)) == IERROR) {
+    if((rc = groupsig_open(&index, NULL, NULL, sig, grpkey, mgrkey, gml)) == IERROR) {
       fprintf(stderr, "Error opening signature.\n");
       return IERROR;
     }
@@ -202,7 +203,7 @@ int main(int argc, char *argv[]) {
 #endif
 
     if(rc == IFAIL) {
-      fprintf(stderr, "Unable to open signature %s: no suitable trapdoor found.\n", s_sig);
+      fprintf(stderr, "Unable to open signature %s: no suitable entry found.\n", s_sig);
       return IERROR;
     }
 
@@ -214,7 +215,7 @@ int main(int argc, char *argv[]) {
     }
 #endif
 
-    fprintf(stdout, "Signer: %s\n", identity_to_string(id));
+    fprintf(stdout, "Signer: %lu\n", index);
     
 #ifdef PROFILE
     if(!profile_skip && profile_get_time(&tv_end, &clck_end, &cycle_end) == IOK) {
@@ -222,7 +223,6 @@ int main(int argc, char *argv[]) {
     }
 
     groupsig_signature_free(sig); sig = NULL;
-    identity_free(id); id = NULL;
     free(s_sig_i); s_sig_i = NULL;
 
   }
@@ -230,7 +230,6 @@ int main(int argc, char *argv[]) {
 #endif
 
   if(sig) { groupsig_signature_free(sig); sig = NULL; }
-  identity_free(id); id = NULL;
 
   groupsig_clear(scheme);
   groupsig_mgr_key_free(mgrkey); mgrkey = NULL;

@@ -10,6 +10,7 @@ from pygroupsig import memkey
 from pygroupsig import identity
 from pygroupsig import message
 from pygroupsig import signature
+from pygroupsig import gml
 from pygroupsig import constants
 
 # Tests for group operations
@@ -80,8 +81,7 @@ class TestGroupOps(unittest.TestCase):
         self.addMember()
         sig = groupsig.sign(b"Hello, World!", self.memkeys[1], self.grpkey)
         gsopen = groupsig.open(sig, self.mgrkey, self.grpkey, gml = self.gml)
-        idStr = identity.identity_to_string(gsopen['identity'])
-        self.assertEqual(idStr, "1")
+        self.assertEqual(gsopen["index"], 1)
         
 # Tests for signature operations
 class TestSignatureOps(unittest.TestCase):
@@ -200,6 +200,38 @@ class TestMemkeyOps(unittest.TestCase):
         # method returns ffi.NULL. Maybe implementing a cmp function for
         # mem keys would be good for testing this (and also in general?)
         self.assertIsNot(ffi.NULL, mkey)
+
+# Tests for GML operations
+class TestGmlOps(unittest.TestCase):
+
+    # Non-test functions
+    def addMember(self):
+        msg1 = groupsig.join_mgr(0, self.mgrkey, self.grpkey, gml = self.gml)
+        msg2 = groupsig.join_mem(1, self.grpkey, msgin = msg1)
+        usk = msg2['memkey']
+        self.memkey = usk
+        
+    # Creates a group, adds a member and generates a signature
+    def setUp(self):
+        groupsig.init(constants.BBS04_CODE, 0)
+        group = groupsig.setup(constants.BBS04_CODE)
+        self.code = constants.BBS04_CODE
+        self.mgrkey = group['mgrkey']
+        self.grpkey = group['grpkey']
+        self.gml = group['gml']
+        self.addMember()
+        
+    def tearDown(self):
+        groupsig.clear(self.code)
+
+    # Exports and reimports a member key
+    def test_gmlExportImport(self):
+        gml_str = gml.gml_export(self.gml)
+        _gml = gml.gml_import(self.code, gml_str)
+        # This is quite useless, as import returns an exception if the FFI
+        # method returns ffi.NULL. Maybe implementing a cmp function for
+        # GMLs would be good for testing this (and also in general?)
+        self.assertIsNot(ffi.NULL, _gml)   
                                 
 # Define test suites
 def suiteGroupOps():
@@ -233,6 +265,11 @@ def suiteMemkeyOps():
     suiteMemkeyOps = unittest.TestSuite()    
     suiteMemkeyOps.addTest(WidgetTestCase('test_memkeyExportImport'))
     return suiteMemkeyOps
+
+def suiteGmlOps():
+    suiteGmlOps = unittest.TestSuite()    
+    suiteGmlOps.addTest(WidgetTestCase('test_gmlExportImport'))
+    return suiteGmlOps
         
 if __name__ == '__main__':
     runner = unittest.TextTestRunner()
@@ -241,3 +278,4 @@ if __name__ == '__main__':
     runner.run(suiteGrpkeyOps())
     runner.run(suiteManagerkeyOps())
     runner.run(suiteMemkeyOps())
+    runner.run(suiteGmlOps())

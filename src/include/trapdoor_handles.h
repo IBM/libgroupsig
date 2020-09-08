@@ -20,9 +20,9 @@
 #ifndef _TRAPDOOR_HANDLES_H
 #define _TRAPDOOR_HANDLES_H
 
+#include "string.h"
 #include "trapdoor.h"
 /* #include "groupsig/kty04/trapdoor.h" */
-#include "groupsig/bbs04/trapdoor.h"
 /* #include "groupsig/cpy06/trapdoor.h" */
 
 #ifdef __cplusplus
@@ -41,8 +41,8 @@ extern "C" {
  */
 static const trapdoor_handle_t *TRAPDOOR_HANDLES[TRAPDOOR_HANDLES_N] = {
   //  &kty04_trapdoor_handle,
-  &bbs04_trapdoor_handle,
   //  &cpy06_trapdoor_handle,
+  NULL,
 };
 
 #ifdef __cplusplus

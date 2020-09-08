@@ -419,29 +419,29 @@ public class BBS04 implements GS {
      * Opens the given signature.
      *
      * @param sig The signature to open.
-     * @return An object wrapping the identity of the signer and, optionally,
+     * @return An object wrapping the index of the signer and, optionally,
      *  a proof of opening (for schemes that support it).
      * @exception UnsupportedEncodingException
      * @exception IllegalArgumentException
      * @exception Exception
      */
-    public IdProof open(Signature sig)
+    public IndexProof open(Signature sig)
 	throws IllegalArgumentException,
 	       Exception {
-	Identity id = new Identity(this.code);
-	if(groupsig_gsOpen(id.getObject(),
-			   0,
-			   0,
-			   sig.getObject(),
-			   this.grpKey.getObject(),
-			   this.mgrKey.getObject(),
-			   this.gml.getObject()) == 1)
+
+	long index;
+	if((index = groupsig_gsOpen(0,
+				    0,
+				    sig.getObject(),
+				    this.grpKey.getObject(),
+				    this.mgrKey.getObject(),
+				    this.gml.getObject())) == -1)
 	    throw new Exception("Error opening.");
-	IdProof idProof = new IdProof(id);
-	return idProof;
+	IndexProof indexProof = new IndexProof(GS.BBS04_CODE, index);
+	return indexProof;
     }
 
-    public boolean openVerify(IdProof idProof,
+    public boolean openVerify(IndexProof indexProof,
 			      Signature sig)
 	throws UnsupportedEncodingException,
 	       IllegalArgumentException,
@@ -613,15 +613,13 @@ public class BBS04 implements GS {
     						    byte[] msg,
     						    int msgLen,
     						    long grpKeyPtr);
-    private static native int groupsig_gsOpen(long idPtr,
-					      long proofPtr,
-					      long crlPtr,
-					      long sigPtr,
-					      long grpKeyPtr,
-					      long mgrKeyPtr,
-					      long gmlPtr);
-    private static native boolean groupsig_gsOpenVerify(long idPtr,
-							long proofPtr,
+    private static native long groupsig_gsOpen(long proofPtr,
+					       long crlPtr,
+					       long sigPtr,
+					       long grpKeyPtr,
+					       long mgrKeyPtr,
+					       long gmlPtr);
+    private static native boolean groupsig_gsOpenVerify(long proofPtr,
 							long sigPtr,
 							long grpKeyPtr);    
     private static native int groupsig_gsBlind(long bSigPtr,

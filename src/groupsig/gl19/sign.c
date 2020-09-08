@@ -249,7 +249,7 @@ int gl19_sign(groupsig_signature_t *sig, message_t *msg, groupsig_key_t *memkey,
   if(r3) { pbcext_element_Fr_free(r3); r3 = NULL; }
   if(ss) { pbcext_element_Fr_free(ss); ss = NULL; }
   if(aux) { pbcext_element_G1_free(aux); aux = NULL; }
-  if(aux_Zr) { pbcext_element_Fr_free(aux_Zr); aux = NULL; }
+  if(aux_Zr) { pbcext_element_Fr_free(aux_Zr); aux_Zr = NULL; }
   if(aux_h2negr2) { pbcext_element_G1_free(aux_h2negr2); aux_h2negr2 = NULL; }
   if(negy) { pbcext_element_Fr_free(negy); negy = NULL; }
   if(A_d) { pbcext_element_G1_free(A_d); A_d = NULL; }

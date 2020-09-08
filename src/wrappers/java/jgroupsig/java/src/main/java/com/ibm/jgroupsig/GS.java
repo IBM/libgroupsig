@@ -255,28 +255,28 @@ public interface GS {
      * Opens the given signature.
      *
      * @param sig The signature to open.
-     * @return An object wrapping the identity of the signer and, optionally,
+     * @return An object wrapping the index of the signer and, optionally,
      *  a proof of opening (for schemes that support it).
      * @exception UnsupportedEncodingException
      * @exception IllegalArgumentException
      * @exception Exception
      */
-    public IdProof open(Signature sig)
+    public IndexProof open(Signature sig)
 	throws IllegalArgumentException,
 	       Exception;
 
     /**
      * Verifies an opening of a signature.
      *
-     * @param idProof The object wrapping the open proof and, optionally,
-     *  the identity of the signer.
+     * @param indexProof The object wrapping the signer index and opening 
+     *  proof object.
      * @param sig The signature to open.
      * @return True if the proof is valid, False otherwise.
      * @exception UnsupportedEncodingException
      * @exception IllegalArgumentException
      * @exception Exception
      */
-    public boolean openVerify(IdProof idProof, Signature sig)
+    public boolean openVerify(IndexProof indexProof, Signature sig)
 	throws IllegalArgumentException,
 	       Exception;    
 

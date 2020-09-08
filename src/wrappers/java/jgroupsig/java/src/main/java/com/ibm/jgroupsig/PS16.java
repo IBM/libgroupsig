@@ -419,55 +419,51 @@ public class PS16 implements GS {
      * Opens the given signature.
      *
      * @param sig The signature to open.
-     * @return An object wrapping the identity of the signer and, optionally,
-     *  a proof of opening (for schemes that support it).
+     * @return An object wrapping the index of the signer and a proof of
+     *         opening.
      * @exception UnsupportedEncodingException
      * @exception IllegalArgumentException
      * @exception Exception
      */
-    public IdProof open(Signature sig)
+    public IndexProof open(Signature sig)
 	throws IllegalArgumentException,
 	       Exception {
-	Identity id = new Identity(this.code);
+
+	long index;
 	Proof proof = new Proof(this.code);
-	if(groupsig_gsOpen(id.getObject(),
-			   proof.getObject(),
-			   0,
-			   sig.getObject(),
-			   this.grpKey.getObject(),
-			   this.mgrKey.getObject(),
-			   this.gml.getObject()) == 1)
+
+	if((index = groupsig_gsOpen(proof.getObject(),
+				    0,
+				    sig.getObject(),
+				    this.grpKey.getObject(),
+				    this.mgrKey.getObject(),
+				    this.gml.getObject())) == -1)
 	    throw new Exception("Error opening.");
-	IdProof idProof = new IdProof(id, proof);
-	return idProof;
+	IndexProof indexProof = new IndexProof(index, proof);
+	return indexProof;
     }
 
     /**
      * Verifies an opening of a signature.
      *
-     * @param idProof The object wrapping the open proof and, optionally,
-     *  the identity of the signer.
+     * @param indexProof The object wrapping the open proof.
      * @param sig The signature to open.
      * @return True if the proof is valid, False otherwise.
      * @exception UnsupportedEncodingException
      * @exception IllegalArgumentException
      * @exception Exception
      */
-    public boolean openVerify(IdProof idProof,
+    public boolean openVerify(IndexProof indexProof,
 			      Signature sig)
 	throws IllegalArgumentException,
 	       Exception {
 
-	long idPtr = 0;
 	long proofPtr = 0;
-
-	if (idProof.getIdentity() != null)
-	    idPtr = idProof.getIdentity().getObject();
-	if (idProof.getProof() != null)
-	    proofPtr = idProof.getProof().getObject();
 	
-        return groupsig_gsOpenVerify(idPtr,
-				     proofPtr,
+	if (indexProof.getProof() != null)
+	    proofPtr = indexProof.getProof().getObject();
+	
+        return groupsig_gsOpenVerify(proofPtr,
 				     sig.getObject(),
 				     this.grpKey.getObject());
     }
@@ -635,15 +631,13 @@ public class PS16 implements GS {
     						    byte[] msg,
     						    int msgLen,
     						    long grpKeyPtr);
-    private static native int groupsig_gsOpen(long idPtr,
-					      long proofPtr,
-					      long crlPtr,
-					      long sigPtr,
-					      long grpKeyPtr,
-					      long mgrKeyPtr,
-					      long gmlPtr);
-    private static native boolean groupsig_gsOpenVerify(long idPtr,
-							long proofPtr,
+    private static native long groupsig_gsOpen(long proofPtr,
+					       long crlPtr,
+					       long sigPtr,
+					       long grpKeyPtr,
+					       long mgrKeyPtr,
+					       long gmlPtr);
+    private static native boolean groupsig_gsOpenVerify(long proofPtr,
 							long sigPtr,
 							long grpKeyPtr);    
     private static native int groupsig_gsBlind(long bSigPtr,

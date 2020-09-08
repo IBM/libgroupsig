@@ -68,7 +68,7 @@ groupsig_key_t *grpkey);
 
 ffibuilder.cdef("""
 int ps16_open(
-identity_t *id, 
+uint64_t *index, 
 groupsig_proof_t *proof,
 crl_t *crl, 
 groupsig_signature_t *sig, 
@@ -78,8 +78,7 @@ groupsig_key_t *mgrkey, gml_t *gml);
 
 ffibuilder.cdef("""
 int ps16_open_verify(
-uint8_t *ok, 
-identity_t *id, 
+uint8_t *ok,
 groupsig_proof_t *proof, 
 groupsig_signature_t *sig, 
 groupsig_key_t *grpkey);

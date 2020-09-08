@@ -31,11 +31,13 @@
 #include "groupsig/ps16/mgr_key.h"
 #include "groupsig/ps16/signature.h"
 #include "groupsig/ps16/gml.h"
-#include "groupsig/ps16/identity.h"
 
-int ps16_open(identity_t *id, groupsig_proof_t *proof, 
-	      crl_t *crl, groupsig_signature_t *sig, 
-	      groupsig_key_t *grpkey, groupsig_key_t *mgrkey,
+int ps16_open(uint64_t *index,
+	      groupsig_proof_t *proof, 
+	      crl_t *crl,
+	      groupsig_signature_t *sig, 
+	      groupsig_key_t *grpkey,
+	      groupsig_key_t *mgrkey,
 	      gml_t *gml) {
 
   pbcext_element_GT_t *e1, *e2, *e3;
@@ -43,14 +45,14 @@ int ps16_open(identity_t *id, groupsig_proof_t *proof,
   ps16_proof_t *ps16_proof;
   ps16_grp_key_t *ps16_grpkey;
   ps16_mgr_key_t *ps16_mgrkey;
-  ps16_gml_entry_t *ps16_entry;
+  gml_entry_t *ps16_entry;
   byte_t *bsig;
   uint64_t i;
   uint32_t slen;
   uint8_t match;
   int rc;
 
-  if (!id || !sig || sig->scheme != GROUPSIG_PS16_CODE ||
+  if (!index || !sig || sig->scheme != GROUPSIG_PS16_CODE ||
       !grpkey || grpkey->scheme != GROUPSIG_PS16_CODE ||
       !mgrkey || mgrkey->scheme != GROUPSIG_PS16_CODE ||
       !gml) {
@@ -80,15 +82,14 @@ int ps16_open(identity_t *id, groupsig_proof_t *proof,
 
     if (!(ps16_entry = gml_get(gml, i))) GOTOENDRC(IERROR, ps16_open);
 
-    if (pbcext_pairing(e3, ps16_sig->sigma1, ps16_entry->ttau) == IERROR)
+    if (pbcext_pairing(e3, ps16_sig->sigma1,
+		       ((ps16_gml_entry_data_t *) ps16_entry->data)->ttau) == IERROR)
       GOTOENDRC(IERROR, ps16_open);
 
     if (!pbcext_element_GT_cmp(e1, e3)) {
 
       /* Get the identity from the matched entry. */
-      if (ps16_identity_copy(id, ps16_entry->id) == IERROR)
-	GOTOENDRC(IERROR, ps16_open);
-
+      *index = ps16_entry->id;
       match = 1;
       break;
 
@@ -118,7 +119,7 @@ int ps16_open(identity_t *id, groupsig_proof_t *proof,
   if (spk_pairing_homomorphism_G2_sign(proof->proof,
 				       ps16_sig->sigma1,
 				       e3,
-				       ps16_entry->ttau,				       
+				       ((ps16_gml_entry_data_t *) ps16_entry->data)->ttau,
 				       bsig,
 				       slen) == IERROR)
     GOTOENDRC(IERROR, ps16_open);

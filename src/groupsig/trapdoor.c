@@ -17,6 +17,8 @@
  * under the License.
  */
 
+#include "logger.h"
+#include "types.h"
 #include "trapdoor_handles.h"
 
 const trapdoor_handle_t* trapdoor_handle_from_code(uint8_t code) {

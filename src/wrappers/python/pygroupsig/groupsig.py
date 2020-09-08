@@ -250,26 +250,29 @@ def open(sig, mgrkey, grpkey, gml=ffi.NULL, crl=ffi.NULL):
         gml: Optional. The GML.
         crl: Optional. The CRL (Certificate Revocation List).
     Returns:
-        A native object representing the identity of the signer. On error,
-        an exception is thrown.
+        A native object with two fields: 
+          'index': An integer identifying the signer within the GML. 
+          'proof': Optional field. Will be a native object in schemes that
+                   provide verifiable openings.
+        On error, an exception is thrown.
     """
     
-    identity = lib.identity_init(sig.scheme)
+    _index = ffi.new("uint64_t *")
     proof = lib.groupsig_proof_init(sig.scheme)
 
-    if lib.groupsig_open(identity, proof, crl, sig, grpkey, mgrkey, gml) == lib.IERROR:
+    if lib.groupsig_open(_index, proof, crl, sig, grpkey, mgrkey, gml) == lib.IERROR:
         raise Exception('Error opening signature')
 
     return  {
-        'identity': identity,
+        'index': _index[0],
         'proof': proof
     }
 
-def open_verify(proof, sig, grpkey, identity=ffi.NULL):
+def open_verify(proof, sig, grpkey):
 
     _b = ffi.new("uint8_t *")
     
-    if lib.groupsig_open_verify(_b, identity, proof, sig, grpkey) == lib.IERROR:
+    if lib.groupsig_open_verify(_b, proof, sig, grpkey) == lib.IERROR:
         raise Exception('Error verifying open proof')
     else:
         if _b[0] == 1:

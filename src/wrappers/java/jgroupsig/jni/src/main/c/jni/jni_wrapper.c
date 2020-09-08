@@ -509,9 +509,8 @@ static jboolean groupsig_gsVerify(JNIEnv *env,
   
 }
 
-static jint groupsig_gsOpen(JNIEnv *env,
+static jlong groupsig_gsOpen(JNIEnv *env,
 			    jobject obj,
-			    jlong idPtr,
 			    jlong proofPtr,
 			    jlong crlPtr,
 			    jlong sigPtr,
@@ -520,18 +519,19 @@ static jint groupsig_gsOpen(JNIEnv *env,
 			    jlong gmlPtr) {
   
   jclass jcls;
+  uint64_t index;
   int rc;
   
   (void) env;
   (void) obj;
 
-  if (!idPtr || !sigPtr || !grpKeyPtr || !mgrKeyPtr) {
+  if (!sigPtr || !grpKeyPtr || !mgrKeyPtr) {
     jcls = (*env)->FindClass(env, "java/lang/IllegalArgumentException");
     (*env)->ThrowNew(env, jcls, "Invalid argument.");
     return (jint) IERROR;    
   }
 
-  rc = groupsig_open((identity_t *) idPtr,
+  rc = groupsig_open(&index,
 		     (groupsig_proof_t *) proofPtr,
 		     (crl_t *) crlPtr,
 		     (groupsig_signature_t *) sigPtr,
@@ -542,16 +542,18 @@ static jint groupsig_gsOpen(JNIEnv *env,
   if (rc == IERROR) {
     jcls = (*env)->FindClass(env, "java/lang/Exception");
     (*env)->ThrowNew(env, jcls, "Internal error.");
-    return (jint) IERROR;
+    return (jlong) UINT_MAX;
   }
-  
-  return (jint) rc;
+
+  /* Note: jlong is interpreted by java as a signed integer of 64 bits,
+     while index is an unsigned int of 64 bits. But there are no larger
+     int data types in JNI, so this must be dealt with outside of it. */
+  return (jlong) index;
   
 }
 
 static jboolean groupsig_gsOpenVerify(JNIEnv *env,
 				      jobject obj,
-				      jlong idPtr,
 				      jlong proofPtr,
 				      jlong sigPtr,
 				      jlong grpKeyPtr) {
@@ -570,7 +572,6 @@ static jboolean groupsig_gsOpenVerify(JNIEnv *env,
   }
 
   rc = groupsig_open_verify(&ok,
-			    (identity_t *) idPtr,
 			    (groupsig_proof_t *) proofPtr,
 			    (groupsig_signature_t *) sigPtr,
 			    (groupsig_key_t *) grpKeyPtr);
@@ -798,8 +799,8 @@ static JNINativeMethod funcs_gs[] = {
   { "groupsig_gsSign", "(J[BIJJI)I", (void *) &groupsig_gsSign },
   { "groupsig_gsVerify", "(J[BIJ)Z", (void *) &groupsig_gsVerify },
   /* { "groupsig_gsReveal", , }, */
-  { "groupsig_gsOpen", "(JJJJJJJ)I", (void *) &groupsig_gsOpen },
-  { "groupsig_gsOpenVerify", "(JJJJ)Z", (void *) &groupsig_gsOpenVerify },
+  { "groupsig_gsOpen", "(JJJJJJ)J", (void *) &groupsig_gsOpen },
+  { "groupsig_gsOpenVerify", "(JJJ)Z", (void *) &groupsig_gsOpenVerify },
   /* { "groupsig_gsTrace", , }, */
   /* { "groupsig_gsClaim", , }, */
   /* { "groupsig_gsClaimVerify", , }, */
@@ -1498,10 +1499,75 @@ static jint groupsig_gmlFree(JNIEnv *env,
   
 }
 
+static jbyteArray groupsig_gmlExport(JNIEnv *env,
+					jobject obj,
+					long ptr) {
+
+  jclass jcls;
+  jbyteArray result;
+  byte_t *bytes;
+  uint32_t size;
+  int len;
+  
+  if (!ptr) {
+    jcls = (*env)->FindClass(env, "java/lang/IllegalArgumentException");
+    (*env)->ThrowNew(env, jcls, "Argument cannot be null.");
+    return NULL;
+  }
+
+  bytes = NULL;
+  if(gml_export(&bytes, &size, (gml_t *) ptr) == IERROR) {
+    jcls = (*env)->FindClass(env, "java/lang/Exception");
+    (*env)->ThrowNew(env, jcls, "Internal error.");
+    return NULL;
+  }
+
+  result=(*env)->NewByteArray(env, size);
+  (*env)->SetByteArrayRegion(env, result, 0, size, (const jbyte *) bytes);
+  
+  return result;
+  
+}
+
+static jlong groupsig_gmlImport(JNIEnv *env,
+				   jobject obj,
+				   int code,
+				   jbyteArray bytes,
+				   int size) {
+  jclass jcls;
+  gml_t *gml;
+  byte_t *_bytes;
+  
+  if (!bytes || !size) {
+    jcls = (*env)->FindClass(env, "java/lang/IllegalArgumentException");
+    (*env)->ThrowNew(env, jcls, "Argument cannot be null.");
+    return (jlong) 0;
+  }
+
+  if(!(_bytes = (byte_t *) malloc(sizeof(byte_t)*size))) {
+    jcls = (*env)->FindClass(env, "java/lang/Exception");
+    (*env)->ThrowNew(env, jcls, "Internal error.");
+    return (jint) IERROR;
+  }
+
+  (*env)->GetByteArrayRegion(env, bytes, 0, size, (jbyte *) _bytes); 
+
+  if(!(gml = gml_import(code, _bytes, size))) {
+    jcls = (*env)->FindClass(env, "java/lang/Exception");
+    (*env)->ThrowNew(env, jcls, "Internal error.");
+    return (jlong) 0;
+  }
+  free(_bytes); _bytes = NULL;
+  
+  return (jlong) gml;
+  
+}
 
 static JNINativeMethod funcs_gml[] = {
   { "groupsig_gmlInit", "(I)J", (void *) &groupsig_gmlInit },
   { "groupsig_gmlFree", "(J)I", (void *) &groupsig_gmlFree },
+  { "groupsig_gmlExport", "(J)[B", (void *) &groupsig_gmlExport },
+  { "groupsig_gmlImport", "(I[BI)J", (void *) &groupsig_gmlImport }
 };
 
 /********** Signature functions **********/

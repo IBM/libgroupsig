@@ -5,7 +5,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.ibm.jgroupsig</groupId>
   <artifactId>jgroupsig</artifactId>
-  <version>0.1.0</version>
+  <version>1.0.0</version>
   <packaging>pom</packaging>
 
   <name>jgroupsig</name>

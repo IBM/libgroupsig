@@ -1065,80 +1065,6 @@ int pbcext_element_Fp_from_unformat_bytes(pbcext_element_Fp_t *e,
 					  uint64_t len);
   
 /** 
- * @fn int pbcext_element_Fp_length_in_bytes(uint64_t *len,
- *                                           pbcext_element_Fp_t *e)
- *                                      
- * @brief Returns the number of bytes required to represent e.
- *
- * @param[in,out] len Will be set to the number of bytes required to represent
- *  e.
- * @param[in] e The element.
- * 
- * @return IOK or IERROR.
- */
-int pbcext_element_Fp_length_in_bytes(uint64_t *len,
-				      pbcext_element_Fp_t *e);
-
-/** 
- * @fn int pbcext_element_Fr_length_in_bytes(uint64_t *len,
- *                                           pbcext_element_Fr_t *e)
- *                                      
- * @brief Returns the number of bytes required to represent e.
- *
- * @param[in,out] len Will be set to the number of bytes required to represent
- *  e.
- * @param[in] e The element.
- * 
- * @return IOK or IERROR.
- */
-int pbcext_element_Fr_length_in_bytes(uint64_t *len,
-				      pbcext_element_Fr_t *e);
-
-/** 
- * @fn int pbcext_element_G1_length_in_bytes(uint64_t *len,
- *                                           pbcext_element_G1_t *e)
- *                                      
- * @brief Returns the number of bytes required to represent e.
- *
- * @param[in,out] len Will be set to the number of bytes required to represent
- *  e.
- * @param[in] e The element.
- * 
- * @return IOK or IERROR.
- */
-int pbcext_element_G1_length_in_bytes(uint64_t *len,
-				      pbcext_element_G1_t *e);
-
-/** 
- * @fn int pbcext_element_G2_length_in_bytes(uint64_t *len,
- *                                           pbcext_element_G2_t *e)
- *                                      
- * @brief Returns the number of bytes required to represent e.
- *
- * @param[in,out] len Will be set to the number of bytes required to represent
- *  e.
- * @param[in] e The element.
- * 
- * @return IOK or IERROR.
- */
-int pbcext_element_G2_length_in_bytes(uint64_t *len,
-				      pbcext_element_G2_t *e);
-
-/** 
- * @fn int pbcext_element_GT_length_in_bytes(uint64_t *len,
- *                                           pbcext_element_GT_t *e)
- *                                      
- * @brief Returns the number of bytes required to represent e.
- *
- * @param[in,out] len Will be set to the number of bytes required to represent
- *  e.
- * @param[in] e The element.
- * 
- * @return IOK or IERROR.
- */
-int pbcext_element_GT_length_in_bytes(uint64_t *len,
-				      pbcext_element_GT_t *e);
-/** 
  * @fn int pbcext_element_Fr_from_hash(pbcext_element_Fr_t *e,
  *                                      byte_t *h,
  *                                      uint64_t len)
@@ -1686,7 +1612,23 @@ int pbcext_element_Fr_to_string(char **str,
  */
 int pbcext_element_G1_to_string(char **str,
 				uint64_t *len,
-				pbcext_element_G1_t *e);  
+				pbcext_element_G1_t *e);
+
+/** 
+ * @fn int pbcext_element_G2_to_string(char **str,
+ *                                    uint64_t *len, 
+ *                                    pbcext_element_G2_t *e)
+ * @brief Gets the string representation in base 16 of e.
+ *
+ * @param[in,out] e Will be set to the string representation of e.
+ * @param[in,out] len Will be set to the length of str.
+ * @param[in] e The element.
+ * 
+ * @return IOK or IERROR.
+ */
+int pbcext_element_G2_to_string(char **str,
+				uint64_t *len,
+				pbcext_element_G2_t *e);    
 
 #ifdef __cplusplus
 }

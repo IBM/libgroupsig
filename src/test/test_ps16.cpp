@@ -319,8 +319,7 @@ namespace groupsig {
     groupsig_signature_t *sig;
     groupsig_proof_t *proof;
     message_t *msg;
-    identity_t *id;
-    char *str;
+    uint64_t index;
     int rc;
     uint8_t b;
 
@@ -343,24 +342,17 @@ namespace groupsig {
     EXPECT_EQ(rc, IOK);
 
     /* Open */
-    id = identity_init(GROUPSIG_PS16_CODE);
-    EXPECT_NE(id, nullptr);
-
     proof = groupsig_proof_init(GROUPSIG_PS16_CODE);
     EXPECT_NE(proof, nullptr);
     
-    rc = groupsig_open(id, proof, nullptr, sig, grpkey, mgrkey, gml);
+    rc = groupsig_open(&index, proof, nullptr, sig, grpkey, mgrkey, gml);
     EXPECT_EQ(rc, IOK);
 
-    /* id must be 1 */
-    str = identity_to_string(id);
-    EXPECT_NE(str, nullptr);
-
-    rc = strcmp(str, "1");
-    EXPECT_EQ(rc, 0);
+    /* index must be 1 */
+    EXPECT_EQ(index, 1);
 
     /* Verify the open proof. */
-    rc = groupsig_open_verify(&b, nullptr, proof, sig, grpkey);
+    rc = groupsig_open_verify(&b, proof, sig, grpkey);
     EXPECT_EQ(rc, IOK);
     EXPECT_EQ(b, 1);
 
@@ -371,13 +363,8 @@ namespace groupsig {
     rc = groupsig_signature_free(sig);
     EXPECT_EQ(rc, IOK);
 
-    rc = identity_free(id);
-    EXPECT_EQ(rc, IOK);
-
     rc = groupsig_proof_free(proof);
     EXPECT_EQ(rc, IOK);
-
-    free(str);    
     
   }
 
@@ -387,8 +374,7 @@ namespace groupsig {
     groupsig_signature_t *sig0, *sig1;
     groupsig_proof_t *proof;
     message_t *msg;
-    identity_t *id;
-    char *str;
+    uint64_t index;
     int rc;
     uint8_t b;
 
@@ -417,24 +403,17 @@ namespace groupsig {
     EXPECT_EQ(rc, IOK);
 
     /* Open */
-    id = identity_init(GROUPSIG_PS16_CODE);
-    EXPECT_NE(id, nullptr);
-
     proof = groupsig_proof_init(GROUPSIG_PS16_CODE);
     EXPECT_NE(proof, nullptr);
     
-    rc = groupsig_open(id, proof, nullptr, sig0, grpkey, mgrkey, gml);
+    rc = groupsig_open(&index, proof, nullptr, sig0, grpkey, mgrkey, gml);
     EXPECT_EQ(rc, IOK);
 
-    /* id must be 0 */
-    str = identity_to_string(id);
-    EXPECT_NE(str, nullptr);
-
-    rc = strcmp(str, "0");
-    EXPECT_EQ(rc, 0);
+    /* index must be 0 */
+    EXPECT_EQ(index, 0);
 
     /* Verify the open proof. */
-    rc = groupsig_open_verify(&b, nullptr, proof, sig1, grpkey);
+    rc = groupsig_open_verify(&b, proof, sig1, grpkey);
     EXPECT_EQ(rc, IOK);
     EXPECT_EQ(b, 0);
 
@@ -448,13 +427,8 @@ namespace groupsig {
     rc = groupsig_signature_free(sig1);
     EXPECT_EQ(rc, IOK);    
 
-    rc = identity_free(id);
-    EXPECT_EQ(rc, IOK);
-
     rc = groupsig_proof_free(proof);
     EXPECT_EQ(rc, IOK);
-
-    free(str);
 
   }  
 
@@ -799,8 +773,10 @@ namespace groupsig {
   /* Successfully exports and imports a GML */
   TEST_F(PS16Test, GmlExportImport) {
 
+    byte_t *bytes;
     gml_t *imported;
     int rc;
+    uint32_t size;
 
     rc = groupsig_setup(GROUPSIG_PS16_CODE, grpkey, mgrkey, gml);
     EXPECT_EQ(rc, IOK); 
@@ -809,15 +785,18 @@ namespace groupsig {
     addMembers(1);
 
     /* Export */
-    rc = gml_export(gml, (void *) "gml", GML_FILE);
+    bytes = NULL;
+    rc = gml_export(&bytes, &size, gml);
     EXPECT_EQ(rc, IOK);
 
     /* Import */
-    imported = gml_import(GROUPSIG_PS16_CODE, GML_FILE, (void *) "gml");
+    imported = gml_import(GROUPSIG_BBS04_CODE, bytes, size);
     EXPECT_NE(imported, nullptr);
 
     gml_free(imported);
     imported = nullptr;
+
+    free(bytes); bytes = NULL;
     
   }  
   

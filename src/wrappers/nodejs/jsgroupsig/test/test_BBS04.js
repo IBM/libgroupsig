@@ -103,26 +103,6 @@ describe('BBS04 Signature operations', function() {
     
 });
 
-describe('BBS04 Identity operations', function() {
-
-    it('initializes an identity.', function() {
-	jsgroupsig.init(jsgroupsig.BBS04, 0);
-	let id = jsgroupsig.identity_init(jsgroupsig.BBS04);
-	assert.notEqual(id, null);
-    });
-
-    it('can be represented as a string.', function() {
-	let bbs04 = setupFull();
-	let memkey = addMember(bbs04.mgrkey, bbs04.grpkey, bbs04.gml);
-	let sig = jsgroupsig.sign("Hello, World!", memkey, bbs04.grpkey);
-	let { id, proof } = jsgroupsig.open(sig, bbs04.grpkey, bbs04.mgrkey, bbs04.gml);
-	let idstr = jsgroupsig.identity_to_string(id);
-	expect(idstr).to.be.a('string');
-    });
-    
-});
-
-
 describe('BBS04 Group operations', function() {
     
     it('sets up group and manager keys.', function() {
@@ -168,9 +148,8 @@ describe('BBS04 Group operations', function() {
 	let memkey = addMember(bbs04.mgrkey, bbs04.grpkey, bbs04.gml);
 	let memkey2 = addMember(bbs04.mgrkey, bbs04.grpkey, bbs04.gml);
 	let sig = jsgroupsig.sign("Hello, World!", memkey2, bbs04.grpkey);
-	let { id, proof } = jsgroupsig.open(sig, bbs04.grpkey, bbs04.mgrkey, bbs04.gml);
-	let idstr = jsgroupsig.identity_to_string(id);
-	assert.equal(idstr, "1");
+	let { index, proof } = jsgroupsig.open(sig, bbs04.grpkey, bbs04.mgrkey, bbs04.gml);
+	assert.equal(index, 1);
     });
 
 });
