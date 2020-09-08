@@ -37,7 +37,6 @@ jobs:
         shell: bash
         working-directory: ${{ github.workspace }}/build
         run: |
-#          ctest --output-on-failure .
           ctest -VV --output-on-failure -T memcheck .
           cat Testing/Temporary/MemoryChecker.*
       - name: Process coverage
