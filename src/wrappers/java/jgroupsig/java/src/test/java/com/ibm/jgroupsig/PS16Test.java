@@ -165,18 +165,16 @@ public class PS16Test {
     	Signature sig = this.groupUser.sign("Hello, World!", memkey2);
 
 	/* Open the signature */
-	IdProof idProof = this.groupMgr.open(sig);
-	Identity id = idProof.getIdentity();
+	IndexProof indexProof = this.groupMgr.open(sig);
+	long index = indexProof.getIndex();
 	
 	/* Convert the identity to a string */
 	
     	/* The identity must be 1 */
-    	String idStr = id.toStr();
-	boolean b = idStr.equals("1");
-    	assertTrue(b, "Signer's identity should be 1.");
+    	assertTrue(index == 1, "Signer's index should be 1.");
 
 	/* Verify the proof */
-	b = this.groupUser.openVerify(idProof, sig);
+	boolean b = this.groupUser.openVerify(indexProof, sig);
 	assertTrue(b, "Opening proof should be valid.");
 	
     }
@@ -232,12 +230,24 @@ public class PS16Test {
     	this.setupFull();
     	MemKey mem = this.addMember();
     	Signature sig = this.groupUser.sign("Hello, World!", mem);
-    	IdProof idProof = this.groupMgr.open(sig);
-    	String sproof = idProof.getProof().export();
+    	IndexProof indexProof = this.groupMgr.open(sig);
+    	String sproof = indexProof.getProof().export();
     	Proof proof2 = new Proof(this.groupUser.getCode(), sproof);
-    	IdProof idProof2 = new IdProof(proof2);
-    	boolean b = this.groupUser.openVerify(idProof2, sig);
+    	IndexProof indexProof2 = new IndexProof(proof2);
+    	boolean b = this.groupUser.openVerify(indexProof2, sig);
     	assertTrue(b, "Imported proof should verify correctly.");
+    }
+
+    @Test
+    public void exportImportGml()
+    	throws Exception
+    {
+    	this.setupFull();
+    	MemKey mem = this.addMember();
+    	String sgml = this.groupMgr.getGml().export();
+	/* This should be refactored into a negative test that throws an
+	   exception, as here no exception should be thrown ... */	
+    	Gml gml2 = new Gml(this.groupUser.getCode(), sgml);
     }    
     
 }

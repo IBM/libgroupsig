@@ -155,15 +155,11 @@ public class BBS04Test {
     	Signature sig = this.groupUser.sign("Hello, World!", memkey2);
 
 	/* Open the signature */
-	IdProof idProof = this.groupMgr.open(sig);
-	Identity id = idProof.getIdentity();
+	IndexProof indexProof = this.groupMgr.open(sig);
+	long index = indexProof.getIndex();
 	
-	/* Conver the identity to a string */
-	
-    	/* The nyms must be different */
-    	String idStr = id.toStr();
-	boolean b = idStr.equals("1");
-    	assertTrue(b, "Signer's identity should be 1.");
+    	/* Signer is 1 */
+    	assertTrue(index == 1, "Signer's index should be 1.");
 	
     }
 
@@ -210,5 +206,18 @@ public class BBS04Test {
     	boolean b = this.groupUser.verify(sig2, "Hello, World!");
     	assertTrue(b, "Imported signature should verify correctly.");
     }
+
+    @Test
+    public void exportImportGml()
+    	throws Exception
+    {
+    	this.setupFull();
+    	MemKey mem = this.addMember();
+    	String sgml = this.groupMgr.getGml().export();
+	/* This should be refactored into a negative test that throws an
+	   exception, as here no exception should be thrown ... */
+    	Gml gml2 = new Gml(this.groupUser.getCode(), sgml);
+    }    
+    
     
 }

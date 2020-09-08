@@ -495,13 +495,13 @@ public class GL19 implements GS {
 	
     }
 
-    public IdProof open(Signature sig)
+    public IndexProof open(Signature sig)
 	throws IllegalArgumentException,
 	       Exception {
 	throw new Exception("Functionality not supported in GL19.");
     }
 
-    public boolean openVerify(IdProof idProof,
+    public boolean openVerify(IndexProof indexProof,
 			      Signature sig)
 	throws UnsupportedEncodingException,
 	       IllegalArgumentException,
@@ -823,15 +823,13 @@ public class GL19 implements GS {
     						    byte[] msg,
     						    int msgLen,
     						    long grpKeyPtr);
-    private static native int groupsig_gsOpen(long idPtr,
-					      long proofPtr,
-					      long crlPtr,
-					      long sigPtr,
-					      long grpKeyPtr,
-					      long mgrKeyPtr,
-					      long gmlPtr);
-    private static native boolean groupsig_gsOpenVerify(long idPtr,
-							long proofPtr,
+    private static native long groupsig_gsOpen(long proofPtr,
+					       long crlPtr,
+					       long sigPtr,
+					       long grpKeyPtr,
+					       long mgrKeyPtr,
+					       long gmlPtr);
+    private static native boolean groupsig_gsOpenVerify(long proofPtr,
 							long sigPtr,
 							long grpKeyPtr);        
     private static native int groupsig_gsBlind(long bSigPtr,
