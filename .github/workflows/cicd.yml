@@ -36,9 +36,7 @@ jobs:
 #        if: "contains( matrix.os, 'ubuntu')"
         shell: bash
         working-directory: ${{ github.workspace }}/build
-        run: |
-          ctest -VV --output-on-failure -T memcheck .
-          cat Testing/Temporary/MemoryChecker.*
+        run: ctest -VV --output-on-failure --overwrite MemoryCheckCommandOptions="--leak-check=full" -T memcheck .
       - name: Process coverage
         working-directory: ${{ github.workspace }}/build
         run: | 
