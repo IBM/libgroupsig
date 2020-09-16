@@ -35,7 +35,8 @@
 
 groupsig_key_t* gl19_mgr_key_init() {
 
-    groupsig_key_t *key;
+  groupsig_key_t *key;
+  gl19_mgr_key_t *gl19_key;
 
   if(!(key = (groupsig_key_t *) mem_malloc(sizeof(groupsig_key_t)))) {
     return NULL;
@@ -47,6 +48,10 @@ groupsig_key_t* gl19_mgr_key_init() {
   }
 
   key->scheme = GROUPSIG_GL19_CODE;
+  gl19_key = key->key;
+  gl19_key->isk = NULL;
+  gl19_key->csk = NULL;
+  gl19_key->esk = NULL;  
 
   return key;
 

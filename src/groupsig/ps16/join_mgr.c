@@ -49,9 +49,18 @@ int ps16_get_joinstart(uint8_t *start) {
  * a "standard" keypair+certificate. Nor do we add the signature of tau to the
  * GML (because we don't receive such signature). Rather, it should be the caller
  * who takes care of that using some well tested library/software for PKI 
- * management.
+ * management. 
  *
- * @TODO: Refine this and document better.
+ * This can be easily done by a calling library as follows:
+ *   1) The member digitally signs, using his PKI-backed identity, the bytearray
+ *      representation of the <i>min</i> parameter when <i>seq</i>=2 (this
+ *      contains the challenge response). 
+ *   2) If the join is successful, the manager exports the newly created GML
+ *      entry, producing a byte array (which contains the libgroupsig-internal
+ *      identity -- an integer). 
+ *   3) All the server running the issuer needs to store in its database, is
+ *      the output of the previous steps. This can then be queried when an open
+ *      is requested.
  */
 int ps16_join_mgr(message_t **mout,
 		  gml_t *gml,

@@ -28,7 +28,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-
+  
 /**
  * @struct spk_dlog_t
  * @brief Data structure for convenional discrete log proofs.
