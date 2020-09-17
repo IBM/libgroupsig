@@ -24,6 +24,7 @@
 #include "groupsig/klap20/grp_key.h"
 #include "groupsig/klap20/mem_key.h"
 #include "groupsig/klap20/signature.h"
+#include "crypto/spk.h"
 #include "shim/pbc_ext.h"
 #include "sys/mem.h"
 
@@ -57,13 +58,13 @@ int klap20_sign(groupsig_signature_t *sig,
   if (pbcext_element_Fr_random(r) == IERROR) GOTOENDRC(IERROR, klap20_sign);
 
   if (!(klap20_sig->uu = pbcext_element_G1_init())) GOTOENDRC(IERROR, klap20_sign);
-  if (pbcext_element_G1_mul(klap20_sig->uu, klap20_memkey->uu, r) == IERROR)
+  if (pbcext_element_G1_mul(klap20_sig->uu, klap20_memkey->u, r) == IERROR)
     GOTOENDRC(IERROR, klap20_sign);
   if (!(klap20_sig->vv = pbcext_element_G1_init())) GOTOENDRC(IERROR, klap20_sign);
-  if (pbcext_element_G1_mul(klap20_sig->vv, klap20_memkey->vv, r) == IERROR)
+  if (pbcext_element_G1_mul(klap20_sig->vv, klap20_memkey->v, r) == IERROR)
     GOTOENDRC(IERROR, klap20_sign);
   if (!(klap20_sig->ww = pbcext_element_G1_init())) GOTOENDRC(IERROR, klap20_sign);
-  if (pbcext_element_G1_mul(klap20_sig->ww, klap20_memkey->ww, r) == IERROR)
+  if (pbcext_element_G1_mul(klap20_sig->ww, klap20_memkey->w, r) == IERROR)
     GOTOENDRC(IERROR, klap20_sign);
   
   /* Compute signature of knowledge of alpha */

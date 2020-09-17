@@ -22,6 +22,7 @@
 #include "klap20.h"
 #include "groupsig/klap20/grp_key.h"
 #include "groupsig/klap20/signature.h"
+#include "crypto/spk.h"
 #include "shim/pbc_ext.h"
 #include "sys/mem.h"
 
@@ -53,12 +54,12 @@ int klap20_verify(uint8_t *ok,
   _ok = 0;
 
   /* Verify SPK */
-  if (spk_dlog_verify(&_ok,
-		      klap20_sig->ww,
-		      klap20_sig->uu,
-		      klap20_sig->pi,
-		      msg->bytes,
-		      msg->length) == IERROR)
+  if (spk_dlog_G1_verify(&_ok,
+			 klap20_sig->ww,
+			 klap20_sig->uu,
+			 klap20_sig->pi,
+			 msg->bytes,
+			 msg->length) == IERROR)
     GOTOENDRC(IERROR, klap20_verify);
 
   if (!_ok) {

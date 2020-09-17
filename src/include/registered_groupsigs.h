@@ -27,6 +27,7 @@
 /* #include "cpy06.h" */
 #include "gl19.h"
 #include "ps16.h"
+#include "klap20.h"
 
 #ifdef __cplusplus
 extern "C" {

@@ -26,8 +26,10 @@
 #include "groupsig/klap20/mgr_key.h"
 #include "groupsig/klap20/mem_key.h"
 #include "groupsig/klap20/gml.h"
+#include "groupsig/klap20/spk.h"
 #include "crypto/spk.h"
 #include "shim/pbc_ext.h"
+#include "shim/hash.h"
 #include "sys/mem.h"
 
 int klap20_get_joinseq(uint8_t *seq) {
@@ -79,9 +81,11 @@ int klap20_join_mgr(message_t **mout,
   hash_t *h;
   message_t *_mout;
   byte_t *bn, *bf, *bv;
+  void *y[6], *g[5];  
   uint64_t len, nlen, flen, wlen, SS0len, SS1len, ff0len, ff1len, pilen, offset;
   uint8_t ok;
   int rc;
+  uint16_t i[8][2], prods[6];  
 
   if((seq != 0 && seq != 2) ||
      !mout || !gml || gml->scheme != GROUPSIG_KLAP20_CODE ||
@@ -141,25 +145,26 @@ int klap20_join_mgr(message_t **mout,
     if (!(w = pbcext_element_G1_init())) GOTOENDRC(IERROR, klap20_join_mgr);
     if (pbcext_get_element_G1_bytes(w, &wlen, min->bytes + offset) == IERROR)
       GOTOENDRC(IERROR, klap20_join_mgr);
-    offset =+ wlen;
+    offset += wlen;
     if (!(SS0 = pbcext_element_G2_init())) GOTOENDRC(IERROR, klap20_join_mgr);
     if (pbcext_get_element_G2_bytes(SS0, &SS0len, min->bytes + offset) == IERROR)
       GOTOENDRC(IERROR, klap20_join_mgr);
-    offset =+ SS0len;
+    offset += SS0len;
     if (!(SS1 = pbcext_element_G2_init())) GOTOENDRC(IERROR, klap20_join_mgr);
     if (pbcext_get_element_G2_bytes(SS1, &SS1len, min->bytes + offset) == IERROR)
       GOTOENDRC(IERROR, klap20_join_mgr);
-    offset =+ SS1len;
+    offset += SS1len;
     if (!(ff0 = pbcext_element_G2_init())) GOTOENDRC(IERROR, klap20_join_mgr);
     if (pbcext_get_element_G2_bytes(ff0, &ff0len, min->bytes + offset) == IERROR)
       GOTOENDRC(IERROR, klap20_join_mgr);
-    offset =+ ff0len;
+    offset += ff0len;
     if (!(ff1 = pbcext_element_G2_init())) GOTOENDRC(IERROR, klap20_join_mgr);
     if (pbcext_get_element_G2_bytes(ff1, &ff1len, min->bytes + offset) == IERROR)
       GOTOENDRC(IERROR, klap20_join_mgr);
-    offset =+ ff1len;   
-    if (!(pi = spk_rep_import(min->bytes + offset)))
+    offset += ff1len;   
+    if (!(pi = spk_rep_import(min->bytes + offset, &pilen)))
       GOTOENDRC(IERROR, klap20_join_mgr);
+    offset += pilen;
 
     if (pbcext_element_G1_to_bytes(&bn, &nlen, n) == IERROR)
       GOTOENDRC(IERROR, klap20_join_mgr);
@@ -252,7 +257,7 @@ int klap20_join_mgr(message_t **mout,
 
     /* Export v into a msg */
     bv = NULL;
-    if(pbcext_dump_element_G1_bytes(&bn, &len, n) == IERROR) 
+    if(pbcext_dump_element_G1_bytes(&bv, &len, v) == IERROR) 
       GOTOENDRC(IERROR, klap20_join_mgr);
 
     if(!*mout) {

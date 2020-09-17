@@ -28,14 +28,15 @@
 #include "sys/mem.h"
 #include "registered_groupsigs.h"
 
-#define GROUPSIG_REGISTERED_GROUPSIGS_N 3//4
+#define GROUPSIG_REGISTERED_GROUPSIGS_N 4
 static const groupsig_t *GROUPSIG_REGISTERED_GROUPSIGS[GROUPSIG_REGISTERED_GROUPSIGS_N] = {
-/* &kty04_groupsig_bundle, */
-&bbs04_groupsig_bundle,
-/* &cpy06_groupsig_bundle, */
+  /* &kty04_groupsig_bundle, */
+  &bbs04_groupsig_bundle,
+  /* &cpy06_groupsig_bundle, */
   &gl19_groupsig_bundle,
   &ps16_groupsig_bundle,
-  };
+  &klap20_groupsig_bundle,
+};
 
 int groupsig_hello_world(void) {
   fprintf(stdout, "Hello, World!\n");

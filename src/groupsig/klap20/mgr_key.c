@@ -104,23 +104,34 @@ int klap20_mgr_key_copy(groupsig_key_t *dst, groupsig_key_t *src) {
   rc = IOK;
   
   /* Copy the elements */
-  if(!(klap20_dst->x = pbcext_element_Fr_init()))
-    GOTOENDRC(IERROR, klap20_mgr_key_copy);
-  if(pbcext_element_Fr_set(klap20_dst->x, klap20_src->x) == IERROR)
-    GOTOENDRC(IERROR, klap20_mgr_key_copy);
-  if(!(klap20_dst->y = pbcext_element_Fr_init()))
-    GOTOENDRC(IERROR, klap20_mgr_key_copy);
-  if(pbcext_element_Fr_set(klap20_dst->y, klap20_src->y) == IERROR)
-    GOTOENDRC(IERROR, klap20_mgr_key_copy);
-  if(!(klap20_dst->z0 = pbcext_element_Fr_init()))
-    GOTOENDRC(IERROR, klap20_mgr_key_copy);
-  if(pbcext_element_Fr_set(klap20_dst->z0, klap20_src->z0) == IERROR)
-    GOTOENDRC(IERROR, klap20_mgr_key_copy);
-  if(!(klap20_dst->z1 = pbcext_element_Fr_init()))
-    GOTOENDRC(IERROR, klap20_mgr_key_copy);
-  if(pbcext_element_Fr_set(klap20_dst->z1, klap20_src->z1) == IERROR)
-    GOTOENDRC(IERROR, klap20_mgr_key_copy);  
+  if(klap20_src->x) {
+    if(!(klap20_dst->x = pbcext_element_Fr_init()))
+      GOTOENDRC(IERROR, klap20_mgr_key_copy);
+    if(pbcext_element_Fr_set(klap20_dst->x, klap20_src->x) == IERROR)
+      GOTOENDRC(IERROR, klap20_mgr_key_copy);
+  }
 
+  if(klap20_src->y) {  
+    if(!(klap20_dst->y = pbcext_element_Fr_init()))
+      GOTOENDRC(IERROR, klap20_mgr_key_copy);
+    if(pbcext_element_Fr_set(klap20_dst->y, klap20_src->y) == IERROR)
+      GOTOENDRC(IERROR, klap20_mgr_key_copy);
+  }
+
+  if(klap20_src->z0) {  
+    if(!(klap20_dst->z0 = pbcext_element_Fr_init()))
+      GOTOENDRC(IERROR, klap20_mgr_key_copy);
+    if(pbcext_element_Fr_set(klap20_dst->z0, klap20_src->z0) == IERROR)
+      GOTOENDRC(IERROR, klap20_mgr_key_copy);
+  }
+
+  if(klap20_src->z1) {  
+    if(!(klap20_dst->z1 = pbcext_element_Fr_init()))
+      GOTOENDRC(IERROR, klap20_mgr_key_copy);
+    if(pbcext_element_Fr_set(klap20_dst->z1, klap20_src->z1) == IERROR)
+      GOTOENDRC(IERROR, klap20_mgr_key_copy);  
+  }
+    
  klap20_mgr_key_copy_end:
 
   if(rc == IERROR) {
@@ -148,10 +159,10 @@ int klap20_mgr_key_get_size(groupsig_key_t *key) {
 
   sx = sy = sz0 = sz1 = 0;
 
-  if (klap20_key->sx) { if(pbcext_element_Fr_byte_size(&sx) == IERROR) return -1; }
-  if (klap20_key->sy) { if(pbcext_element_Fr_byte_size(&sy) == IERROR) return -1; }
-  if (klap20_key->sz0) { if(pbcext_element_Fr_byte_size(&sz0) == IERROR) return -1; }
-  if (klap20_key->sz1) { if(pbcext_element_Fr_byte_size(&sz1) == IERROR) return -1; }
+  if (klap20_key->x) { if(pbcext_element_Fr_byte_size(&sx) == IERROR) return -1; }
+  if (klap20_key->y) { if(pbcext_element_Fr_byte_size(&sy) == IERROR) return -1; }
+  if (klap20_key->z0) { if(pbcext_element_Fr_byte_size(&sz0) == IERROR) return -1; }
+  if (klap20_key->z1) { if(pbcext_element_Fr_byte_size(&sz1) == IERROR) return -1; }
 
   size64 = sizeof(uint8_t)*2 + sizeof(int)*4 + sx + sy + sz0 + sz1;
 
@@ -219,11 +230,15 @@ int klap20_mgr_key_export(byte_t **bytes,
   }
 
   /* Dump z0 */
-  __bytes = &_bytes[ctr];
-  if (pbcext_dump_element_Fr_bytes(&__bytes, &len, klap20_key->z0) == IERROR) 
-    GOTOENDRC(IERROR, klap20_mgr_key_export);
-  ctr += len;
-
+  if (klap20_key->z0) {  
+    __bytes = &_bytes[ctr];
+    if (pbcext_dump_element_Fr_bytes(&__bytes, &len, klap20_key->z0) == IERROR) 
+      GOTOENDRC(IERROR, klap20_mgr_key_export);
+    ctr += len;
+  } else {
+    ctr += sizeof(int);    
+  }
+  
   /* Dump z1 */
   if (klap20_key->z1) {
     __bytes = &_bytes[ctr];
@@ -339,7 +354,7 @@ groupsig_key_t* klap20_mgr_key_import(byte_t *source, uint32_t size) {
   }
 
   /* Get z1 */
-  if(!(klap20_key->y = pbcext_element_Fr_init()))
+  if(!(klap20_key->z1 = pbcext_element_Fr_init()))
     GOTOENDRC(IERROR, klap20_mgr_key_import);
   if(pbcext_get_element_Fr_bytes(klap20_key->z1, &len, &source[ctr]) == IERROR)
     GOTOENDRC(IERROR, klap20_mgr_key_import);

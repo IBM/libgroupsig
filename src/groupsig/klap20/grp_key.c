@@ -39,7 +39,7 @@
 groupsig_key_t* klap20_grp_key_init() {
 
   groupsig_key_t *key;
-  klap20_key_t *klap20_key;
+  klap20_grp_key_t *klap20_key;
 
   if(!(key = (groupsig_key_t *) mem_malloc(sizeof(groupsig_key_t)))) {
     return NULL;
@@ -52,12 +52,12 @@ groupsig_key_t* klap20_grp_key_init() {
 
   key->scheme = GROUPSIG_KLAP20_CODE;
   klap20_key = key->key;
-  key->g = NULL;
-  key->gg = NULL;
-  key->XX = NULL;
-  key->YY = NULL;
-  key->ZZ0 = NULL;
-  key->ZZ1 = NULL;
+  klap20_key->g = NULL;
+  klap20_key->gg = NULL;
+  klap20_key->XX = NULL;
+  klap20_key->YY = NULL;
+  klap20_key->ZZ0 = NULL;
+  klap20_key->ZZ1 = NULL;
   
   return key;
   

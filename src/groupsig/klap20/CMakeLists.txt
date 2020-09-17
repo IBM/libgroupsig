@@ -1,5 +1,5 @@
 include_directories ("${PROJECT_SOURCE_DIR}/src/include"
-                     "${PROJECT_SOURCE_DIR}/src")
+  "${PROJECT_SOURCE_DIR}/src")
 
 add_library (klap20 
   grp_key.c grp_key.h 
@@ -10,10 +10,11 @@ add_library (klap20
   join_mem.c join_mgr.c 
   sign.c 
   verify.c 
-  open.c
-  open_verify.c
+  #  open.c
+  #  open_verify.c
   gml.c gml.h
-  proof.c proof.h)
+  spk.c spk.h)
+#  proof.c proof.h)
 
 target_include_directories (klap20 PRIVATE ${OPENSSL_INCLUDE_DIR})
 target_link_libraries (klap20 PRIVATE ${OPENSSL_LIBRARIES})

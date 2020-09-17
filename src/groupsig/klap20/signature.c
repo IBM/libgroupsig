@@ -86,7 +86,7 @@ int klap20_signature_free(groupsig_signature_t *sig) {
       klap20_sig->ww = NULL;
     }
     if(klap20_sig->pi) {
-      spk_dlog_free(klap20_sig->pi)
+      spk_dlog_free(klap20_sig->pi);
       klap20_sig->pi = NULL;
     }
     mem_free(klap20_sig); klap20_sig = NULL;
@@ -124,12 +124,12 @@ int klap20_signature_copy(groupsig_signature_t *dst, groupsig_signature_t *src) 
     GOTOENDRC(IERROR, klap20_signature_copy);
   if(!(klap20_dst->ww = pbcext_element_G1_init()))
     GOTOENDRC(IERROR, klap20_signature_copy);    
-  if(pbcext_element_Fr_set(klap20_dst->ww, klap20_src->ww) == IERROR)
+  if(pbcext_element_G1_set(klap20_dst->ww, klap20_src->ww) == IERROR)
     GOTOENDRC(IERROR, klap20_signature_copy);  
-  if(!(klap20_dst->pi = spk_dlog_init(klap20_src->pi->ns)))
+  if(!(klap20_dst->pi = spk_dlog_init()))
     GOTOENDRC(IERROR, klap20_signature_copy);
-  if(spk_dlog_copy(klap_dst->pi, klap20_src->pi) == IERROR)
-    GOTOENDRC(IERROR, gl19_signature_copy);
+  if(spk_dlog_copy(klap20_dst->pi, klap20_src->pi) == IERROR)
+    GOTOENDRC(IERROR, klap20_signature_copy);
   
  klap20_signature_copy_end:
 
@@ -175,8 +175,8 @@ int klap20_signature_get_size(groupsig_signature_t *sig) {
   if(pbcext_element_G1_byte_size(&suu) == IERROR) return -1;
   if(pbcext_element_G1_byte_size(&svv) == IERROR) return -1;
   if(pbcext_element_G1_byte_size(&sww) == IERROR) return -1;
-  if(pbcext_element_G1_byte_size(&sc) == IERROR) return -1;
-  if(pbcext_element_G1_byte_size(&ss) == IERROR) return -1;  
+  if(pbcext_element_Fr_byte_size(&sc) == IERROR) return -1;
+  if(pbcext_element_Fr_byte_size(&ss) == IERROR) return -1;  
       
   size64 = sizeof(uint8_t) + sizeof(int)*5 + suu + svv + sww +  sc + ss;
 

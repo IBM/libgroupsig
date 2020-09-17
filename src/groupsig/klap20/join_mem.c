@@ -27,6 +27,7 @@
 #include "sys/mem.h"
 #include "groupsig/klap20/spk.h" /* To be replaced in issue23. */
 #include "shim/pbc_ext.h"
+#include "shim/hash.h"
 
 /** 
  * In the paper, it is the member who begins the protocol and, during join,
@@ -49,19 +50,21 @@
  */
 int klap20_join_mem(message_t **mout, groupsig_key_t *memkey,
 		    int seq, message_t *min, groupsig_key_t *grpkey) {
-
+  
   klap20_mem_key_t *klap20_memkey;
   klap20_grp_key_t *klap20_grpkey;
-  spk_dlog_t *pi;
+  spk_rep_t *pi;
   hash_t *h;
-  pbcext_element_Fr_t *s0, *s1;
+  pbcext_element_Fr_t *s0, *s1, *x[3];
   pbcext_element_G1_t *n, *f;
   pbcext_element_G2_t *SS0, *SS1, *ff0, *ff1, *ggalpha, *ZZ0s0, *ZZ1s1;
   pbcext_element_GT_t *tau, *e1, *e2, *e3;  
   message_t *_mout;
-  byte_t *bn, *bf, *bw, *bSS0, *bSS1, *bff0, *bff1;
-  uint64_t len, flen, wlen, SS0len, SS1len, ff0len, ff1len, offset;
+  byte_t *bn, *bf, *bw, *bSS0, *bSS1, *bff0, *bff1, *bpi, *bmsg;
+  void *y[6], *g[5];
+  uint64_t len, nlen, flen, wlen, SS0len, SS1len, ff0len, ff1len, pilen, offset;
   int rc;
+  uint16_t i[8][2], prods[6];  
   
   if(!memkey || memkey->scheme != GROUPSIG_KLAP20_CODE ||
      !min || (seq != 1 && seq != 3)) {
@@ -77,7 +80,7 @@ int klap20_join_mem(message_t **mout, groupsig_key_t *memkey,
   SS0 = SS1 = ff0 = ff1 = ggalpha = ZZ0s0 = ZZ1s1 = NULL;
   tau = e1 = e2 = e3 = NULL;
   pi = NULL;
-  bn = bf = bw = bSS0 = bSS1 = bff0 = bff1 = NULL;
+  bn = bf = bw = bSS0 = bSS1 = bff0 = bff1 = bmsg = bpi = NULL;
   h = NULL;
   rc = IOK;
   
@@ -151,7 +154,9 @@ int klap20_join_mem(message_t **mout, groupsig_key_t *memkey,
     /* ff0 = gg^alpha*ZZ0^s0 */
     if(!(ggalpha = pbcext_element_G2_init()))
       GOTOENDRC(IERROR, klap20_join_mem);
-    if(pbcext_element_G2_mul(ggalpha, klap20_grpkey->gg, alpha) == IERROR)
+    if(pbcext_element_G2_mul(ggalpha,
+			     klap20_grpkey->gg,
+			     klap20_memkey->alpha) == IERROR)
       GOTOENDRC(IERROR, klap20_join_mem);    
     if(!(ZZ0s0 = pbcext_element_G2_init()))
       GOTOENDRC(IERROR, klap20_join_mem);
@@ -236,7 +241,7 @@ int klap20_join_mem(message_t **mout, groupsig_key_t *memkey,
 
     if(pbcext_dump_element_G1_bytes(&bw,
 				    &wlen,
-				    w) == IERROR) 
+				    klap20_memkey->w) == IERROR) 
       GOTOENDRC(IERROR, klap20_join_mem);
     len += wlen;
 
@@ -263,7 +268,8 @@ int klap20_join_mem(message_t **mout, groupsig_key_t *memkey,
 				    ff1) == IERROR) 
       GOTOENDRC(IERROR, klap20_join_mem);
     len += ff1len;
-   
+
+    bpi = NULL;
     if(spk_rep_export(&bpi, &pilen, pi) == IERROR)
       GOTOENDRC(IERROR, klap20_join_mem);
     len += pilen;
@@ -278,6 +284,7 @@ int klap20_join_mem(message_t **mout, groupsig_key_t *memkey,
     memcpy(&bmsg[offset], bSS1, SS1len); offset += SS1len;
     memcpy(&bmsg[offset], bff0, ff0len); offset += ff0len;
     memcpy(&bmsg[offset], bff1, ff1len); offset += ff1len;
+    memcpy(&bmsg[offset], bpi, pilen); offset += pilen;
 
     if(!*mout) {
       if(!(_mout = message_from_bytes(bmsg, len)))
@@ -330,17 +337,17 @@ int klap20_join_mem(message_t **mout, groupsig_key_t *memkey,
 	klap20_memkey->alpha = NULL;
       }
       if (klap20_memkey->u) {
-	pbcext_element_Fr_free(klap20_memkey->u);
+	pbcext_element_G1_free(klap20_memkey->u);
 	klap20_memkey->u = NULL;
       }
       if (klap20_memkey->w) {
-	pbcext_element_Fr_free(klap20_memkey->w);
+	pbcext_element_G1_free(klap20_memkey->w);
 	klap20_memkey->w = NULL;
       }
     }
     if (seq == 3) {
       if (klap20_memkey->v) {
-	pbcext_element_Fr_free(klap20_memkey->v);
+	pbcext_element_G1_free(klap20_memkey->v);
 	klap20_memkey->v = NULL;
       }
     }
@@ -361,7 +368,6 @@ int klap20_join_mem(message_t **mout, groupsig_key_t *memkey,
   if (e2) { pbcext_element_GT_free(e2); e2 = NULL; }
   if (e3) { pbcext_element_GT_free(e3); e3 = NULL; } 
   if (bn) { mem_free(bn); bn = NULL; }      
-  if (btau) { mem_free(btau); btau = NULL; }
   if (bf) { mem_free(bf); bf = NULL; }
   if (bw) { mem_free(bw); bw = NULL; }
   if (bSS0) { mem_free(bSS0); bSS0 = NULL; }

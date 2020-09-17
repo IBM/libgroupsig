@@ -288,41 +288,48 @@ int klap20_gml_entry_free(gml_entry_t *entry) {
 
 }
 
-// xxxxx
-
 int klap20_gml_entry_get_size(gml_entry_t *entry) {
 
-  uint64_t sG1, sG2;
+  uint64_t sSS0, sSS1, sff0, sff1;
   
   if (!entry) {
     LOG_EINVAL(&logger, __FILE__, "klap20_gml_entry_get_size", __LINE__, LOGERROR);
     return -1;
   }
 
-  if (pbcext_element_G1_byte_size(&sG1) == -1)
+  if (pbcext_element_G2_byte_size(&sSS0) == -1)
     return -1;
   
-  if (pbcext_element_G2_byte_size(&sG2) == -1)
+  if (pbcext_element_G2_byte_size(&sSS1) == -1)
     return -1;
 
-  if (sG1 + sG2 > INT_MAX) return -1;
+  if (pbcext_element_G2_byte_size(&sff0) == -1)
+    return -1;
 
-  return (int) sG1 + sG2 + sizeof(int)*2;
+  if (pbcext_element_G2_byte_size(&sff1) == -1)
+    return -1;  
+
+  if (sSS0 + sSS1 + sff0 + sff1 > INT_MAX) return -1;
+
+  return (int) sSS0 + sSS1 + sff0 + sff1 + sizeof(int)*4;
   
 }
 
 int klap20_gml_entry_export(byte_t **bytes,
-			  uint32_t *size,
-			  gml_entry_t *entry) {
+			    uint32_t *size,
+			    gml_entry_t *entry) {
 
+  klap20_gml_entry_data_t *klap20_data;
   byte_t *_bytes, *__bytes;
-  uint64_t _size, len;
+  uint64_t _size, len, offset;
   
   if (!bytes || !size || !entry) {
     LOG_EINVAL(&logger, __FILE__, "klap20_gml_entry_export", __LINE__, LOGERROR);
     return IERROR;    
   }
 
+  klap20_data = (klap20_gml_entry_data_t *) entry->data;  
+  
   /* Calculate size */
   if ((_size = klap20_gml_entry_get_size(entry)) == -1) return IERROR;
   _size += sizeof(int) + sizeof(uint64_t);
@@ -331,24 +338,35 @@ int klap20_gml_entry_export(byte_t **bytes,
 
   /* First, dump the identity */
   memcpy(_bytes, &entry->id, sizeof(uint64_t));
+  offset = sizeof(uint64_t);
 
-  /* Next, dump the data, which for KLAP20 is tau (G1 element) and 
-     ttau (G2 element) */
-  __bytes = &_bytes[sizeof(uint64_t)];
-  if (pbcext_dump_element_G1_bytes(&__bytes,
-				   &len,
-				   ((klap20_gml_entry_data_t *) entry->data)->tau) == IERROR) {
+  /* Next, dump the data */
+  __bytes = &_bytes[offset];
+  if (pbcext_dump_element_G2_bytes(&__bytes, &len, klap20_data->SS0) == IERROR) {
     mem_free(_bytes); _bytes = NULL;
     return IERROR;
   }
+  offset += len;
 
-  __bytes = &_bytes[sizeof(uint64_t)+len];  
-  if (pbcext_dump_element_G2_bytes(&__bytes,
-				   &len,
-				   ((klap20_gml_entry_data_t *) entry->data)->ttau) == IERROR) {
+  __bytes = &_bytes[offset];  
+  if (pbcext_dump_element_G2_bytes(&__bytes, &len, klap20_data->SS1) == IERROR) {
     mem_free(_bytes); _bytes = NULL;
     return IERROR;
-  }  
+  }
+  offset += len;
+
+  __bytes = &_bytes[offset];  
+  if (pbcext_dump_element_G2_bytes(&__bytes, &len, klap20_data->ff0) == IERROR) {
+    mem_free(_bytes); _bytes = NULL;
+    return IERROR;
+  }
+  offset += len;
+
+  __bytes = &_bytes[offset];  
+  if (pbcext_dump_element_G2_bytes(&__bytes, &len, klap20_data->ff1) == IERROR) {
+    mem_free(_bytes); _bytes = NULL;
+    return IERROR;
+  }
 
   /* Prepare exit */
   if (!*bytes) {
@@ -367,7 +385,8 @@ int klap20_gml_entry_export(byte_t **bytes,
 gml_entry_t* klap20_gml_entry_import(byte_t *bytes, uint32_t size) {
 
   gml_entry_t *entry;
-  uint64_t len;
+  klap20_gml_entry_data_t *klap20_data;
+  uint64_t len, offset;
   FILE *fd;
 
   if (!bytes || !size) {
@@ -379,6 +398,7 @@ gml_entry_t* klap20_gml_entry_import(byte_t *bytes, uint32_t size) {
 
   /* First, read the identity */
   memcpy(&entry->id, bytes, sizeof(uint64_t));
+  offset = sizeof(uint64_t);
 
   /* Next, read the data */
 
@@ -386,15 +406,17 @@ gml_entry_t* klap20_gml_entry_import(byte_t *bytes, uint32_t size) {
     klap20_gml_entry_free(entry); entry = NULL;
     return NULL;
   }
+
+  klap20_data = (klap20_gml_entry_data_t *) entry->data;
   
-  if(!(((klap20_gml_entry_data_t *)entry->data)->tau = pbcext_element_G1_init())) {
+  if(!(klap20_data->SS0 = pbcext_element_G2_init())) {
     klap20_gml_entry_free(entry); entry = NULL;
     return NULL;
   }
 
-  if (pbcext_get_element_G1_bytes(((klap20_gml_entry_data_t *)entry->data)->tau,
+  if (pbcext_get_element_G2_bytes(klap20_data->SS0,
 				  &len,
-				  &bytes[sizeof(uint64_t)]) == IERROR) {
+				  &bytes[offset]) == IERROR) {
     klap20_gml_entry_free(entry); entry = NULL;
     return NULL;    
   }
@@ -404,14 +426,16 @@ gml_entry_t* klap20_gml_entry_import(byte_t *bytes, uint32_t size) {
     return NULL;    
   }
 
-  if(!(((klap20_gml_entry_data_t *)entry->data)->ttau = pbcext_element_G2_init())) {
+  offset += len;
+
+  if(!(klap20_data->SS1 = pbcext_element_G2_init())) {
     klap20_gml_entry_free(entry); entry = NULL;
     return NULL;
   }
 
-  if (pbcext_get_element_G2_bytes(((klap20_gml_entry_data_t *)entry->data)->ttau,
+  if (pbcext_get_element_G2_bytes(klap20_data->SS1,
 				  &len,
-				  &bytes[sizeof(uint64_t)+len]) == IERROR) {
+				  &bytes[offset]) == IERROR) {
     klap20_gml_entry_free(entry); entry = NULL;
     return NULL;    
   }
@@ -419,7 +443,47 @@ gml_entry_t* klap20_gml_entry_import(byte_t *bytes, uint32_t size) {
   if (!len) {
     klap20_gml_entry_free(entry); entry = NULL;
     return NULL;    
-  }  
+  }
+
+  offset += len;
+
+  if(!(klap20_data->ff0 = pbcext_element_G2_init())) {
+    klap20_gml_entry_free(entry); entry = NULL;
+    return NULL;
+  }
+
+  if (pbcext_get_element_G2_bytes(klap20_data->ff0,
+				  &len,
+				  &bytes[offset]) == IERROR) {
+    klap20_gml_entry_free(entry); entry = NULL;
+    return NULL;    
+  }
+
+  if (!len) {
+    klap20_gml_entry_free(entry); entry = NULL;
+    return NULL;    
+  }
+
+  offset += len;
+
+  if(!(klap20_data->ff1 = pbcext_element_G2_init())) {
+    klap20_gml_entry_free(entry); entry = NULL;
+    return NULL;
+  }
+
+  if (pbcext_get_element_G2_bytes(klap20_data->ff1,
+				  &len,
+				  &bytes[offset]) == IERROR) {
+    klap20_gml_entry_free(entry); entry = NULL;
+    return NULL;    
+  }
+
+  if (!len) {
+    klap20_gml_entry_free(entry); entry = NULL;
+    return NULL;    
+  }
+
+  offset += len;  
 
   return entry;
   
@@ -427,54 +491,62 @@ gml_entry_t* klap20_gml_entry_import(byte_t *bytes, uint32_t size) {
 
 char* klap20_gml_entry_to_string(gml_entry_t *entry) {
 
-  char *stau, *sttau, *sid, *sentry;
-  uint64_t stau_len, sttau_len, sentry_len;
+  klap20_gml_entry_data_t *klap20_data;
+  char *sSS0, *sSS1, *sff0, *sff1, *sid, *sentry;
+  uint64_t sSS0_len, sSS1_len, sff0_len, sff1_len, sentry_len;
+  int rc;
 
   if(!entry) {
     LOG_EINVAL(&logger, __FILE__, "klap20_gml_entry_to_string", __LINE__, LOGERROR);
     return NULL;
   }
 
+  rc = IOK;
+  sSS0 = sSS1 = sff0 = sff1 = sid = sentry = NULL;
+
+  klap20_data = (klap20_gml_entry_data_t *) entry->data;
+
   /* A string representation of a GML entry will be: 
-     <id>\t<tau>\t<ttau> */
+     <id>\t<SS0>\t<SS1>\t<ff0>\t<ff1> */
 
   /* Get the string representations of the entry's fields */
   if(!(sid = misc_uint642string(entry->id))) {
     return NULL;
   }
 
-  stau = NULL;
-  if(pbcext_element_G1_to_string(&stau,
-				 &stau_len,
-				 ((klap20_gml_entry_data_t *)entry->data)->tau) == IERROR) {
-    mem_free(sid); sid = NULL;
-    return NULL;
+  sSS0 = NULL;
+  if(pbcext_element_G2_to_string(&sSS0, &sSS0_len, klap20_data->SS0) == IERROR)
+    GOTOENDRC(IERROR, klap20_gml_entry_to_string);
+
+  sSS1 = NULL;
+  if(pbcext_element_G2_to_string(&sSS1, &sSS1_len, klap20_data->SS1) == IERROR)
+    GOTOENDRC(IERROR, klap20_gml_entry_to_string);    
+
+  sff0 = NULL;
+  if(pbcext_element_G2_to_string(&sff0, &sff0_len, klap20_data->ff0) == IERROR)
+    GOTOENDRC(IERROR, klap20_gml_entry_to_string);   
+
+  sff1 = NULL;
+  if(pbcext_element_G2_to_string(&sff1, &sff1_len, klap20_data->ff1) == IERROR)
+    GOTOENDRC(IERROR, klap20_gml_entry_to_string);
+
+  sentry_len = strlen(sid)+sSS0_len+sSS1_len+sff0_len+sff1_len+5;
+
+  if(!(sentry = (char *) mem_malloc(sizeof(char)*sentry_len))) {
+    LOG_ERRORCODE(&logger, __FILE__, "klap20_gml_entry_to_string",
+		  __LINE__, errno, LOGERROR);
+    GOTOENDRC(IERROR, klap20_gml_entry_to_string);    
   }
 
-  if(pbcext_element_G2_to_string(&sttau,
-				 &sttau_len,
-				 ((klap20_gml_entry_data_t *)entry->data)->ttau) == IERROR) {
-    mem_free(sid); sid = NULL;
-    mem_free(stau); stau = NULL;    
-    return NULL;
-  }
+  sprintf(sentry, "%s\t%s\t%s\t%s\t%s", sid, sSS0, sSS1, sff0, sff1);
 
-  sentry_len = strlen(sid)+stau_len+sttau_len+2;
-
-  if(!(sentry = (char *) mem_malloc(sizeof(char)*sentry_len+1))) {
-    LOG_ERRORCODE(&logger, __FILE__, "klap20_gml_entry_to_string", __LINE__, errno,
-		  LOGERROR);
-    free(stau); stau = NULL;
-    free(sttau); sttau = NULL;
-    mem_free(sid); sid = NULL;
-    return NULL;
-  }
-
-  sprintf(sentry, "%s\t%s\t%s", sid, stau, sttau);
-
-  mem_free(sid); sid = NULL;
-  mem_free(stau); stau = NULL;
-  mem_free(sttau); sttau = NULL;
+ klap20_gml_entry_to_string_end:
+  
+  if (sid) { mem_free(sid); sid = NULL; }
+  if (sSS0) { mem_free(sSS0); sSS0 = NULL; }
+  if (sSS1) { mem_free(sSS1); sSS1 = NULL; }
+  if (sff0) { mem_free(sff0); sff0 = NULL; }
+  if (sff1) { mem_free(sff1); sff1 = NULL;  }
 
   return sentry;
  

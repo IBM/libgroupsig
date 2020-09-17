@@ -92,8 +92,8 @@ int klap20_setup(groupsig_key_t *grpkey,
     if(pbcext_element_G1_random(gkey->g) == IERROR)
       GOTOENDRC(IERROR, klap20_setup);
     
-    if(!(gkey->gg = pbcext_element_G1_init())) GOTOENDRC(IERROR, klap20_setup);
-    if(pbcext_element_G1_random(gkey->gg) == IERROR)
+    if(!(gkey->gg = pbcext_element_G2_init())) GOTOENDRC(IERROR, klap20_setup);
+    if(pbcext_element_G2_random(gkey->gg) == IERROR)
       GOTOENDRC(IERROR, klap20_setup);
     
     /* Partially fill the group key with the Issuer's public key */

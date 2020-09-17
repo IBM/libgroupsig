@@ -26,6 +26,7 @@
 /* #include "groupsig/cpy06/mgr_key.h" */
 #include "groupsig/gl19/mgr_key.h"
 #include "groupsig/ps16/mgr_key.h"
+#include "groupsig/klap20/mgr_key.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -35,7 +36,7 @@ extern "C" {
  * @def GROUPSIG_MGR_KEY_HANDLES_N
  * @brief Number of supported bundles of manager key handles.
  */
-#define GROUPSIG_MGR_KEY_HANDLES_N 3//4
+#define GROUPSIG_MGR_KEY_HANDLES_N 4
 
 /**
  * @var GROUPSIG_MGR_KEY_HANDLES
@@ -47,6 +48,7 @@ static const mgr_key_handle_t *GROUPSIG_MGR_KEY_HANDLES[GROUPSIG_MGR_KEY_HANDLES
   /* &cpy06_mgr_key_handle, */
   &gl19_mgr_key_handle,
   &ps16_mgr_key_handle,
+  &klap20_mgr_key_handle,  
 };
 
 #ifdef __cplusplus

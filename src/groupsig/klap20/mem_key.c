@@ -150,21 +150,21 @@ int klap20_mem_key_copy(groupsig_key_t *dst, groupsig_key_t *src) {
  klap20_mem_key_copy_end:
 
   if(rc == IERROR) {
-    if(klap20_dst->sk) {
-      pbcext_element_Fr_free(klap20_dst->sk);
-      klap20_dst->sk = NULL;
+    if(klap20_dst->alpha) {
+      pbcext_element_Fr_free(klap20_dst->alpha);
+      klap20_dst->alpha = NULL;
     }
-    if(klap20_dst->sigma1) {
-      pbcext_element_G1_free(klap20_dst->sigma1);
-      klap20_dst->sigma1 = NULL;
+    if(klap20_dst->u) {
+      pbcext_element_G1_free(klap20_dst->u);
+      klap20_dst->u = NULL;
     }
-    if(klap20_dst->sigma2) {
-      pbcext_element_G1_free(klap20_dst->sigma2);
-      klap20_dst->sigma2 = NULL;
+    if(klap20_dst->v) {
+      pbcext_element_G1_free(klap20_dst->v);
+      klap20_dst->v = NULL;
     }
-    if(klap20_dst->e) {
-      pbcext_element_G1_free(klap20_dst->e);
-      klap20_dst->e = NULL;
+    if(klap20_dst->w) {
+      pbcext_element_G1_free(klap20_dst->w);
+      klap20_dst->w = NULL;
     }
   }
 
@@ -185,10 +185,10 @@ int klap20_mem_key_get_size(groupsig_key_t *key) {
   salpha = su = sv = sw = 0;
   klap20_key = key->key;
   
-  if(klap20_key->salpha) { if(pbcext_element_Fr_byte_size(&salpha) == IERROR) return -1; }
-  if(klap20_key->su) { if(pbcext_element_G1_byte_size(&su) == IERROR) return -1; }
-  if(klap20_key->sv) { if(pbcext_element_G1_byte_size(&sv) == IERROR) return -1; }
-  if(klap20_key->sw) { if(pbcext_element_G1_byte_size(&sw) == IERROR) return -1; }
+  if(klap20_key->alpha) { if(pbcext_element_Fr_byte_size(&salpha) == IERROR) return -1; }
+  if(klap20_key->u) { if(pbcext_element_G1_byte_size(&su) == IERROR) return -1; }
+  if(klap20_key->v) { if(pbcext_element_G1_byte_size(&sv) == IERROR) return -1; }
+  if(klap20_key->w) { if(pbcext_element_G1_byte_size(&sw) == IERROR) return -1; }
 
   size64 = sizeof(uint8_t)*2 + sizeof(int)*4+ salpha + su + sv + sw;
 

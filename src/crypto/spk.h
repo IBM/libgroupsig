@@ -81,8 +81,7 @@ int spk_dlog_free(spk_dlog_t *spk);
  * @param[in,out] src The source spk_dlog_t* structure.
  *
  * @return IOK or IERROR.
- */
-  
+ */  
 int spk_dlog_copy(spk_dlog_t *dst, spk_dlog_t *src);
 
 /**
@@ -302,7 +301,57 @@ int spk_rep_free(spk_rep_t *spk);
  * @return IOK or IERROR.
  */
   
-int spk_rep_copy(spk_rep_t *dst, spk_rep_t *src);  
+int spk_rep_copy(spk_rep_t *dst, spk_rep_t *src);
+
+/**
+ * @fn int spk_rep_get_size(spk_rep_t *proof)
+ * Returns the number of bytes needed to represent the proof (in raw format.)
+ *
+ * @param[in] proof The proof.
+ * 
+ * @return The size in bytes required to represent the proof. -1 if error.
+ */
+int spk_rep_get_size(spk_rep_t *proof);
+
+/**
+ * @fn int spk_rep_export(byte_t **bytes, uint64_t *len, spk_rep_t *proof)
+ * @brief Exports a rep proof to a bytearray,
+ *
+ * The format of the produced bytearray will be:
+ *
+ *    | sizeof(c) | c | ns | sizeof(s1) | s1 | ... | sizeof(sn) | sn |
+ *
+ * Where the sizeof fields are ints indicating the number of bytes of 
+ * the following field.
+ *
+ * @param[in,out] bytes The byte array to write the spk into. If *bytes is NULL,
+ *  memory will be internally allocated.
+ * @param[in,out] len Will be set to the number of bytes written into bytes.
+ * @param[in] proof The spk to export.
+ *
+ * @return IOK or IERROR.
+ */
+  int spk_rep_export(byte_t **bytes,
+		     uint64_t *len,
+		     spk_rep_t *proof);
+
+/**
+ * @fn spk_rep_t* spk_rep_import(byte_t *bytes, uint64_t *len)
+ * @brief Exports a rep proof to a bytearray,
+ *
+ * The format of the received bytearray must be:
+ *
+ *    | sizeof(c) | c | ns | sizeof(s1) | s1 | ... | sizeof(sn) | sn |
+ *
+ * Where the sizeof fields are ints indicating the number of bytes of 
+ * the following field.
+ *
+ * @param[in] bytes The byte array containing the exported byte array).
+ * @param[in] len The length of the byte array.
+ *
+ * @return A pointer to the allocated structure or NULL if error.
+ */
+spk_rep_t* spk_rep_import(byte_t *bytes, uint64_t *len);  
 
 /**
  * @fn int spk_rep_sign(spk_rep_t *pi,
