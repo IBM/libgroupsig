@@ -423,7 +423,8 @@ int spk_dlog_export(byte_t **bytes,
 		    spk_dlog_t *proof) {
 
   byte_t *bs, *bc, *_bytes;
-  uint64_t slen, clen, _len;
+  uint64_t slen, clen;
+  int rc;
 
   if (!bytes || !len || !proof) {
     LOG_EINVAL(&logger, __FILE__, "spk_dlog_export", __LINE__, LOGERROR);
@@ -431,17 +432,16 @@ int spk_dlog_export(byte_t **bytes,
   }
 
   bs = bc = _bytes = NULL;
-  if(pbcext_dump_element_Fr_bytes(&bs, &slen, proof->s) == IERROR) 
-    return IERROR;
+  rc = IOK;
+  
+  if(pbcext_dump_element_Fr_bytes(&bs, &slen, proof->s) == IERROR)
+    GOTOENDRC(IERROR, spk_dlog_export);
 
-  if(pbcext_dump_element_Fr_bytes(&bc, &clen, proof->c) == IERROR) 
-    return IERROR;
+  if(pbcext_dump_element_Fr_bytes(&bc, &clen, proof->c) == IERROR)
+    GOTOENDRC(IERROR, spk_dlog_export);
 
-  if(!(_bytes = (byte_t *) mem_malloc(sizeof(byte_t)*(slen+clen)))) {
-    mem_free(bc); bc = NULL;
-    mem_free(bs); bs = NULL;
-    return IERROR;
-  }
+  if(!(_bytes = (byte_t *) mem_malloc(sizeof(byte_t)*(slen+clen))))
+    GOTOENDRC(IERROR, spk_dlog_export);
   
   memcpy(_bytes, bs, slen);
   memcpy(&_bytes[slen], bc, clen);
@@ -453,10 +453,12 @@ int spk_dlog_export(byte_t **bytes,
   }
   *len = slen + clen;
 
+ spk_dlog_export_end:
+  
   if(bs) { mem_free(bs); bs = NULL; }
   if(bc) { mem_free(bc); bc = NULL; }
   
-  return IOK;
+  return rc;
   
 }
 

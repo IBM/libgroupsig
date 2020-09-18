@@ -41,6 +41,12 @@ extern "C" {
     uint16_t ns; /**< Size of the s array */
   } klap20_spk0_t;
 
+  typedef struct _klap20_spk1_t {
+    pbcext_element_Fr_t *c;
+    pbcext_element_G2_t *s;
+    pbcext_element_GT_t *tau;
+  } klap20_spk1_t;
+
   /**
    * @fn int klap20_spk0_sign(spk_rep_t *pi,
    *                          void *y[], uint16_t ny,
@@ -105,13 +111,150 @@ extern "C" {
    *
    * @return IOR or IERROR.
    */
-    int klap20_spk0_verify(uint8_t *ok,
-			   void *y[], uint16_t ny,
-			   void *g[], uint16_t ng,
-			   uint16_t i[][2], uint16_t ni,
-			   uint16_t *prods,
-			   spk_rep_t *pi,
-			   byte_t *msg, uint32_t size);
+  int klap20_spk0_verify(uint8_t *ok,
+			 void *y[], uint16_t ny,
+			 void *g[], uint16_t ng,
+			 uint16_t i[][2], uint16_t ni,
+			 uint16_t *prods,
+			 spk_rep_t *pi,
+			 byte_t *msg, uint32_t size);
+
+  /**
+   * @fn klap20_spk1_t* klap20_spk1_init();
+   * Initializes a data structures for SPKs used in open proofs in KLAP20.
+   *
+   * NOTE: This function will be removed with issue23.
+   *
+   * @return A pointer to the allocated structure.
+   */  
+  klap20_spk1_t* klap20_spk1_init();
+
+  /**
+   * @fn int klap20_spk1_free(klap20_spk1_t *pi);
+   * Frees the memory allocated for a data structures for SPKs used in open 
+   * proofs in KLAP20.
+   *
+   * NOTE: This function will be removed with issue23.
+   *
+   * @param[in,out] pi The structure to free.
+   * 
+   * @return IOK or IERROR.
+   */  
+  int klap20_spk1_free(klap20_spk1_t *pi);
+
+  /**
+   * @fn int klap20_spk1_get_size(klap20_spk1_t *pi);
+   * Returns the memory needed to store, in an array of bytes, a data structures
+   * for SPKs used in open proofs in KLAP20.
+   *
+   * NOTE: This function will be removed with issue23.
+   *
+   * @param[in,out] pi The structure.
+   * 
+   * @return The number of bytes, or -1 if error.
+   */
+  int klap20_spk1_get_size(klap20_spk1_t *pi);
+
+  /**
+   * @fn int klap20_spk1_export(byte_t **bytes, uint64_t *len, klap20_spk1_t *pi);
+   * Exports the given proof into an array of bytes.
+   *
+   * The produced format is as follows:
+   * 
+   * | size_c | c | size_s | s | size_tau | tau |
+   *
+   * NOTE: This function will be removed with issue23.
+   *
+   * @param[in,out] bytes A pointer to an array of bytes. If *bytes is NULL,
+   *  memory will be internally allocated. Otherwise, the given array must be
+   *  big enough to store the result.
+   * @param[in,out] len Will be set to the number of bytes in the exported array.
+   * @param[in] pi The SPK to export.
+   * 
+   * @return The number of bytes, or -1 if error.
+   */  
+  int klap20_spk1_export(byte_t **bytes, uint64_t *len, klap20_spk1_t *pi);
+  
+  /**
+   * @fn klap20_spk1_t* klap20_spk1_import(byte_t *bytes, uint64_t *len);
+   * Imports a KLAP20 SPK of opening from the given array of bytes.
+   *
+   * NOTE: This function will be removed with issue23.
+   *
+   * @param[in] bytes A pointer to the array of bytes containing the exported 
+   *  SPK.
+   * @param[in] len The number of bytes in the given array of bytes.
+   * 
+   * @return A pointer to the imported SPK, or NULL if error.
+   */  
+  klap20_spk1_t* klap20_spk1_import(byte_t *bytes, uint64_t *len);
+
+  /**
+   * @fn int klap20_spk1_sign(klap20_spk1_t *pi,
+   *                          pbcext_element_G2_t *xx,
+   *    	  	      pbcext_element_G1_t *g1,
+   *		              pbcext_element_G1_t *g2,
+   *		              pbcext_element_GT_t *e1,
+   *		              pbcext_element_GT_t *e2,
+   *		              byte_t *msg,
+   *		              uint32_t size);
+   * Computes an SPK proving opening correctness in KLAP20.
+   *
+   * NOTE: This function will be removed with issue23.
+   *
+   * @param[in,out] pi An initialized SPK structure for KLAP20 openings. 
+   * @param[in] xx The secret.
+   * @param[in] g1 G1 element defining the first homomorphism.
+   * @param[in] g2 G1 element defining the second homomorphism.
+   * @param[in] e1 GT element value of the first homomorphism: e1 = e(g1, xx).
+   * @param[in] e2 GT element value of the second homomorphism: e2 = e(g2, xx).
+   * @param[in] msg The message to include in the SPK.
+   * @param[in] size The number of bytes in the message.
+   * 
+   * @return IOK or IERROR.
+   */  
+  int klap20_spk1_sign(klap20_spk1_t *pi,
+		       pbcext_element_G2_t *xx,
+		       pbcext_element_G1_t *g1,
+		       pbcext_element_G1_t *g2,
+		       pbcext_element_GT_t *e1,
+		       pbcext_element_GT_t *e2,
+		       byte_t *msg,
+		       uint32_t size);
+
+  /**
+   * @fn int klap20_spk1_verify(uint8_t *ok,
+   *                            klap20_spk1_t *pi,
+   *                            pbcext_element_G1_t *g1,
+   *                            pbcext_element_G1_t *g2,
+   *			        pbcext_element_GT_t *e1,
+   *			        pbcext_element_GT_t *e2,
+   *			        byte_t *msg,
+   *			        uint32_t size);
+   * Verifies an SPK proving opening correctness in KLAP20.
+   *
+   * NOTE: This function will be removed with issue23.
+   *
+   * @param[in,out] ok A pointer to a uint8_t. The pointed uint will be set to
+   *  1 if the SPK is correct, to 0 otherwise.
+   * @param[in] pi The proof to verify.
+   * @param[in] g1 G1 element defining the first homomorphism.
+   * @param[in] g2 G1 element defining the second homomorphism.
+   * @param[in] e1 GT element value of the first homomorphism: e1 = e(g1, xx).
+   * @param[in] e2 GT element value of the second homomorphism: e2 = e(g2, xx).
+   * @param[in] msg The message included in the SPK.
+   * @param[in] size The number of bytes in the message.
+   * 
+   * @return IOK or IERROR.
+   */    
+  int klap20_spk1_verify(uint8_t *ok,
+			 klap20_spk1_t *pi,
+			 pbcext_element_G1_t *g1,
+			 pbcext_element_G1_t *g2,
+			 pbcext_element_GT_t *e1,
+			 pbcext_element_GT_t *e2,
+			 byte_t *msg,
+			 uint32_t size);  
   
 #ifdef __cplusplus
 }

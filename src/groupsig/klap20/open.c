@@ -23,16 +23,17 @@
 
 #include "types.h"
 #include "sysenv.h"
-#include "ps16.h"
+#include "klap20.h"
 #include "sys/mem.h"
 #include "crypto/spk.h"
-#include "groupsig/ps16/proof.h"
-#include "groupsig/ps16/grp_key.h"
-#include "groupsig/ps16/mgr_key.h"
-#include "groupsig/ps16/signature.h"
-#include "groupsig/ps16/gml.h"
+#include "math/rnd.h"
+#include "groupsig/klap20/proof.h"
+#include "groupsig/klap20/grp_key.h"
+#include "groupsig/klap20/mgr_key.h"
+#include "groupsig/klap20/signature.h"
+#include "groupsig/klap20/gml.h"
 
-int ps16_open(uint64_t *index,
+int klap20_open(uint64_t *index,
 	      groupsig_proof_t *proof, 
 	      crl_t *crl,
 	      groupsig_signature_t *sig, 
@@ -40,56 +41,82 @@ int ps16_open(uint64_t *index,
 	      groupsig_key_t *mgrkey,
 	      gml_t *gml) {
 
+  pbcext_element_G2_t *ff;
   pbcext_element_GT_t *e1, *e2, *e3;
-  ps16_signature_t *ps16_sig;
-  ps16_proof_t *ps16_proof;
-  ps16_grp_key_t *ps16_grpkey;
-  ps16_mgr_key_t *ps16_mgrkey;
-  gml_entry_t *ps16_entry;
+  klap20_signature_t *klap20_sig;
+  klap20_grp_key_t *klap20_grpkey;
+  klap20_mgr_key_t *klap20_mgrkey;
+  gml_entry_t *klap20_entry;
+  klap20_gml_entry_data_t *klap20_data;
   byte_t *bsig;
-  uint64_t i;
+  uint64_t i, b;
   uint32_t slen;
   uint8_t match;
   int rc;
 
-  if (!index || !sig || sig->scheme != GROUPSIG_PS16_CODE ||
-      !grpkey || grpkey->scheme != GROUPSIG_PS16_CODE ||
-      !mgrkey || mgrkey->scheme != GROUPSIG_PS16_CODE ||
+  if (!index || !sig || sig->scheme != GROUPSIG_KLAP20_CODE ||
+      !grpkey || grpkey->scheme != GROUPSIG_KLAP20_CODE ||
+      !mgrkey || mgrkey->scheme != GROUPSIG_KLAP20_CODE ||
       !gml) {
-    LOG_EINVAL(&logger, __FILE__, "ps16_open", __LINE__, LOGERROR);
+    LOG_EINVAL(&logger, __FILE__, "klap20_open", __LINE__, LOGERROR);
     return IERROR;
   }
 
-  ps16_sig = sig->sig;
-  ps16_grpkey = grpkey->key;
-  ps16_mgrkey = mgrkey->key;
+  klap20_sig = sig->sig;
+  klap20_grpkey = grpkey->key;
+  klap20_mgrkey = mgrkey->key;
   rc = IOK;
   e1 = e2 = e3 = NULL;
-  
-  if (!(e1 = pbcext_element_GT_init())) GOTOENDRC(IERROR, ps16_open);
-  if (pbcext_pairing(e1, ps16_sig->sigma2, ps16_grpkey->gg) == IERROR)
-    GOTOENDRC(IERROR, ps16_open);
-  if (!(e2 = pbcext_element_GT_init())) GOTOENDRC(IERROR, ps16_open);
-  if (pbcext_pairing(e2, ps16_sig->sigma1, ps16_grpkey->X) == IERROR)
-    GOTOENDRC(IERROR, ps16_open);
-  if (pbcext_element_GT_div(e1, e1, e2) == IERROR) GOTOENDRC(IERROR, ps16_open);
 
-  if (!(e3 = pbcext_element_GT_init())) GOTOENDRC(IERROR, ps16_open);
+  /* Pick random b from [0,1] */
+  if ((rnd_get_random_int_in_range(&b, 1)) == IERROR)
+    GOTOENDRC(IERROR, klap20_open);
+
+  if (!(ff = pbcext_element_G2_init()))
+    GOTOENDRC(IERROR, klap20_open);
+  if (!(e1 = pbcext_element_GT_init()))
+    GOTOENDRC(IERROR, klap20_open);
+  if (!(e2 = pbcext_element_GT_init()))
+    GOTOENDRC(IERROR, klap20_open);
+  if (!(e3 = pbcext_element_GT_init()))
+    GOTOENDRC(IERROR, klap20_open);
   
   /* Look up the recovered e1 in the GML */
   match = 0;
   for (i=0; i<gml->n; i++) {  
 
-    if (!(ps16_entry = gml_get(gml, i))) GOTOENDRC(IERROR, ps16_open);
+    if (!(klap20_entry = gml_get(gml, i))) GOTOENDRC(IERROR, klap20_open);
+    klap20_data = klap20_entry->data;
+    if (!klap20_data) GOTOENDRC(IERROR, klap20_open);
 
-    if (pbcext_pairing(e3, ps16_sig->sigma1,
-		       ((ps16_gml_entry_data_t *) ps16_entry->data)->ttau) == IERROR)
-      GOTOENDRC(IERROR, ps16_open);
+    if (b) {
+      if (pbcext_element_G2_mul(ff, klap20_data->SS1, klap20_mgrkey->z1) == IERROR)
+	GOTOENDRC(IERROR, klap20_open);
+      if (pbcext_element_G2_neg(ff, ff) == IERROR)
+	GOTOENDRC(IERROR, klap20_open);
+      if (pbcext_element_G2_add(ff, klap20_data->ff1, ff) == IERROR)
+	GOTOENDRC(IERROR, klap20_open);    
+    } else { 
+      if (pbcext_element_G2_mul(ff, klap20_data->SS0, klap20_mgrkey->z0) == IERROR)
+	GOTOENDRC(IERROR, klap20_open);
+      if (pbcext_element_G2_neg(ff, ff) == IERROR)
+	GOTOENDRC(IERROR, klap20_open);
+      if (pbcext_element_G2_add(ff, klap20_data->ff0, ff) == IERROR)
+	GOTOENDRC(IERROR, klap20_open);
+    }
 
-    if (!pbcext_element_GT_cmp(e1, e3)) {
+    if (pbcext_pairing(e1, klap20_sig->uu, ff) == IERROR)
+      GOTOENDRC(IERROR, klap20_open);
+    if (pbcext_pairing(e2, klap20_sig->ww, klap20_grpkey->gg) == IERROR)
+      GOTOENDRC(IERROR, klap20_open);
+    if (pbcext_pairing(e3, klap20_grpkey->g, ff) == IERROR)
+      GOTOENDRC(IERROR, klap20_open);
+    
+    if (!pbcext_element_GT_cmp(e1, e2) &&
+	!pbcext_element_GT_cmp(klap20_data->tau, e3)) {
 
       /* Get the identity from the matched entry. */
-      *index = ps16_entry->id;
+      *index = klap20_entry->id;
       match = 1;
       break;
 
@@ -98,43 +125,43 @@ int ps16_open(uint64_t *index,
   }
 
   /* No match: FAIL */
-  if(!match) GOTOENDRC(IFAIL, ps16_open);
-
-  /* If there is a match, we need to proof knowledge of ttau in 
-     e(sigma1, ttau), where ttau = ps16_entry->ttau and e(sigma1,ttau) = e3. 
-
-     We use an SPK (over the byte representation of the opened signature) to 
-     make the process non-interactive.
-  */
-
+  if(!match) GOTOENDRC(IFAIL, klap20_open);
 
   /* Export the signature as an array of bytes */
   bsig = NULL;
-  if (ps16_signature_export(&bsig, &slen, sig) == IERROR)
-    GOTOENDRC(IERROR, ps16_open);
+  if (klap20_signature_export(&bsig, &slen, sig) == IERROR)
+    GOTOENDRC(IERROR, klap20_open);
 
-  if (!(proof->proof = spk_pairing_homomorphism_G2_init()))
-    GOTOENDRC(IERROR, ps16_open);
+  if (!(proof->proof = klap20_spk1_init()))
+    GOTOENDRC(IERROR, klap20_open);
 
-  if (spk_pairing_homomorphism_G2_sign(proof->proof,
-				       ps16_sig->sigma1,
-				       e3,
-				       ((ps16_gml_entry_data_t *) ps16_entry->data)->ttau,
-				       bsig,
-				       slen) == IERROR)
-    GOTOENDRC(IERROR, ps16_open);
+  if (!(((klap20_spk1_t *) proof->proof)->tau = pbcext_element_GT_init()))
+    GOTOENDRC(IERROR, klap20_open);
+  if (pbcext_element_GT_set(((klap20_spk1_t *) proof->proof)->tau, e3) == IERROR)
+    GOTOENDRC(IERROR, klap20_open);
+  
+  if (klap20_spk1_sign(proof->proof,
+		       ff,
+		       klap20_sig->uu,
+		       klap20_grpkey->g,
+		       e2,
+		       e3,
+		       bsig,
+		       slen) == IERROR) 
+    GOTOENDRC(IERROR, klap20_open);
 
- ps16_open_end:
+ klap20_open_end:
 
+  if (ff) { pbcext_element_G2_free(ff); ff = NULL; }
   if (e1) { pbcext_element_GT_free(e1); e1 = NULL; }
   if (e2) { pbcext_element_GT_free(e2); e2 = NULL; }
   if (e3) { pbcext_element_GT_free(e3); e3 = NULL; }
   if (bsig) { mem_free(bsig); bsig = NULL; }
   
   if (rc == IERROR) {
-    if (ps16_proof) {
-      spk_pairing_homomorphism_G2_free(ps16_proof);
-      ps16_proof = NULL;
+    if (proof->proof) {
+      klap20_spk1_free(proof->proof);
+      proof->proof = NULL;
     }
   }
   

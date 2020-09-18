@@ -534,3 +534,398 @@ int klap20_spk0_verify(uint8_t *ok,
   return rc;
 	  
 }
+
+klap20_spk1_t* klap20_spk1_init() {
+
+  klap20_spk1_t *pi;
+
+  if (!(pi = mem_malloc(sizeof(klap20_spk1_t))))
+    return NULL;
+
+  pi->c = NULL;
+  pi->s = NULL;
+  pi->tau = NULL;
+
+  return pi;
+
+}
+
+int klap20_spk1_free(klap20_spk1_t *pi) {
+
+  int rc;
+  
+  if (!pi) return IOK;
+
+  rc = IOK;
+
+  if (pi->c) { rc = pbcext_element_Fr_free(pi->c); pi->c = NULL; }
+  if (pi->s) { rc += pbcext_element_G2_free(pi->s); pi->s = NULL; }
+  if (pi->tau) { rc += pbcext_element_GT_free(pi->tau); pi->tau = NULL; }  
+  mem_free(pi);
+
+  if (rc) rc = IERROR; 
+  
+  return rc;
+
+}
+
+int klap20_spk1_get_size(klap20_spk1_t *pi) {
+
+  uint64_t size64, ss, sc, stau;
+  
+  if (!pi) {
+    LOG_EINVAL(&logger, __FILE__, "klap20_spk1_sign", __LINE__, LOGERROR);    
+    return -1;
+  }
+
+  ss = sc = 0;
+
+  if (pbcext_element_Fr_byte_size(&sc) == -1) return -1;
+  if (pbcext_element_G2_byte_size(&ss) == -1) return -1;
+  if (pbcext_element_GT_byte_size(&stau) == -1) return -1;
+
+  size64 = ss + sc + stau + sizeof(int)*3;
+  if (size64 > INT_MAX) return -1;
+
+  return (int) size64;
+  
+  
+}
+
+int klap20_spk1_export(byte_t **bytes,
+		       uint64_t *len,
+		       klap20_spk1_t *pi) {
+
+  byte_t *bc, *bs, *btau, *_bytes;
+  uint64_t clen, slen, taulen;
+  int rc;
+  
+  if (!bytes || !len || !pi) {
+    LOG_EINVAL(&logger, __FILE__, "klap20_spk1_export", __LINE__, LOGERROR);
+    return IERROR;
+  }
+
+  bs = btau = bc = _bytes = NULL;  
+  rc = IOK;
+
+  if(pbcext_dump_element_Fr_bytes(&bc, &clen, pi->c) == IERROR)
+    GOTOENDRC(IERROR, klap20_spk1_export);
+
+  if(pbcext_dump_element_G2_bytes(&bs, &slen, pi->s) == IERROR) 
+    GOTOENDRC(IERROR, klap20_spk1_export);
+
+  if(pbcext_dump_element_GT_bytes(&btau, &taulen, pi->tau) == IERROR) 
+    GOTOENDRC(IERROR, klap20_spk1_export);  
+
+  if(!(_bytes = (byte_t *) mem_malloc(sizeof(byte_t)*(clen+slen+taulen))))
+    GOTOENDRC(IERROR, klap20_spk1_export);
+  
+  memcpy(&_bytes, bc, clen);
+  memcpy(&_bytes[clen], bs, slen);
+  memcpy(&_bytes[clen+slen], btau, taulen);    
+  
+  if(!*bytes) *bytes = _bytes;
+  else {
+    memcpy(*bytes, _bytes, sizeof(byte_t)*(clen+slen+taulen));
+    mem_free(_bytes); _bytes = NULL;
+  }
+  *len = clen + slen + taulen;
+
+ klap20_spk1_export_end:
+
+  if(bc) { mem_free(bc); bc = NULL; }  
+  if(bs) { mem_free(bs); bs = NULL; }
+  if(btau) { mem_free(btau); btau = NULL; }  
+
+  return rc;
+
+}
+
+klap20_spk1_t* klap20_spk1_import(byte_t *bytes, uint64_t *len) {
+
+  klap20_spk1_t *pi;
+  uint64_t _len, offset;
+  int rc;
+
+  if(!bytes || !len) {
+    LOG_EINVAL(&logger, __FILE__, "klap20_spk1_import", __LINE__,
+	       LOGERROR);
+    return NULL;
+  }
+
+  if(!(pi = klap20_spk1_init())) {
+    return NULL;
+  }
+
+  rc = IOK;
+
+  /* Get c */
+  if(!(pi->c = pbcext_element_Fr_init()))
+    GOTOENDRC(IERROR, klap20_spk1_import);
+  if(pbcext_get_element_Fr_bytes(pi->c, &_len, bytes) == IERROR)
+    GOTOENDRC(IERROR, klap20_spk1_import);
+  offset = _len;  
+
+  /* Get s */
+  if(!(pi->s = pbcext_element_G2_init()))
+    GOTOENDRC(IERROR, klap20_spk1_import);
+  if(pbcext_get_element_G2_bytes(pi->s, &_len, &bytes[offset]) == IERROR)
+    GOTOENDRC(IERROR, klap20_spk1_import);
+  offset += _len;
+
+  /* Get tau */
+  if(!(pi->tau = pbcext_element_GT_init()))
+    GOTOENDRC(IERROR, klap20_spk1_import);
+  if(pbcext_get_element_GT_bytes(pi->tau, &_len, &bytes[offset]) == IERROR)
+    GOTOENDRC(IERROR, klap20_spk1_import);
+  offset += _len;
+
+  *len = offset;
+
+ klap20_spk1_import_end:
+
+  if(rc == IERROR && pi) { klap20_spk1_free(pi); pi = NULL; }
+  
+  return pi;  
+  
+}
+
+int klap20_spk1_sign(klap20_spk1_t *pi,
+		     pbcext_element_G2_t *xx,
+		     pbcext_element_G1_t *g1,
+		     pbcext_element_G1_t *g2,
+		     pbcext_element_GT_t *e1,
+		     pbcext_element_GT_t *e2,
+		     byte_t *msg,
+		     uint32_t size) {
+
+  hash_t *h;
+  pbcext_element_G2_t *rr;
+  pbcext_element_GT_t *RR1, *RR2;
+  byte_t *bytes;
+  uint64_t len;  
+  int rc;
+  
+  
+  if (!pi || !xx || !g1 || !g2 || !e1 || !e2 || !msg || !size) {
+    LOG_EINVAL(&logger, __FILE__, "klap20_spk1_sign", __LINE__, LOGERROR);
+    return IERROR;
+  }
+
+  rr = NULL;
+  RR1 = RR2 = NULL;
+  bytes = NULL;
+  h = NULL;
+  rc = IOK;
+
+  /* RR1 = e(g1,rr), RR2 = e(g2,rr) */
+  if (!(rr = pbcext_element_G2_init()))
+    GOTOENDRC(IERROR, klap20_spk1_sign);
+  if (pbcext_element_G2_random(rr) == IERROR)
+    GOTOENDRC(IERROR, klap20_spk1_sign);
+
+  if (!(RR1 = pbcext_element_GT_init()))
+    GOTOENDRC(IERROR, klap20_spk1_sign);
+  if (pbcext_pairing(RR1, g1, rr) == IERROR)
+    GOTOENDRC(IERROR, klap20_spk1_sign);
+
+  if (!(RR2 = pbcext_element_GT_init()))
+    GOTOENDRC(IERROR, klap20_spk1_sign);
+  if (pbcext_pairing(RR2, g2, rr) == IERROR)
+    GOTOENDRC(IERROR, klap20_spk1_sign);
+
+  /* c = Hash(g1,g2,e1,e2,RR1,RR2,msg) */
+  if (!(h = hash_init(HASH_SHA1)))
+    GOTOENDRC(IERROR, klap20_spk1_sign);
+
+  bytes = NULL;
+  if (pbcext_element_G1_to_bytes(&bytes, &len, g1) == IERROR)
+    GOTOENDRC(IERROR, klap20_spk1_sign);
+  if(hash_update(h, bytes, len) == IERROR)
+    GOTOENDRC(IERROR, klap20_spk1_sign);
+  mem_free(bytes); bytes = NULL;
+
+  if (pbcext_element_G1_to_bytes(&bytes, &len, g2) == IERROR)
+    GOTOENDRC(IERROR, klap20_spk1_sign);
+  if(hash_update(h, bytes, len) == IERROR)
+    GOTOENDRC(IERROR, klap20_spk1_sign);  
+  mem_free(bytes); bytes = NULL;
+  
+  if (pbcext_element_GT_to_bytes(&bytes, &len, e1) == IERROR)
+    GOTOENDRC(IERROR, klap20_spk1_sign);
+  if(hash_update(h, bytes, len) == IERROR)
+    GOTOENDRC(IERROR, klap20_spk1_sign);
+  mem_free(bytes); bytes = NULL;  
+
+  if (pbcext_element_GT_to_bytes(&bytes, &len, e2) == IERROR)
+    GOTOENDRC(IERROR, klap20_spk1_sign);  
+  if(hash_update(h, bytes, len) == IERROR)
+    GOTOENDRC(IERROR, klap20_spk1_sign);
+  mem_free(bytes); bytes = NULL;  
+
+  if (pbcext_element_GT_to_bytes(&bytes, &len, RR1) == IERROR)
+    GOTOENDRC(IERROR, klap20_spk1_sign);
+  if(hash_update(h, bytes, len) == IERROR)
+    GOTOENDRC(IERROR, klap20_spk1_sign);
+  mem_free(bytes); bytes = NULL;  
+
+  if (pbcext_element_GT_to_bytes(&bytes, &len, RR2) == IERROR)
+    GOTOENDRC(IERROR, klap20_spk1_sign);
+  if(hash_update(h, bytes, len) == IERROR)
+    GOTOENDRC(IERROR, klap20_spk1_sign);
+  mem_free(bytes); bytes = NULL;  
+
+  if(hash_update(h, msg, size) == IERROR)
+    GOTOENDRC(IERROR, klap20_spk1_sign);
+  
+  if(hash_finalize(h) == IERROR)
+    GOTOENDRC(IERROR, klap20_spk1_sign);
+  
+  /* Convert the hash to an integer */
+  if (!(pi->c = pbcext_element_Fr_init()))
+    GOTOENDRC(IERROR, klap20_spk1_sign);
+  if (pbcext_element_Fr_from_hash(pi->c, h->hash, h->length) == IERROR)
+    GOTOENDRC(IERROR, klap20_spk1_sign);
+
+  /* s = rr + xx^c */
+  if (!(pi->s = pbcext_element_G2_init()))
+    GOTOENDRC(IERROR, klap20_spk1_sign);
+
+  if (pbcext_element_G2_mul(pi->s, xx, pi->c) == IERROR)
+    GOTOENDRC(IERROR, klap20_spk1_sign);
+  if (pbcext_element_G2_add(pi->s, rr, pi->s) == IERROR)
+    GOTOENDRC(IERROR, klap20_spk1_sign);  
+
+ klap20_spk1_sign_end:
+
+  if (rr) { rc += pbcext_element_G2_free(rr); rr = NULL; }
+  if (RR1) { rc += pbcext_element_GT_free(RR1); RR1 = NULL; }
+  if (RR2) { rc += pbcext_element_GT_free(RR2); RR2 = NULL; }
+  if (h) { rc += hash_free(h); h = NULL; }
+  if (bytes) { rc += mem_free(bytes); bytes = NULL; }
+
+  return rc;
+  
+}
+
+int klap20_spk1_verify(uint8_t *ok,
+		       klap20_spk1_t *pi,
+		       pbcext_element_G1_t *g1,
+		       pbcext_element_G1_t *g2,
+		       pbcext_element_GT_t *e1,
+		       pbcext_element_GT_t *e2,
+		       byte_t *msg,
+		       uint32_t size) {
+
+  pbcext_element_Fr_t *c;
+  pbcext_element_GT_t *RR1, *RR2, *aux;
+  byte_t *bytes;
+  hash_t *h;
+  uint64_t len;
+  int rc;
+
+  if (!pi || !g1 || !g2 || !e1 || !e2 || !msg || !size) {
+    LOG_EINVAL(&logger, __FILE__, "klap20_spk1_verify", __LINE__, LOGERROR);
+    return IERROR;
+  }
+
+  c = NULL;
+  RR1 = RR2 = aux = NULL;
+  bytes = NULL;
+  rc = IOK;
+
+  if (!(aux = pbcext_element_GT_init()))
+    GOTOENDRC(IERROR, klap20_spk1_verify);
+
+  /* RR1 = e(g1,pi->s)/e1^pi->c */
+  if (pbcext_element_GT_pow(aux, e1, pi->c) == IERROR)
+    GOTOENDRC(IERROR, klap20_spk1_verify);
+
+  if (!(RR1 = pbcext_element_GT_init()))
+    GOTOENDRC(IERROR, klap20_spk1_verify);
+  if (pbcext_pairing(RR1, g1, pi->s) == IERROR)
+    GOTOENDRC(IERROR, klap20_spk1_verify);
+  if (pbcext_element_GT_div(RR1, RR1, aux) == IERROR)
+    GOTOENDRC(IERROR, klap20_spk1_verify);  
+
+  /* RR2 = e(g2,pi->s)/e2^pi->c */
+  if (pbcext_element_GT_pow(aux, e2, pi->c) == IERROR)
+    GOTOENDRC(IERROR, klap20_spk1_verify);
+  
+  if (!(RR2 = pbcext_element_GT_init()))
+    GOTOENDRC(IERROR, klap20_spk1_verify);
+  if (pbcext_pairing(RR2, g2, pi->s) == IERROR)
+    GOTOENDRC(IERROR, klap20_spk1_verify);
+  if (pbcext_element_GT_div(RR2, RR2, aux) == IERROR)
+    GOTOENDRC(IERROR, klap20_spk1_verify);
+
+  /* c = Hash(g1,g2,e1,e2,R1,R2,msg) */
+  if (!(h = hash_init(HASH_SHA1)))
+    GOTOENDRC(IERROR, klap20_spk1_verify);
+
+  bytes = NULL;
+  if (pbcext_element_G1_to_bytes(&bytes, &len, g1) == IERROR)
+    GOTOENDRC(IERROR, klap20_spk1_verify);
+  if(hash_update(h, bytes, len) == IERROR)
+    GOTOENDRC(IERROR, klap20_spk1_verify);
+  mem_free(bytes); bytes = NULL;
+
+  if (pbcext_element_G1_to_bytes(&bytes, &len, g2) == IERROR)
+    GOTOENDRC(IERROR, klap20_spk1_verify);
+  if(hash_update(h, bytes, len) == IERROR)
+    GOTOENDRC(IERROR, klap20_spk1_verify);  
+  mem_free(bytes); bytes = NULL;
+  
+  if (pbcext_element_GT_to_bytes(&bytes, &len, e1) == IERROR)
+    GOTOENDRC(IERROR, klap20_spk1_verify);
+  if(hash_update(h, bytes, len) == IERROR)
+    GOTOENDRC(IERROR, klap20_spk1_verify);
+  mem_free(bytes); bytes = NULL;  
+
+  if (pbcext_element_GT_to_bytes(&bytes, &len, e2) == IERROR)
+    GOTOENDRC(IERROR, klap20_spk1_verify);  
+  if(hash_update(h, bytes, len) == IERROR)
+    GOTOENDRC(IERROR, klap20_spk1_verify);
+  mem_free(bytes); bytes = NULL;  
+
+  if (pbcext_element_GT_to_bytes(&bytes, &len, RR1) == IERROR)
+    GOTOENDRC(IERROR, klap20_spk1_verify);
+  if(hash_update(h, bytes, len) == IERROR)
+    GOTOENDRC(IERROR, klap20_spk1_verify);
+  mem_free(bytes); bytes = NULL;  
+
+  if (pbcext_element_GT_to_bytes(&bytes, &len, RR2) == IERROR)
+    GOTOENDRC(IERROR, klap20_spk1_verify);
+  if(hash_update(h, bytes, len) == IERROR)
+    GOTOENDRC(IERROR, klap20_spk1_verify);
+  mem_free(bytes); bytes = NULL;  
+
+  if(hash_update(h, msg, size) == IERROR)
+    GOTOENDRC(IERROR, klap20_spk1_verify);
+  
+  if(hash_finalize(h) == IERROR)
+    GOTOENDRC(IERROR, klap20_spk1_verify);
+  
+  /* Convert the hash to an integer */
+  if (!(c = pbcext_element_Fr_init()))
+    GOTOENDRC(IERROR, klap20_spk1_verify);
+  if (pbcext_element_Fr_from_hash(c, h->hash, h->length) == IERROR)
+    GOTOENDRC(IERROR, klap20_spk1_verify);
+
+  if (pbcext_element_Fr_cmp(pi->c, c)) {
+    *ok = 0;
+  } else {
+    *ok = 1;
+  }
+
+ klap20_spk1_verify_end:
+
+  if (c) { rc += pbcext_element_Fr_free(c); c = NULL; }
+  if (RR1) { rc += pbcext_element_GT_free(RR1); RR1 = NULL; }
+  if (RR2) { rc += pbcext_element_GT_free(RR2); RR2 = NULL; }
+  if (aux) { rc += pbcext_element_GT_free(aux); aux = NULL; }
+  if (bytes) { rc += mem_free(bytes); bytes = NULL; }
+
+  return rc ? IERROR : IOK;
+  
+}
