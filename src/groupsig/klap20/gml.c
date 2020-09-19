@@ -515,19 +515,19 @@ char* klap20_gml_entry_to_string(gml_entry_t *entry) {
   }
 
   sSS0 = NULL;
-  if(pbcext_element_G2_to_string(&sSS0, &sSS0_len, klap20_data->SS0) == IERROR)
+  if(pbcext_element_G2_to_string(&sSS0, &sSS0_len, 16, klap20_data->SS0) == IERROR)
     GOTOENDRC(IERROR, klap20_gml_entry_to_string);
 
   sSS1 = NULL;
-  if(pbcext_element_G2_to_string(&sSS1, &sSS1_len, klap20_data->SS1) == IERROR)
+  if(pbcext_element_G2_to_string(&sSS1, &sSS1_len, 16, klap20_data->SS1) == IERROR)
     GOTOENDRC(IERROR, klap20_gml_entry_to_string);    
 
   sff0 = NULL;
-  if(pbcext_element_G2_to_string(&sff0, &sff0_len, klap20_data->ff0) == IERROR)
+  if(pbcext_element_G2_to_string(&sff0, &sff0_len, 16, klap20_data->ff0) == IERROR)
     GOTOENDRC(IERROR, klap20_gml_entry_to_string);   
 
   sff1 = NULL;
-  if(pbcext_element_G2_to_string(&sff1, &sff1_len, klap20_data->ff1) == IERROR)
+  if(pbcext_element_G2_to_string(&sff1, &sff1_len, 16, klap20_data->ff1) == IERROR)
     GOTOENDRC(IERROR, klap20_gml_entry_to_string);
 
   sentry_len = strlen(sid)+sSS0_len+sSS1_len+sff0_len+sff1_len+5;

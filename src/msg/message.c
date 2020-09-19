@@ -22,7 +22,7 @@
 
 #include "logger.h"
 #include "message.h"
-#include "misc.h"
+#include "misc/misc.h"
 #include "shim/base64.h"
 #include "sys/mem.h"
 
@@ -90,14 +90,14 @@ static int _message_export_null_file(message_t *msg, char *dst) {
 static int _message_import_null_file(message_t *msg, char *source) {
 
   if(!msg || !source) {
-    LOG_EINVAL(&logger, __FILE__, "_message_import_null_file", 
+    LOG_EINVAL(&logger, __FILE__, "_message_import_null_file",
                __LINE__, LOGERROR);
     return IERROR;
   }
 
   /* Read the file contents */
   msg->bytes = NULL;
-  if(message_misc_read_file_to_bytestring(source, &msg->bytes, &msg->length) == IERROR) {
+  if(misc_read_file_to_bytestring(source, &msg->bytes, &msg->length) == IERROR) {
     return IERROR;
   }
 

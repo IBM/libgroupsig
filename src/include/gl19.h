@@ -341,6 +341,7 @@ static const groupsig_t gl19_groupsig_bundle = {
  join_mgr: &gl19_join_mgr, /**< Executes manager-side joins. */
  sign: &gl19_sign, /**< Issues GL19 signatures. */
  verify: &gl19_verify, /**< Verifies GL19 signatures. */
+ verify_batch: NULL, 
  open: NULL, // &gl19_open, /**< Opens GL19 signatures. */
  open_verify: NULL, // &gl19_open_verify_f, /**< GL19 does not create proofs of opening. */
  reveal: NULL, // &gl19_reveal, /**< Reveals the tracing trapdoor from GL19 signatures. */

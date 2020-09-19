@@ -274,6 +274,29 @@ int groupsig_verify(uint8_t *ok,
 
 }
 
+int groupsig_verify_batch(uint8_t *ok,
+			  groupsig_signature_t **sigs,
+			  message_t **msgs,
+			  uint32_t n,
+			  groupsig_key_t *grpkey) {
+
+  const groupsig_t *gs;
+
+  if(!ok || !sigs || !msgs || !n || !grpkey) {
+    LOG_EINVAL(&logger, __FILE__, "groupsig_verify_batch", __LINE__, LOGERROR);
+    return IERROR;
+  }
+
+  /* Get the group signature scheme from its code */
+  if(!(gs = groupsig_get_groupsig_from_code(grpkey->scheme))) {
+    return IERROR;
+  }  
+
+  /* Run the VERIFY action */
+  return gs->verify_batch(ok, sigs, msgs, n, grpkey);
+
+}
+
 int groupsig_open(uint64_t *index,
 		  groupsig_proof_t *proof,
 		  crl_t *crl, 

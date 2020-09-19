@@ -275,6 +275,7 @@ static const groupsig_t bbs04_groupsig_bundle = {
  join_mgr: &bbs04_join_mgr, /**< Executes maanger-side joins. */
  sign: &bbs04_sign, /**< Issues BBS04 signatures. */
  verify: &bbs04_verify, /**< Verifies BBS04 signatures. */
+ verify_batch: NULL,
  open: &bbs04_open, /**< Opens BBS04 signatures. */
  open_verify: NULL,
  reveal: NULL,

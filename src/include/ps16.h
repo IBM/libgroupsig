@@ -290,6 +290,7 @@ static const groupsig_t ps16_groupsig_bundle = {
  join_mgr: &ps16_join_mgr, /**< Executes manager-side joins. */
  sign: &ps16_sign, /**< Issues PS16 signatures. */
  verify: &ps16_verify, /**< Verifies PS16 signatures. */
+ verify_batch: NULL,
  open: &ps16_open, /**< Opens PS16 signatures. */
  open_verify: &ps16_open_verify, /**< Verifies proofs of opening. */
  reveal: NULL,
