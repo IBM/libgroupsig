@@ -354,6 +354,8 @@ int klap20_join_mem(message_t **mout, groupsig_key_t *memkey,
   }
 
   if (pi) { spk_rep_free(pi); pi = NULL; }
+  if (s0) { pbcext_element_Fr_free(s0); s0 = NULL; }
+  if (s1) { pbcext_element_Fr_free(s1); s1 = NULL; }  
   if (n) { pbcext_element_G1_free(n); n = NULL; }
   if (f) { pbcext_element_G1_free(f); f = NULL; }
   if (SS0) { pbcext_element_G2_free(SS0); SS0 = NULL; }

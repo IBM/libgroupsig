@@ -925,6 +925,7 @@ int klap20_spk1_verify(uint8_t *ok,
   if (RR2) { rc += pbcext_element_GT_free(RR2); RR2 = NULL; }
   if (aux) { rc += pbcext_element_GT_free(aux); aux = NULL; }
   if (bytes) { rc += mem_free(bytes); bytes = NULL; }
+  if (h) { rc += hash_free(h); h = NULL; }
 
   return rc ? IERROR : IOK;
   

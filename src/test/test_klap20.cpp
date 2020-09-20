@@ -115,16 +115,16 @@ namespace groupsig {
 
 	rc = groupsig_join_mem(&m4, memkey[i], 3, m3, grpkey);
 	ASSERT_EQ(rc, IOK);
+
+	if(m0) { message_free(m0); m0 = NULL; }
+	if(m1) { message_free(m1); m1 = NULL; }
+	if(m2) { message_free(m2); m2 = NULL; }
+	if(m3) { message_free(m3); m3 = NULL; }
+	if(m4) { message_free(m4); m4 = NULL; }	
 		
       }
       
       this->n = n;
-
-      if(m0) { message_free(m0); m0 = NULL; }
-      if(m1) { message_free(m1); m1 = NULL; }
-      if(m2) { message_free(m2); m2 = NULL; }
-      if(m3) { message_free(m3); m3 = NULL; }
-      if(m4) { message_free(m4); m4 = NULL; }
 
     }
     

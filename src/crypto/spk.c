@@ -734,9 +734,6 @@ spk_rep_t* spk_rep_import(byte_t *bytes, uint64_t *len) {
 
   proof->c = c;
 
-  if (!(proof->s = mem_malloc(sizeof(pbcext_element_Fr_t *)*proof->ns)))
-    GOTOENDRC(IERROR, spk_rep_import);
-
   /* Get the s[i]'s */
   for(i=0; i<proof->ns; i++) {
     if(!(proof->s[i] = pbcext_element_Fr_init()))

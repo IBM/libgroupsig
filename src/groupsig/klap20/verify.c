@@ -241,6 +241,7 @@ if (!(g1 = pbcext_element_G1_init()))
 
  klap20_verify_batch_end:
 
+  if (ei) { pbcext_element_Fr_free(ei); ei = NULL; }  
   if (g1) { pbcext_element_G1_free(g1); g1 = NULL; }
   if (uu) { pbcext_element_G1_free(uu); uu = NULL; }
   if (vv) { pbcext_element_G1_free(vv); vv = NULL; }
