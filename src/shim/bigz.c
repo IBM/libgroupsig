@@ -626,7 +626,7 @@ size_t bigz_sizeinbits(bigz_t op) {
 
 }
 
-char* bigz_get_str(bigz_t op) {
+char* bigz_get_str16(bigz_t op) {
 
   if(!op) {
     errno = EINVAL;
@@ -637,7 +637,7 @@ char* bigz_get_str(bigz_t op) {
 
 }
 
-int bigz_set_str(bigz_t rop, char *str) {
+int bigz_set_str16(bigz_t rop, char *str) {
   
   if(!rop || !str) {
     errno = EINVAL;
@@ -645,6 +645,29 @@ int bigz_set_str(bigz_t rop, char *str) {
   }
 
   if(!BN_hex2bn(&rop, str)) return IERROR;
+  return IOK;
+
+}
+
+char* bigz_get_str10(bigz_t op) {
+
+  if(!op) {
+    errno = EINVAL;
+    return NULL;
+  }
+
+  return BN_bn2dec(op);
+
+}
+
+int bigz_set_str10(bigz_t rop, char *str) {
+  
+  if(!rop || !str) {
+    errno = EINVAL;
+    return IERROR;
+  }
+
+  if(!BN_dec2bn(&rop, str)) return IERROR;
   return IOK;
 
 }

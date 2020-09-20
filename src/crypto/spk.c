@@ -54,6 +54,38 @@ int spk_dlog_free(spk_dlog_t *spk) {
   
 }
 
+int spk_dlog_copy(spk_dlog_t *dst, spk_dlog_t *src) {
+
+  int rc;
+  
+  if (!dst || !src) {
+    LOG_EINVAL(&logger, __FILE__, "spk_dlog_copy", __LINE__, LOGERROR);
+    return IERROR;
+  }
+
+  rc = IOK;
+
+  if (!(dst->c = pbcext_element_Fr_init()))
+    GOTOENDRC(IERROR, spk_dlog_copy);
+  if (pbcext_element_Fr_set(dst->c, src->c) == IERROR)
+    GOTOENDRC(IERROR, spk_dlog_copy);
+
+  if (!(dst->s = pbcext_element_Fr_init()))
+    GOTOENDRC(IERROR, spk_dlog_copy);
+  if (pbcext_element_Fr_set(dst->s, src->s) == IERROR)
+    GOTOENDRC(IERROR, spk_dlog_copy);
+
+ spk_dlog_copy_end:
+
+  if (rc == IERROR) {
+    if (dst->c) { pbcext_element_Fr_free(dst->c); dst->c = NULL; }
+    if (dst->s) { pbcext_element_Fr_free(dst->s); dst->s = NULL; }
+  }
+
+  return rc;
+  
+}
+
 int spk_dlog_G1_sign(spk_dlog_t *pi,
 		     pbcext_element_G1_t *G,
 		     pbcext_element_G1_t *g,
@@ -391,7 +423,8 @@ int spk_dlog_export(byte_t **bytes,
 		    spk_dlog_t *proof) {
 
   byte_t *bs, *bc, *_bytes;
-  uint64_t slen, clen, _len;
+  uint64_t slen, clen;
+  int rc;
 
   if (!bytes || !len || !proof) {
     LOG_EINVAL(&logger, __FILE__, "spk_dlog_export", __LINE__, LOGERROR);
@@ -399,17 +432,16 @@ int spk_dlog_export(byte_t **bytes,
   }
 
   bs = bc = _bytes = NULL;
-  if(pbcext_dump_element_Fr_bytes(&bs, &slen, proof->s) == IERROR) 
-    return IERROR;
+  rc = IOK;
+  
+  if(pbcext_dump_element_Fr_bytes(&bs, &slen, proof->s) == IERROR)
+    GOTOENDRC(IERROR, spk_dlog_export);
 
-  if(pbcext_dump_element_Fr_bytes(&bc, &clen, proof->c) == IERROR) 
-    return IERROR;
+  if(pbcext_dump_element_Fr_bytes(&bc, &clen, proof->c) == IERROR)
+    GOTOENDRC(IERROR, spk_dlog_export);
 
-  if(!(_bytes = (byte_t *) mem_malloc(sizeof(byte_t)*(slen+clen)))) {
-    mem_free(bc); bc = NULL;
-    mem_free(bs); bs = NULL;
-    return IERROR;
-  }
+  if(!(_bytes = (byte_t *) mem_malloc(sizeof(byte_t)*(slen+clen))))
+    GOTOENDRC(IERROR, spk_dlog_export);
   
   memcpy(_bytes, bs, slen);
   memcpy(&_bytes[slen], bc, clen);
@@ -421,10 +453,12 @@ int spk_dlog_export(byte_t **bytes,
   }
   *len = slen + clen;
 
+ spk_dlog_export_end:
+  
   if(bs) { mem_free(bs); bs = NULL; }
   if(bc) { mem_free(bc); bc = NULL; }
   
-  return IOK;
+  return rc;
   
 }
 
@@ -581,6 +615,144 @@ int spk_rep_copy(spk_rep_t *dst, spk_rep_t *src) {
   }
   
   return rc;
+  
+}
+
+int spk_rep_get_size(spk_rep_t *proof) {
+
+  uint64_t ss, sc, size64;
+  uint16_t i;
+
+  if(!proof) {
+    LOG_EINVAL(&logger, __FILE__, "spk_dlog_get_size", __LINE__,
+	       LOGERROR);
+    return -1;
+  }
+
+  size64 = sizeof(uint16_t);
+  
+  /* size = sizeof(c) + c + sizeof(s) + s */
+  if(pbcext_element_Fr_byte_size(&sc) == -1) return -1;
+  size64 += sc+sizeof(int);
+
+  if(pbcext_element_Fr_byte_size(&ss) == -1) return -1;
+  size64 += (proof->ns*(ss+sizeof(int)));
+  
+  if (size64 > INT_MAX) return -1;
+
+  return (int) size64;
+  
+}
+
+int spk_rep_export(byte_t **bytes,
+		   uint64_t *len,
+		   spk_rep_t *proof) {
+  
+  byte_t *_bytes, *__bytes;
+  uint64_t size, _len, offset;
+  int rc;
+  uint16_t i;
+
+  if (!bytes || !len || !proof) {
+    LOG_EINVAL(&logger, __FILE__, "spk_rep_export", __LINE__, LOGERROR);
+    return IERROR;
+  }
+
+  _bytes = NULL;
+  offset = 0;
+  rc = IOK;
+  
+  if ((size = spk_rep_get_size(proof)) == -1)
+    GOTOENDRC(IERROR, spk_rep_export);
+
+  if (!(_bytes = (byte_t *) mem_malloc(sizeof(byte_t)*size)))
+    GOTOENDRC(IERROR, spk_rep_export);
+
+  __bytes = _bytes;
+  if(pbcext_dump_element_Fr_bytes(&__bytes, &_len, proof->c) == IERROR)
+    GOTOENDRC(IERROR, spk_rep_export);
+  offset += _len;
+
+  memcpy(&_bytes[offset], &proof->ns, sizeof(uint16_t));
+  offset += sizeof(uint16_t);
+  
+  for (i=0; i<proof->ns; i++) {
+    __bytes = &_bytes[offset];
+    if(pbcext_dump_element_Fr_bytes(&__bytes, &_len, proof->s[i]) == IERROR)
+      GOTOENDRC(IERROR, spk_rep_export);      
+    offset += _len;
+  }
+
+  *len = offset;
+
+  if (!*bytes) {
+    *bytes = _bytes;
+  } else {
+    memcpy(*bytes, _bytes, offset);
+    mem_free(_bytes); _bytes = NULL;
+  }
+
+ spk_rep_export_end:
+
+  if (rc == IERROR) {
+    if (_bytes) { mem_free(_bytes); _bytes = NULL; }
+  }
+  
+  return rc;
+  
+}
+
+spk_rep_t* spk_rep_import(byte_t *bytes, uint64_t *len) {
+
+  spk_rep_t *proof;
+  pbcext_element_Fr_t *c;
+  uint64_t _len, offset;
+  int rc;
+  uint16_t i, ns;
+
+  if(!bytes || !len) {
+    LOG_EINVAL(&logger, __FILE__, "spk_rep_import", __LINE__,
+	       LOGERROR);
+    return NULL;
+  }
+
+  rc = IOK;
+  c = NULL;
+
+  /* Get c */
+  if(!(c = pbcext_element_Fr_init()))
+    GOTOENDRC(IERROR, spk_rep_import);
+  if(pbcext_get_element_Fr_bytes(c, &_len, bytes) == IERROR)
+    GOTOENDRC(IERROR, spk_rep_import);
+  offset = _len;
+
+  /* Get ns */
+  memcpy(&ns, &bytes[offset], sizeof(uint16_t));
+  offset += sizeof(uint16_t);
+
+  if(!(proof = spk_rep_init(ns))) GOTOENDRC(IERROR, spk_rep_import);
+
+  proof->c = c;
+
+  /* Get the s[i]'s */
+  for(i=0; i<proof->ns; i++) {
+    if(!(proof->s[i] = pbcext_element_Fr_init()))
+      GOTOENDRC(IERROR, spk_rep_import);
+    if(pbcext_get_element_Fr_bytes(proof->s[i], &_len, &bytes[offset]) == IERROR)
+      GOTOENDRC(IERROR, spk_rep_import);
+    offset += _len;
+  }
+
+  *len = offset;
+
+ spk_rep_import_end:
+
+  if(rc == IERROR && proof) {
+    spk_rep_free(proof); proof = NULL;
+    if (c) { pbcext_element_Fr_free(c); c = NULL; }
+  }
+  
+  return proof;  
   
 }
 

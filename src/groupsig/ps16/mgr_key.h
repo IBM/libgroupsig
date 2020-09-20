@@ -93,7 +93,7 @@ int ps16_mgr_key_get_size(groupsig_key_t *key);
  * @fn int ps16_mgr_key_export(byte_t **bytes, uint32_t *size, groupsig_key_t *key)
  * @brief Writes a bytearray representation of the given key, with format:
  *
- *  | PS16_CODE | KEYTYPE | size_xi1 | xi1 | size_xi2 | xi2 | size_gamma | gamma |
+ *  | PS16_CODE | KEYTYPE | size_x | x | size_y | y |
  *
  * @param[in,out] bytes A pointer to the array that will contain the exported
  *  manager key. If <i>*bytes</i> is NULL, memory will be internally allocated.

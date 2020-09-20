@@ -525,13 +525,13 @@ int nt_factor_list_fprintf(FILE *fd, factor_list_t *factors) {
   fprintf(fd, "Factors in the list: %u\n", factors->n);
 
   for(i=0; i<factors->n; i++) {
-    sf = bigz_get_str(factors->factors[i]);
+    sf = bigz_get_str10(factors->factors[i]);
     fprintf(fd, "     factor[%u]: %s\n", i, sf);
     free(sf); sf = NULL;
   }
   
-  smax = bigz_get_str(factors->max_factor);
-  smin = bigz_get_str(factors->min_factor);
+  smax = bigz_get_str10(factors->max_factor);
+  smin = bigz_get_str10(factors->min_factor);
 
   fprintf(fd, "    max factor: %s\n", smax);
   fprintf(fd, "    min factor: %s\n\n", smin);

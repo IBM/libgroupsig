@@ -790,7 +790,7 @@ namespace groupsig {
     EXPECT_EQ(rc, IOK);
 
     /* Import */
-    imported = gml_import(GROUPSIG_BBS04_CODE, bytes, size);
+    imported = gml_import(GROUPSIG_PS16_CODE, bytes, size);
     EXPECT_NE(imported, nullptr);
 
     gml_free(imported);

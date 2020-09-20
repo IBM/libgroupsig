@@ -23,25 +23,27 @@
 #include "rnd.h"
 #include "logger.h"
 
-uint64_t rnd_get_random_int_in_range(uint64_t n) {
+int rnd_get_random_int_in_range(uint64_t *r, uint64_t n) {
 
   int attempts, rc;
-  uint64_t r;
+  uint64_t _r;
   
-  if (n < 0) {
+  if (!r || n < 0) {
     LOG_EINVAL(&logger, __FILE__, "rnd_get_random_int_in_range",
 	       __LINE__, LOGERROR);
-    return -1;
+    return IERROR;
   }
 
   /* Call sysenv_getrandom, which uses the best available randomness source. */
-  if (sysenv_getrandom(&r, sizeof(uint64_t)) == IERROR) {
+  if (sysenv_getrandom(&_r, sizeof(uint64_t)) == IERROR) {
     LOG_ERRORCODE(&logger, __FILE__, "rnd_get_random_int_in_range", __LINE__, 
 		  errno, LOGERROR);    
-    return -1;
+    return IERROR;
   }  
 
-  return r % (n+1);
+  *r = _r % (n+1);
+
+  return IOK;
 
 }
 

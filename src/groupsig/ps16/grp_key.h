@@ -36,8 +36,8 @@
 typedef struct {
   pbcext_element_G1_t *g; /**< Random generator of G1 */
   pbcext_element_G2_t *gg; /**< Random generator of G2 */
-  pbcext_element_G2_t *X; /**< gg^x (x is part of mgrkey */
-  pbcext_element_G2_t *Y;  /**< gg^y (y is part of mgrkey */
+  pbcext_element_G2_t *X; /**< gg^x (x is part of mgrkey) */
+  pbcext_element_G2_t *Y;  /**< gg^y (y is part of mgrkey) */
 } ps16_grp_key_t;
 
 /**

@@ -28,14 +28,15 @@
 #include "sys/mem.h"
 #include "registered_groupsigs.h"
 
-#define GROUPSIG_REGISTERED_GROUPSIGS_N 3//4
+#define GROUPSIG_REGISTERED_GROUPSIGS_N 4
 static const groupsig_t *GROUPSIG_REGISTERED_GROUPSIGS[GROUPSIG_REGISTERED_GROUPSIGS_N] = {
-/* &kty04_groupsig_bundle, */
-&bbs04_groupsig_bundle,
-/* &cpy06_groupsig_bundle, */
+  /* &kty04_groupsig_bundle, */
+  &bbs04_groupsig_bundle,
+  /* &cpy06_groupsig_bundle, */
   &gl19_groupsig_bundle,
   &ps16_groupsig_bundle,
-  };
+  &klap20_groupsig_bundle,
+};
 
 int groupsig_hello_world(void) {
   fprintf(stdout, "Hello, World!\n");
@@ -270,6 +271,29 @@ int groupsig_verify(uint8_t *ok,
 
   /* Run the VERIFY action */
   return gs->verify(ok, sig, msg, grpkey);
+
+}
+
+int groupsig_verify_batch(uint8_t *ok,
+			  groupsig_signature_t **sigs,
+			  message_t **msgs,
+			  uint32_t n,
+			  groupsig_key_t *grpkey) {
+
+  const groupsig_t *gs;
+
+  if(!ok || !sigs || !msgs || !n || !grpkey) {
+    LOG_EINVAL(&logger, __FILE__, "groupsig_verify_batch", __LINE__, LOGERROR);
+    return IERROR;
+  }
+
+  /* Get the group signature scheme from its code */
+  if(!(gs = groupsig_get_groupsig_from_code(grpkey->scheme))) {
+    return IERROR;
+  }  
+
+  /* Run the VERIFY action */
+  return gs->verify_batch(ok, sigs, msgs, n, grpkey);
 
 }
 

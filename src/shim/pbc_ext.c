@@ -2536,9 +2536,10 @@ int pbcext_get_element_GT_bytes(pbcext_element_GT_t *e,
 
 int pbcext_element_Fr_to_string(char **str,
 				uint64_t *len,
+				int base,
 				pbcext_element_Fr_t *e) {
 
-  if(!str || !e) {
+  if(!str || !e || (base != 10 && base != 16)) {
     LOG_EINVAL(&logger, __FILE__, "pbcext_element_Fr_to_string",
 	       __LINE__, LOGERROR);
     return IERROR;
@@ -2550,7 +2551,7 @@ int pbcext_element_Fr_to_string(char **str,
       return IERROR;
     }
     
-    if(!mclBnFr_getStr(*str, 1024, e, 16)) {
+    if(!mclBnFr_getStr(*str, 1024, e, base)) {
       LOG_ERRORCODE(&logger, __FILE__, "pbcext_element_Fr_to_string",
   		    __LINE__, ENOLINK, LOGERROR);
       return IERROR;
@@ -2560,7 +2561,7 @@ int pbcext_element_Fr_to_string(char **str,
 
   } else {
     
-    mclBnFr_getStr(*str, *len, e, 16);
+    mclBnFr_getStr(*str, *len, e, base);
 
   }
 
@@ -2570,9 +2571,10 @@ int pbcext_element_Fr_to_string(char **str,
 
 int pbcext_element_G1_to_string(char **str,
 				uint64_t *len,
+				int base,
 				pbcext_element_G1_t *e) {
 
-  if(!str || !e) {
+  if(!str || !e || (base != 10 && base != 16)) {
     LOG_EINVAL(&logger, __FILE__, "pbcext_element_G1_to_string",
 	       __LINE__, LOGERROR);
     return IERROR;
@@ -2584,7 +2586,7 @@ int pbcext_element_G1_to_string(char **str,
       return IERROR;
     }
 
-    if(!mclBnG1_getStr(*str, 1024, e, 16)) {
+    if(!mclBnG1_getStr(*str, 1024, e, base)) {
       LOG_ERRORCODE(&logger, __FILE__, "pbcext_element_G1_to_string",
 		    __LINE__, ENOLINK, LOGERROR);
       return IERROR;
@@ -2594,7 +2596,7 @@ int pbcext_element_G1_to_string(char **str,
 
   } else {
     
-    mclBnG1_getStr(*str, *len, e, 16);
+    mclBnG1_getStr(*str, *len, e, base);
 
   }
 
@@ -2604,9 +2606,10 @@ int pbcext_element_G1_to_string(char **str,
 
 int pbcext_element_G2_to_string(char **str,
 				uint64_t *len,
+				int base,
 				pbcext_element_G2_t *e) {
 
-  if(!str || !e) {
+  if(!str || !e || (base != 10 && base != 16)) {
     LOG_EINVAL(&logger, __FILE__, "pbcext_element_G2_to_string",
 	       __LINE__, LOGERROR);
     return IERROR;
@@ -2618,7 +2621,7 @@ int pbcext_element_G2_to_string(char **str,
       return IERROR;
     }
 
-    if(!mclBnG2_getStr(*str, 2048, e, 16)) {
+    if(!mclBnG2_getStr(*str, 2048, e, base)) {
       LOG_ERRORCODE(&logger, __FILE__, "pbcext_element_G2_to_string",
 		    __LINE__, ENOLINK, LOGERROR);
       return IERROR;
@@ -2628,12 +2631,179 @@ int pbcext_element_G2_to_string(char **str,
 
   } else {
     
-    mclBnG2_getStr(*str, *len, e, 16);
+    mclBnG2_getStr(*str, *len, e, base);
 
   }
 
   return IOK;
 
+}
+
+int pbcext_element_GT_to_string(char **str,
+				uint64_t *len,
+				int base,
+				pbcext_element_GT_t *e) {
+
+  if(!str || !e || (base != 10 && base != 16)) {
+    LOG_EINVAL(&logger, __FILE__, "pbcext_element_GT_to_string",
+	       __LINE__, LOGERROR);
+    return IERROR;
+  }
+	 
+  if(!(*str)) {
+
+    if(!(*str = mem_malloc(sizeof(char) * 2048))) {
+      return IERROR;
+    }
+
+    if(!mclBnGT_getStr(*str, 2048, e, base)) {
+      LOG_ERRORCODE(&logger, __FILE__, "pbcext_element_GT_to_string",
+		    __LINE__, ENOLINK, LOGERROR);
+      return IERROR;
+    }
+
+    *len = strlen(*str);
+
+  } else {
+    
+    mclBnGT_getStr(*str, *len, e, base);
+
+  }
+
+  return IOK;
+
+}
+
+int pbcext_element_Fr_from_string(pbcext_element_Fr_t **e,
+				  char *str,
+				  int base) {
+
+  pbcext_element_Fr_t *_e;
+  
+  if (!e || !str || (base != 10 && base != 16)) {
+    LOG_EINVAL(&logger, __FILE__, "pbcext_element_Fr_from_string",
+	       __LINE__, LOGERROR);
+    return IERROR;
+  }
+
+  if (!(_e = pbcext_element_Fr_init()))
+    return IERROR;
+
+  if (mclBnFr_setStr(_e, (const char *) str, strlen(str), base) == -1) {
+    pbcext_element_Fr_free(_e); _e = NULL;
+    return IERROR;
+  }
+
+  if (!e) *e = _e;
+  else {
+    if (pbcext_element_Fr_set(*e, _e) == IERROR) {
+      pbcext_element_Fr_free(_e); _e = NULL;
+      return IERROR;    
+    }
+    pbcext_element_Fr_free(_e); _e = NULL;    
+  }
+
+  return IOK;
+  
+}
+
+int pbcext_element_G1_from_string(pbcext_element_G1_t **e,
+				  char *str,
+				  int base) {
+
+  pbcext_element_G1_t *_e;
+  
+  if (!e || !str || (base != 10 && base != 16)) {
+    LOG_EINVAL(&logger, __FILE__, "pbcext_element_G1_from_string",
+	       __LINE__, LOGERROR);
+    return IERROR;
+  }
+
+  if (!(_e = pbcext_element_G1_init()))
+    return IERROR;
+
+  if (mclBnG1_setStr(_e, (const char *) str, strlen(str), base) == -1) {
+    pbcext_element_G1_free(_e); _e = NULL;
+    return IERROR;
+  }
+
+  if (!e) *e = _e;
+  else {
+    if (pbcext_element_G1_set(*e, _e) == IERROR) {
+      pbcext_element_G1_free(_e); _e = NULL;
+      return IERROR;    
+    }
+    pbcext_element_G1_free(_e); _e = NULL;    
+  }
+
+  return IOK;
+  
+}
+
+int pbcext_element_G2_from_string(pbcext_element_G2_t **e,
+				  char *str,
+				  int base) {
+
+  pbcext_element_G2_t *_e;
+  
+  if (!e || !str || (base != 10 && base != 16)) {
+    LOG_EINVAL(&logger, __FILE__, "pbcext_element_G2_from_string",
+	       __LINE__, LOGERROR);
+    return IERROR;
+  }
+
+  if (!(_e = pbcext_element_G2_init()))
+    return IERROR;
+
+  if (mclBnG2_setStr(_e, (const char *) str, strlen(str), base) == -1) {
+    pbcext_element_G2_free(_e); _e = NULL;
+    return IERROR;
+  }
+
+  if (!e) *e = _e;
+  else {
+    if (pbcext_element_G2_set(*e, _e) == IERROR) {
+      pbcext_element_G2_free(_e); _e = NULL;
+      return IERROR;    
+    }
+    pbcext_element_G2_free(_e); _e = NULL;    
+  }
+
+  return IOK;
+  
+}
+
+int pbcext_element_GT_from_string(pbcext_element_GT_t **e,
+				  char *str,
+				  int base) {
+
+  pbcext_element_GT_t *_e;
+  
+  if (!e || !str || (base != 10 && base != 16)) {
+    LOG_EINVAL(&logger, __FILE__, "pbcext_element_GT_from_string",
+	       __LINE__, LOGERROR);
+    return IERROR;
+  }
+
+  if (!(_e = pbcext_element_GT_init()))
+    return IERROR;
+
+  if (mclBnGT_setStr(_e, (const char *) str, strlen(str), base) == -1) {
+    pbcext_element_GT_free(_e); _e = NULL;
+    return IERROR;
+  }
+
+  if (!e) *e = _e;
+  else {
+    if (pbcext_element_GT_set(*e, _e) == IERROR) {
+      pbcext_element_GT_free(_e); _e = NULL;
+      return IERROR;    
+    }
+    pbcext_element_GT_free(_e); _e = NULL;    
+  }
+
+  return IOK;
+  
 }
 
 /* pbc_ext.c ends here */
