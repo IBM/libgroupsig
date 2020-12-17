@@ -18,6 +18,7 @@ def memkey_export(memkey):
     if lib.groupsig_mem_key_export(bkey, size, memkey) == constants.IERROR:
         raise Exception('Error exporting member key.')
     b64key = base64.b64encode(ffi.buffer(bkey[0],size[0]))
+    b64key = b64key.decode('utf-8').replace('\n', '')    
     #    lib.free(bkey)
     return b64key    
 

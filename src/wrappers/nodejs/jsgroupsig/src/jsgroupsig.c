@@ -1566,7 +1566,7 @@ napi_value gs_grp_key_export
     return NULL;
   }
 
-  if(!(str = base64_encode(bytes, size))) {
+  if(!(str = base64_encode(bytes, size, 0))) {
     napi_throw_type_error(env, NULL, "Internal error");	       
     return NULL;
   }
@@ -1909,7 +1909,7 @@ napi_value gs_mgr_key_export
     return NULL;
   }
 
-  if(!(str = base64_encode(bytes, size))) {
+  if(!(str = base64_encode(bytes, size, 0))) {
     napi_throw_type_error(env, NULL, "Internal error");	       
     return NULL;
   }
@@ -2252,7 +2252,7 @@ napi_value gs_mem_key_export
     return NULL;
   }
 
-  if(!(str = base64_encode(bytes, size))) {
+  if(!(str = base64_encode(bytes, size, 0))) {
     napi_throw_type_error(env, NULL, "Internal error");	       
     return NULL;
   }
@@ -3016,6 +3016,19 @@ napi_value gs_signature_get_size
   size = groupsig_signature_get_size(sig);
   assert (!errno);
 
+/* WOLOLOOOO
+  bytes = NULL; size = 0;
+  status = groupsig_bld_key_export(&bytes, (uint32_t *) &size, key);
+  assert (status == napi_ok);   
+
+  if(!(str = base64_encode(bytes, size, 0))) {
+    napi_throw_type_error(env, NULL, "Internal error");	       
+    return NULL;
+  }
+
+  free(bytes); bytes = NULL;  
+*/
+
   /* Convert the size to NAPI format */
   status = napi_create_int32(env, (int32_t) size, &nsize);
   assert(status == napi_ok);
@@ -3059,7 +3072,7 @@ napi_value gs_signature_export
     return NULL;
   }
 
-  if(!(str = base64_encode(bytes, size))) {
+  if(!(str = base64_encode(bytes, size, 0))) {
     napi_throw_type_error(env, NULL, "Internal error");	       
     return NULL;
   }
@@ -3403,7 +3416,7 @@ napi_value gs_proof_export
     return NULL;
   }
 
-  if(!(str = base64_encode(bytes, size))) {
+  if(!(str = base64_encode(bytes, size, 0))) {
     napi_throw_type_error(env, NULL, "Internal error");	       
     return NULL;
   }

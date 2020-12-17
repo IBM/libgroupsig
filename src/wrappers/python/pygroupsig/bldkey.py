@@ -35,6 +35,7 @@ def bldkey_export(bldkey):
     if lib.groupsig_bld_key_export(bkey, size, bldkey) == constants.IERROR:
         raise Exception('Error exporting blinding key.')
     b64key = base64.b64encode(ffi.buffer(bkey[0],size[0]))
+    b64key = b64key.decode('utf-8').replace('\n', '')
 #    lib.free(bkey[0])
     return b64key
 
@@ -54,6 +55,7 @@ def bldkey_export_pub(bldkey):
     if lib.groupsig_bld_key_export_pub(bkey, size, bldkey) == constants.IERROR:
         raise Exception('Error exporting blinding public key.')
     b64key = base64.b64encode(ffi.buffer(bkey[0],size[0]))
+    b64key = b64key.decode('utf-8').replace('\n', '')    
 #    lib.free(bkey[0])
     return b64key
     

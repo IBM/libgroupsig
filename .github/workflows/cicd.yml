@@ -6,7 +6,6 @@ on:
   pull_request:
     branches: [ master, develop ]
 
-#on: [push, pull_request]
 jobs:
   test-core:
     runs-on: ${{ matrix.os }}
@@ -74,7 +73,6 @@ jobs:
           pytest -v --cov-report xml --cov-report annotate --cov-report term --cov=pygroupsig
       - name: Upload coverage
         uses: codecov/codecov-action@v1
-
   test-jsgroupsig:
     runs-on: ubuntu-latest
     strategy:

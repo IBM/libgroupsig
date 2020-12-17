@@ -45,7 +45,7 @@ char * base64_encode(const byte_t *src, uint64_t len, uint8_t nl) {
   olen++; /* nul termination */
   if (olen < len)
     return NULL; /* integer overflow */
-  out = mem_malloc(olen);
+  out = mem_malloc(olen*2);
   if (out == NULL)
     return NULL;
 
@@ -125,7 +125,7 @@ byte_t* base64_decode(const char *src, uint64_t *out_len) {
     return NULL;
 
   olen = count / 4 * 3;
-  pos = out = mem_malloc(olen);
+  pos = out = mem_malloc(olen*2);
   if (out == NULL)
     return NULL;
 
