@@ -405,7 +405,7 @@ groupsig_key_t* gl19_grp_key_import(byte_t *source, uint32_t size) {
   } else {
     ctr += len;
   }
-  
+
   /* Get g2 */
   if(!(gl19_key->g2 = pbcext_element_G2_init()))
     GOTOENDRC(IERROR, gl19_grp_key_import);
@@ -417,7 +417,7 @@ groupsig_key_t* gl19_grp_key_import(byte_t *source, uint32_t size) {
   } else {
     ctr += len;
   }
-  
+
   /* Get g */
   if(!(gl19_key->g = pbcext_element_G1_init()))
     GOTOENDRC(IERROR, gl19_grp_key_import);
@@ -429,7 +429,7 @@ groupsig_key_t* gl19_grp_key_import(byte_t *source, uint32_t size) {
   } else {
     ctr += len;
   }
-  
+
   /* Get h */
   if(!(gl19_key->h = pbcext_element_G1_init()))
     GOTOENDRC(IERROR, gl19_grp_key_import);
@@ -453,7 +453,7 @@ groupsig_key_t* gl19_grp_key_import(byte_t *source, uint32_t size) {
   } else {
     ctr += len;
   }
-  
+
   /* Get h2 */
   if(!(gl19_key->h2 = pbcext_element_G1_init()))
     GOTOENDRC(IERROR, gl19_grp_key_import);
@@ -464,8 +464,8 @@ groupsig_key_t* gl19_grp_key_import(byte_t *source, uint32_t size) {
     pbcext_element_G1_free(gl19_key->h2); gl19_key->h2 = NULL;
   } else {
     ctr += len;
-  }  
-  
+  }
+
   /* Get ipk */
   if(!(gl19_key->ipk = pbcext_element_G2_init()))
     GOTOENDRC(IERROR, gl19_grp_key_import);
@@ -500,8 +500,8 @@ groupsig_key_t* gl19_grp_key_import(byte_t *source, uint32_t size) {
     pbcext_element_G1_free(gl19_key->epk); gl19_key->epk = NULL;
   } else {
     ctr += len;
-  }  
-  
+  }
+
  gl19_grp_key_import_end:
   
   if(rc == IERROR && key) { gl19_grp_key_free(key); key = NULL; }

@@ -1,5 +1,6 @@
 from _groupsig import lib, ffi
 from . import constants
+import base64
 
 def message_from_string(mstr):
     """
@@ -43,7 +44,8 @@ def message_from_base64(b64):
         A message data structure. On error, an Exception is thrown.
     """
 
-    msg = lib.message_from_base64(b64.encode('utf8'))
+    b = base64.b64decode(b64)
+    msg = lib.message_from_bytes(b, len(b))
     if msg == ffi.NULL:
         raise Exception('Error parsing message the given Base64 string.')
     return msg

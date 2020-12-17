@@ -31,7 +31,8 @@ app.use((err, req, res, next) => {
 });
 
 /* Set to true for erasing DB upon Express restart (for testing) */
-const eraseDatabaseOnSync = true;
+//const eraseDatabaseOnSync = true;
+const eraseDatabaseOnSync = false;
 sequelize.sync({ force: eraseDatabaseOnSync }).then(async () => {
   app.listen(process.env.PORT, () => {
     console.log(`Listening on port ${process.env.PORT}!`)

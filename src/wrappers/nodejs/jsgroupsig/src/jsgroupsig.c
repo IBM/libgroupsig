@@ -258,7 +258,7 @@ napi_value gs_init
     return NULL;
   }
 
-  NAPI_GET_ARG_UINT32(env, args[0], seed);
+  NAPI_GET_ARG_UINT32(env, args[1], seed);
     
   /* Run groupsig_init */
   if (groupsig_init((uint8_t) code, (unsigned int) seed) == IERROR) {

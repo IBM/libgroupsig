@@ -2,6 +2,24 @@ import { Router } from 'express';
 const jsgroupsig = require('jsgroupsig');
 
 const router = Router();
+const axios = require('axios');
+
+async function checkPKICert(certificate, signature, message) {
+    try {
+	const response = await axios.post(process.env.PKI_ENDPOINT,
+					  {
+					      cert: certificate,
+					      sign: signature,
+					      message: message
+					  })
+	if (response.status == 200 && response.data == true) {
+	    return true;
+	}
+	return false;
+    } catch(error) {
+	return false;
+    }
+}
 
 /** Group requests **/
 
@@ -276,7 +294,7 @@ router.post('/:groupId/member', async (req, res, next) => {
 		return;
 	    });
 	}
-	
+
 	/* The manager sends the "first" message */
 	let mout = jsgroupsig.join_mgr(0, mgrkey, grpkey);
 
@@ -378,7 +396,25 @@ router.put('/:groupId/member/:seq', async (req, res, next) => {
 		});
 	    });
 	    return;
+	}
 
+	/* If the server requires validating control of a PKI-based identity, 
+	   forward the request to the appropriate service. If the result is
+	   different than "true", means the requester has not proved owning
+	   a valid PKI-based identity. */
+	if (process.env.PKI_CHECK == "true") {
+	    result = await checkPKICert(req.body.certificate,
+					req.body.signature,
+					req.body.challenge);
+	    if (result == false) {
+		setImmediate( () => {
+		    next({
+			status: 405,
+			message: "Invalid PKI certificate."
+		    });
+		    return;		    
+		});
+	    }
 	}
 
 	/* Parse the received data into a jslibgroupsig message object */

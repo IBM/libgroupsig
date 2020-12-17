@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "start": "nodemon --exec babel-node src/index.js",
-    "test": "mocha --require @babel/register src/tests/*.js --exit"
+    "test": "mocha --require @babel/register src/tests/*.js --exit",
+    "mocks": "mocks-server"
   },
   "author": "",
   "license": "Apache-2.0",
@@ -16,12 +17,14 @@
     "babel-core": "^7.0.0-bridge.0",
     "chai": "^4.2.0",
     "chai-http": "^4.3.0",
-    "mocha": "^8.0.1",
+    "jsgroupsig": "^0.1.4",
+    "mocha": "^8.2.1",
     "nodemon": "^2.0.4",
-    "request": "^2.88.2",
-    "jsgroupsig": "^0.1.4"
+    "request": "^2.88.2"
   },
   "dependencies": {
+    "@mocks-server/main": "^1.8.7",
+    "axios": "^0.21.0",
     "cors": "^2.8.5",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
