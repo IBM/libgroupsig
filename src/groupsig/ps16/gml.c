@@ -441,6 +441,7 @@ char* ps16_gml_entry_to_string(gml_entry_t *entry) {
   stau = NULL;
   if(pbcext_element_G1_to_string(&stau,
 				 &stau_len,
+				 16,
 				 ((ps16_gml_entry_data_t *)entry->data)->tau) == IERROR) {
     mem_free(sid); sid = NULL;
     return NULL;
@@ -448,6 +449,7 @@ char* ps16_gml_entry_to_string(gml_entry_t *entry) {
 
   if(pbcext_element_G2_to_string(&sttau,
 				 &sttau_len,
+				 16,
 				 ((ps16_gml_entry_data_t *)entry->data)->ttau) == IERROR) {
     mem_free(sid); sid = NULL;
     mem_free(stau); stau = NULL;    

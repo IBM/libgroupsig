@@ -238,6 +238,38 @@ def verify(sig, msg, grpkey):
         if _b[0] == 0:
             return False
 
+def verify_batch(sigs, msgs, grpkey):
+    """
+    Verifies a group signature.
+
+    Parameters:
+        sigs: The array of signatures to verify.
+        msgs: The array signed messages. Each message may be of type _bytes_ or 
+              a UTF-8 string.
+        grpkey: The group key.
+    Returns:
+        True if the signatures are all valid, False otherwise. On error, an 
+        exception is thrown.
+    """    
+    
+    _b = ffi.new("uint8_t *")
+
+    _msgs = []
+    for i in range(len(msgs)):       
+        if isinstance(msgs[i], bytes):
+            _msg = lib.message_from_bytes(msgs[i],len(msg[i]))
+        else:
+            _msg = lib.message_from_string(msgs[i].encode('utf8'))
+        _msgs.append(_msg)
+    
+    if lib.groupsig_verify_batch(_b, sigs, _msgs, len(sigs), grpkey) == lib.IERROR:
+        raise Exception('Error verifying message.')
+    else:
+        if _b[0] == 1:
+            return True
+        if _b[0] == 0:
+            return False        
+
 def open(sig, mgrkey, grpkey, gml=ffi.NULL, crl=ffi.NULL):
     """
     Opens a group signature, in schemes that support it.

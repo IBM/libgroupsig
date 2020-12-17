@@ -220,6 +220,29 @@ extern "C" {
 			  groupsig_key_t *grpkey);
 
   /** 
+   * @typedef int (*verify_batch_f)(uint8_t *ok, 
+   *                                groupsig_signature_t **sig, 
+   *                                message_t **msg, 
+   *                                uint32_t n,
+   *                                groupsig_key_t *grpkey)
+   * @brief Type of functions for verifying batches of signatures.
+   *
+   * @param[in,out] ok Will be set to 1 if all the signatures are correct.
+   *  To 0 otherwise.
+   * @param[in] sigs The signatures to verify.
+   * @param[in] msgs The messages related to the signatures.
+   * @param[in] n The size of the sigs and msgs arrays.
+   * @param[in] grpkey The group key.
+   * 
+   * @return IOK or IERROR.
+   */    
+  typedef int (*verify_batch_f)(uint8_t *ok,
+				groupsig_signature_t **sigs,
+				message_t **msgs,
+				uint32_t n,
+				groupsig_key_t *grpkey);
+    
+  /** 
    * @typedef int (*reveal_f)(trapdoor_t *trap, crl_t *crl, gml_t *gml, uint64_t index)
    * @brief Type of functions for revealing the tracing trapdoor of group members.7
    *
@@ -638,6 +661,7 @@ extern "C" {
     join_mgr_f join_mgr; /**< The manager side join function. */
     sign_f sign; /**< Signs messages. */
     verify_f verify; /**< Verifies group signatures. */
+    verify_batch_f verify_batch; /**< Verifies batches of group signatures. */
     open_f open; /**< Opens group signatures. */
     open_verify_f open_verify; /**< Verifies proofs of opening. */
     reveal_f reveal; /**< Reveals tracing trapdoors. */
@@ -867,13 +891,35 @@ extern "C" {
    * @param[in] grpkey The group key.
    * 
    * @return IOK or IERROR.
-   *
    */
   int groupsig_verify(uint8_t *ok,
 		      groupsig_signature_t *sig,
 		      message_t *msg, 
 		      groupsig_key_t *grpkey);
 
+  /** 
+   * @fn int groupsig_verify_batch(uint8_t *ok, 
+   *                               groupsig_signature_t **sig, 
+   *                               message_t **msg, 
+   *                               uint32_t n,
+   *                               groupsig_key_t *grpkey)
+   * @brief Verifies batches of signatures.
+   *
+   * @param[in,out] ok Will be set to 1 if all the signatures are correct.
+   *  To 0 otherwise.
+   * @param[in] sigs The signatures to verify.
+   * @param[in] msgs The messages related to the signatures.
+   * @param[in] n The size of the sigs and msgs arrays.
+   * @param[in] grpkey The group key.
+   * 
+   * @return IOK or IERROR.
+   */  
+  int groupsig_verify_batch(uint8_t *ok,
+			    groupsig_signature_t **sigs,
+			    message_t **msgs,
+			    uint32_t n,
+			    groupsig_key_t *grpkey);
+    
   /** 
    * @fn int groupsig_reveal(trapdoor_t *trap, crl_t *crl, gml_t *gml, uint64_t index)
    * @brief Reveals the tracing trapdoor of the member in position <i>index</i> within 

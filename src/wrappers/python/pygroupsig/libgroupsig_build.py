@@ -22,6 +22,7 @@ import pygroupsig.groupsig_build
 import pygroupsig.gl19_build
 import pygroupsig.bbs04_build
 import pygroupsig.ps16_build
+import pygroupsig.klap20_build
 
 groupsigcdef = r"""
 int groupsig_hello_world(void);
@@ -54,6 +55,13 @@ groupsig_key_t *memkey,
 groupsig_key_t *grpkey, unsigned int seed);
 
 int groupsig_verify(uint8_t *ok, groupsig_signature_t *sig, message_t *msg, 
+groupsig_key_t *grpkey);
+
+int groupsig_verify_batch(
+uint8_t *ok,
+groupsig_signature_t **sigs,
+message_t **msgs,
+uint32_t n,
 groupsig_key_t *grpkey);
 
 int groupsig_open(uint64_t *index,
@@ -98,6 +106,7 @@ c_lib_path =  path.Path("../../../build/lib/libgroupsig-static.a").abspath()
 c_gl19_path =  path.Path("../../../build/lib/libgl19.a").abspath()
 c_bbs04_path =  path.Path("../../../build/lib/libbbs04.a").abspath()
 c_ps16_path =  path.Path("../../../build/lib/libps16.a").abspath()
+c_klap20_path =  path.Path("../../../build/lib/libklap20.a").abspath()
 c_logger_path =  path.Path("../../../build/lib/liblogger.a").abspath()
 c_msg_path =  path.Path("../../../build/lib/libmsg.a").abspath()
 c_base64_path =  path.Path("../../../build/lib/libbase64.a").abspath()
@@ -130,7 +139,8 @@ ffibuilder.set_source("_groupsig",
                           c_lib_path,
                           c_gl19_path,
                           c_bbs04_path,
-                          c_ps16_path,                          
+                          c_ps16_path,
+                          c_klap20_path,
                           c_logger_path,
                           c_msg_path,                          
                           c_base64_path,

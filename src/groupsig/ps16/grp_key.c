@@ -39,6 +39,7 @@
 groupsig_key_t* ps16_grp_key_init() {
 
   groupsig_key_t *key;
+  ps16_grp_key_t *ps16_key;
 
   if(!(key = (groupsig_key_t *) mem_malloc(sizeof(groupsig_key_t)))) {
     return NULL;
@@ -50,6 +51,11 @@ groupsig_key_t* ps16_grp_key_init() {
   }
 
   key->scheme = GROUPSIG_PS16_CODE;
+  ps16_key = key->key;
+  ps16_key->g = NULL;
+  ps16_key->gg = NULL;
+  ps16_key->X = NULL;
+  ps16_key->Y = NULL;
   
   return key;
   
@@ -142,6 +148,8 @@ int ps16_grp_key_get_size(groupsig_key_t *key) {
   }
 
   ps16_key = key->key;
+
+  sg = sgg = sX = sY = 0;
 
   if(pbcext_element_G1_byte_size(&sg) == IERROR) return -1;
   if(pbcext_element_G2_byte_size(&sgg) == IERROR) return -1;

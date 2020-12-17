@@ -397,7 +397,7 @@ char* bbs04_gml_entry_to_string(gml_entry_t *entry) {
   }
 
   sdata = NULL;
-  if(pbcext_element_G1_to_string(&sdata, &sdata_len, entry->data) == IERROR) {
+  if(pbcext_element_G1_to_string(&sdata, &sdata_len, 16, entry->data) == IERROR) {
     mem_free(sid); sid = NULL;
     return NULL;
   }

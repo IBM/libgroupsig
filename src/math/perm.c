@@ -35,7 +35,7 @@ int perm_durstenfeld_inplace(void **array, int size) {
   for (i=size-1; i>0; i--) {
 
     /* j random integer in [0,i] */
-    if((j = rnd_get_random_int_in_range(i)) == -1) {
+    if(rnd_get_random_int_in_range(&j, i) == IERROR) {
       LOG_ERRORCODE(&logger, __FILE__, "perm_durstenfeld_inplace", __LINE__, 
 		    errno, LOGERROR);
       return IERROR;

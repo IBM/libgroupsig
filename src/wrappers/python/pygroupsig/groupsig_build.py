@@ -61,6 +61,14 @@ groupsig_key_t *grpkey);
 """)
 
 ffibuilder.cdef("""
+typedef int (*verify_batch_f)(uint8_t *ok,
+groupsig_signature_t **sigs,
+message_t **msgs,
+uint32_t n,
+groupsig_key_t *grpkey);
+""")
+
+ffibuilder.cdef("""
 typedef int (*reveal_f)(
 trapdoor_t *trap, 
 crl_t *crl, 
@@ -208,32 +216,33 @@ uint32_t n);
 """)
 
 ffibuilder.cdef("""
-  typedef struct {
-    const groupsig_description_t *desc; 
-    init_f init; 
-    clear_f clear;
-    setup_f setup; 
-    get_joinseq_f get_joinseq; 
-    get_joinstart_f get_joinstart; 
-    join_mem_f join_mem;
-    join_mgr_f join_mgr; 
-    sign_f sign; 
-    verify_f verify;
-    open_f open;
-    open_verify_f open_verify;
-    reveal_f reveal; 
-    trace_f trace; 
-    claim_f claim; 
-    claim_verify_f claim_verify; 
-    prove_equality_f prove_equality; 
-    prove_equality_verify_f prove_equality_verify; 
-    blind_f blind; 
-    convert_f convert; 
-    unblind_f unblind; 
-    identify_f identify; 
-    link_f link; 
-    verify_link_f verify_link;
-    seqlink_f seqlink; 
-    verify_seqlink_f verify_seqlink;
-  } groupsig_t;
+typedef struct {
+const groupsig_description_t *desc; 
+init_f init; 
+clear_f clear;
+setup_f setup; 
+get_joinseq_f get_joinseq; 
+get_joinstart_f get_joinstart; 
+join_mem_f join_mem;
+join_mgr_f join_mgr; 
+sign_f sign; 
+verify_f verify;
+verify_batch_f verify_batch;
+open_f open;
+open_verify_f open_verify;
+reveal_f reveal; 
+trace_f trace; 
+claim_f claim; 
+claim_verify_f claim_verify; 
+prove_equality_f prove_equality; 
+prove_equality_verify_f prove_equality_verify; 
+blind_f blind; 
+convert_f convert; 
+unblind_f unblind; 
+identify_f identify; 
+link_f link; 
+verify_link_f verify_link;
+seqlink_f seqlink; 
+verify_seqlink_f verify_seqlink;
+} groupsig_t;
 """)
