@@ -624,9 +624,14 @@ namespace bigz {
     rc = bigz_free(b2);
     EXPECT_EQ(rc, IOK);
 
+    free(str); str = nullptr;
+
     /* Export to decimal string */
     str = bigz_get_str10(b1);
     EXPECT_NE(str, nullptr);
+
+    b2 = bigz_init();
+    EXPECT_NE(b2, nullptr);    
 
     /* Import back */
     rc = bigz_set_str10(b2, str);

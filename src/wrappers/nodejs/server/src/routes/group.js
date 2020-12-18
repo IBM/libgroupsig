@@ -555,6 +555,7 @@ router.post('/:groupId/signature/convert', async (req, res, next) => {
 	   signatures */
 	let bsigsStr = req.body.blindedSignatures;
 	let bsigs = [];
+
 	bsigsStr.forEach( (bsigStr) => {
 	    let bsig = jsgroupsig.blindsig_import(group.code,
 						  bsigStr);

@@ -437,9 +437,6 @@ namespace groupsig {
 
     }
 
-    message_free(msgs[0]);
-    msgs[0] = message_from_string((char *) "WOLOLOOO");
-
     /* Verify the signatures */
     rc = groupsig_verify_batch(&b, sigs, msgs, 10, grpkey);
     EXPECT_EQ(rc, IOK);
@@ -567,9 +564,6 @@ namespace groupsig {
       EXPECT_EQ(rc, IOK);
 
     }
-
-    message_free(msgs[0]);
-    msgs[0] = message_from_string((char *) "WOLOLOOO");    
 
     /* Verify the signatures */
     rc = groupsig_verify_batch(&b, sigs, msgs, 10, grpkey);

@@ -369,7 +369,7 @@ groupsig_signature_t* gl19_signature_import(byte_t *source, uint32_t size) {
   uint16_t i;
   int rc, ctr;
   uint8_t scheme;
-  
+
   if(!source || !size) {
     LOG_EINVAL(&logger, __FILE__, "gl19_signature_import", __LINE__, LOGERROR);
     return NULL;
@@ -381,7 +381,7 @@ groupsig_signature_t* gl19_signature_import(byte_t *source, uint32_t size) {
   if(!(sig = gl19_signature_init())) {
     return NULL;
   }
-  
+
   gl19_sig = sig->sig;
 
   /* First byte: scheme */
@@ -402,7 +402,7 @@ groupsig_signature_t* gl19_signature_import(byte_t *source, uint32_t size) {
   } else {
     ctr += len;
   }
-  
+
   /* Get A_ */
   if(!(gl19_sig->A_ = pbcext_element_G1_init()))
     GOTOENDRC(IERROR, gl19_signature_import);
@@ -424,7 +424,7 @@ groupsig_signature_t* gl19_signature_import(byte_t *source, uint32_t size) {
   } else {
     ctr += len;
   }
-
+  
   /* Get spk */
   if(!(gl19_sig->pi = spk_rep_init(8)))
     GOTOENDRC(IERROR, gl19_signature_import);
@@ -438,7 +438,7 @@ groupsig_signature_t* gl19_signature_import(byte_t *source, uint32_t size) {
   } else {
     ctr += len;
   }
-  
+
   for(i=0; i<gl19_sig->pi->ns; i++) {
     if(!(gl19_sig->pi->s[i] = pbcext_element_Fr_init()))
       GOTOENDRC(IERROR, gl19_signature_import);

@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "f72b89f9-4b3e-4095-b5b6-319e1b8bca2b",
+		"_postman_id": "006cab9d-4a78-4102-a357-fb7722598acf",
 		"name": "libgroupsig REST API",
 		"description": "Collection for querying the REST API of libgroupsig.",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
@@ -50,8 +50,7 @@
 							"variable": [
 								{
 									"key": "groupId",
-									"value": "1",
-									"type": "string"
+									"value": "2"
 								}
 							]
 						},
@@ -62,10 +61,28 @@
 				{
 					"name": "POST new group (generic)",
 					"request": {
-						"method": "GET",
+						"method": "POST",
 						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"code\": 3,\n    \"seq\": 1\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
 						"url": {
-							"raw": ""
+							"raw": "http://{{url}}:{{port}}/{{version}}/group",
+							"protocol": "http",
+							"host": [
+								"{{url}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"{{version}}",
+								"group"
+							]
 						},
 						"description": "Creates a new group"
 					},
@@ -74,10 +91,28 @@
 				{
 					"name": "POST new group GL19 Init Issuer",
 					"request": {
-						"method": "GET",
+						"method": "POST",
 						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"code\": 3,\n    \"seq\": 1\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
 						"url": {
-							"raw": ""
+							"raw": "http://{{url}}:{{port-issuer}}/{{version}}/group",
+							"protocol": "http",
+							"host": [
+								"{{url}}"
+							],
+							"port": "{{port-issuer}}",
+							"path": [
+								"{{version}}",
+								"group"
+							]
 						},
 						"description": "Creates a new group"
 					},
@@ -86,10 +121,28 @@
 				{
 					"name": "POST new group GL19 Converter",
 					"request": {
-						"method": "GET",
+						"method": "POST",
 						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"code\": 3,\n    \"seq\": 2,\n    \"grpkey\": \"AwAwAAAAEzxEHkqYNVGPlAhEcanka5aIJZ84QTyetN9wAlBxRouC/qNeBas3kj8+BJkPob+DYAAAAGrb+RUMdNzpwEQ0MupCM7xn4/KlDNVzqnE3BCmztnDpW7t+xS8EqdY+lFTehamyARoRFrKmdSjyk32wTtXQ2qMYlibpwrZtdINlbOsN3JMvrPyHxwxesgtv93NZfhi0DTAAAADeXpCIvfXKCEPKjrJz5DUg0MyRsJqB5JmGyDZ5KJBNFEVdxQHch+SBUlTLIEGfG4cwAAAA3JW+faXqqGA0LVjXsuScN01/cjD2vv7c7fZK+YYEirXzWxicbhO6kL1jDufLJdGOMAAAALSu+P0oxtcQGHb8zhPAvBittSO0ulJsBQ6pzBnHmDGa3vqOmzY3fE4aDJskEp+oDzAAAABEmg2Fw6jNgeiyWXvjgcorvJKhC233+Kg0sLhqKIQy8gY/ESPMgxFkbIHmiruR3BNgAAAAY0ivN3G+vzM8EZ0kVPKHYujgBo/OvhnPIfR+DGvpZaPGsske3TuPsjYsofTYQ8sPR7eeshbCMHlC4P5A70cmlXvyNwdnLzu4QIqNvvzXAH3xn0TLk7Ino1HTE+jEjxaNAAAAAAAAAAA=\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
 						"url": {
-							"raw": ""
+							"raw": "http://{{url}}:{{port-converter}}/{{version}}/group",
+							"protocol": "http",
+							"host": [
+								"{{url}}"
+							],
+							"port": "{{port-converter}}",
+							"path": [
+								"{{version}}",
+								"group"
+							]
 						},
 						"description": "Creates a new group"
 					},
@@ -97,18 +150,29 @@
 				},
 				{
 					"name": "POST new group GL19 Finalize Issuer",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
 					"request": {
-						"method": "GET",
+						"method": "POST",
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"code\": {{GL19_CODE}},\n    \"seq\": 3,\n    \"grpkeytmp\": \"xxx\",\n    \"grpkeyfull\": \"yyy\"\n}"
+							"raw": "{\n    \"code\": 3,\n    \"seq\": 3,\n    \"grpkeyfull\": \"AwAwAAAAEzxEHkqYNVGPlAhEcanka5aIJZ84QTyetN9wAlBxRouC/qNeBas3kj8+BJkPob+DYAAAAGrb+RUMdNzpwEQ0MupCM7xn4/KlDNVzqnE3BCmztnDpW7t+xS8EqdY+lFTehamyARoRFrKmdSjyk32wTtXQ2qMYlibpwrZtdINlbOsN3JMvrPyHxwxesgtv93NZfhi0DTAAAADeXpCIvfXKCEPKjrJz5DUg0MyRsJqB5JmGyDZ5KJBNFEVdxQHch+SBUlTLIEGfG4cwAAAA3JW+faXqqGA0LVjXsuScN01/cjD2vv7c7fZK+YYEirXzWxicbhO6kL1jDufLJdGOMAAAALSu+P0oxtcQGHb8zhPAvBittSO0ulJsBQ6pzBnHmDGa3vqOmzY3fE4aDJskEp+oDzAAAABEmg2Fw6jNgeiyWXvjgcorvJKhC233+Kg0sLhqKIQy8gY/ESPMgxFkbIHmiruR3BNgAAAAY0ivN3G+vzM8EZ0kVPKHYujgBo/OvhnPIfR+DGvpZaPGsske3TuPsjYsofTYQ8sPR7eeshbCMHlC4P5A70cmlXvyNwdnLzu4QIqNvvzXAH3xn0TLk7Ino1HTE+jEjxaNMAAAACL7wh8+tw/yYKpnpA/kVXfjOclIyBL6wvlFph3Yf0qN9VVngGl110/Nbm9VqvGuCjAAAABiPQyXG7qMzqIVEyGBnXusnGuKJb9Mg6iGAt3ZFaPRUk7MPB9fAS6EYwyLNN+1Ogw=\",\n    \"grpkeytmp\": \"AwAwAAAAEzxEHkqYNVGPlAhEcanka5aIJZ84QTyetN9wAlBxRouC/qNeBas3kj8+BJkPob+DYAAAAGrb+RUMdNzpwEQ0MupCM7xn4/KlDNVzqnE3BCmztnDpW7t+xS8EqdY+lFTehamyARoRFrKmdSjyk32wTtXQ2qMYlibpwrZtdINlbOsN3JMvrPyHxwxesgtv93NZfhi0DTAAAADeXpCIvfXKCEPKjrJz5DUg0MyRsJqB5JmGyDZ5KJBNFEVdxQHch+SBUlTLIEGfG4cwAAAA3JW+faXqqGA0LVjXsuScN01/cjD2vv7c7fZK+YYEirXzWxicbhO6kL1jDufLJdGOMAAAALSu+P0oxtcQGHb8zhPAvBittSO0ulJsBQ6pzBnHmDGa3vqOmzY3fE4aDJskEp+oDzAAAABEmg2Fw6jNgeiyWXvjgcorvJKhC233+Kg0sLhqKIQy8gY/ESPMgxFkbIHmiruR3BNgAAAAY0ivN3G+vzM8EZ0kVPKHYujgBo/OvhnPIfR+DGvpZaPGsske3TuPsjYsofTYQ8sPR7eeshbCMHlC4P5A70cmlXvyNwdnLzu4QIqNvvzXAH3xn0TLk7Ino1HTE+jEjxaNAAAAAAAAAAA=\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
 						},
 						"url": {
-							"raw": ""
+							"raw": "http://{{url}}:{{port-issuer}}/{{version}}/group",
+							"protocol": "http",
+							"host": [
+								"{{url}}"
+							],
+							"port": "{{port-issuer}}",
+							"path": [
+								"{{version}}",
+								"group"
+							]
 						},
 						"description": "Creates a new group"
 					},
@@ -117,17 +181,32 @@
 				{
 					"name": "DELETE group",
 					"request": {
-						"method": "GET",
+						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": ""
+							"raw": "http://{{url}}:{{port}}/{{version}}/group/:groupId",
+							"protocol": "http",
+							"host": [
+								"{{url}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"{{version}}",
+								"group",
+								":groupId"
+							],
+							"variable": [
+								{
+									"key": "groupId",
+									"value": "1"
+								}
+							]
 						},
 						"description": "Deletes an existing group"
 					},
 					"response": []
 				}
-			],
-			"protocolProfileBehavior": {}
+			]
 		},
 		{
 			"name": "Member management",
@@ -135,10 +214,36 @@
 				{
 					"name": "GL19 First Join request",
 					"request": {
-						"method": "GET",
+						"method": "POST",
 						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
 						"url": {
-							"raw": ""
+							"raw": "http://{{url}}:{{port-issuer}}/{{version}}/group/:groupId/member",
+							"protocol": "http",
+							"host": [
+								"{{url}}"
+							],
+							"port": "{{port-issuer}}",
+							"path": [
+								"{{version}}",
+								"group",
+								":groupId",
+								"member"
+							],
+							"variable": [
+								{
+									"key": "groupId",
+									"value": "1"
+								}
+							]
 						},
 						"description": "Issues the first join request for GL19 groups."
 					},
@@ -147,17 +252,47 @@
 				{
 					"name": "GL19 Second Join request",
 					"request": {
-						"method": "GET",
+						"method": "PUT",
 						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"challenge\": \"MAAAAP9Hfp6lvK+Alvmjb4R31Z/XWm/VsrwOPBPqe5VdjUBIZhrrC07Oa7DlGla9oOxlBQ==\",\n    \"response\": \"MAAAAP9Hfp6lvK+Alvmjb4R31Z/XWm/VsrwOPBPqe5VdjUBIZhrrC07Oa7DlGla9oOxlBTAAAABlV3Vj+JbJCqVJ0tW8ToXtkB0TtEhBrAsJywTk2swdg18RR9S3vr7mjSSojouR0AQgAAAAtLxVZGl7mnzTmJPoaOIH4N1uUrceMRp6YwLdOx83+FkgAAAAKPQGS/DqnNtj/3IYqKm0qeuNgYEI4j5l7/R530wjOBA=\",\n    \"certificate\": \"sample-cert\",\n    \"signature\": \"sample-signature\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
 						"url": {
-							"raw": ""
+							"raw": "http://{{url}}:{{port-issuer}}/{{version}}/group/:groupId/member/:seq",
+							"protocol": "http",
+							"host": [
+								"{{url}}"
+							],
+							"port": "{{port-issuer}}",
+							"path": [
+								"{{version}}",
+								"group",
+								":groupId",
+								"member",
+								":seq"
+							],
+							"variable": [
+								{
+									"key": "groupId",
+									"value": "1"
+								},
+								{
+									"key": "seq",
+									"value": "2"
+								}
+							]
 						},
 						"description": "Sends the second member join request."
 					},
 					"response": []
 				}
-			],
-			"protocolProfileBehavior": {}
+			]
 		},
 		{
 			"name": "Signatures",
@@ -165,10 +300,37 @@
 				{
 					"name": "Verify signature",
 					"request": {
-						"method": "GET",
+						"method": "POST",
 						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"message\": \"Hello, World!\",\n    \"signature\": \"AzAAAAAhZR0YppoF5GlBqqNjAg2bXfZ7J5tWzwbD9lunomJibMAmTLekrDw9RyTleU7CYYAwAAAAowaygOStylXcpzP2Hfd4rLVX6TZVhhh5wBZA3gh9m1twbi20VcVdUe/RQAYAvJyLMAAAAA48mcMVLr5t0HqDPnxjwjOh0OrGfVVgb3c4dGZyXN4XgtlWJp50Iwh5pY953kijCCAAAABOasJuCI1ex+ZyJxyJ3OeEvbwC4aYrhqUjSzFIuk6WWyAAAABajHD7XtmB61qxXse+AhAlkTtflDgqnlwNnV+zOz3KGCAAAAAJnMTpPkHTdDgTgvAhJJb9dP/NiRX5Oo7oqyrGzZUhGCAAAABkg7Hvu/bnB/dYZJJvi/8sZfPALgs4UU/nlX/OrPIiUCAAAAD8AaM7zipT++WI9k6YAraoqWHEK2ok/mkXrrRKProdCSAAAAA5IKFeEGY83Rrvd4uzNLnttG3HsAn6Jub6lf3ir5wMPyAAAAAkz+1yIXeJA5QgVyqaTD2ZN5wn9B4lOecPoaV+IrO6BCAAAAD5C+N1DqihxSJvS4MpEksshKOGAztMF0sjQ+nKIULkZyAAAACnolrR165DgwTlhG82gIej24kv9RJX5n6uUYKvSja5EDAAAADojG5yePtqWNb9GcZq8e7JrF1gP/yfZ+tmEkZsN+eA/kRGCW1tmc6Lt+HQiFPXGQ8wAAAAEwFWo9BV/9nlI3+TK2tcmFYDFJ1QmCLPU+tBAF2MBYLT0aumbv01WnWTVlYBY96RMAAAACY8dU+Ol7W8esOO7L2cHB2bBsCohmm8TPE1+y30Ith8Tt0U0e0WPEpVxxU3BwqgjzAAAACJWJPdwlZOP/LIuPA6ogZ9BnbVGCjVx8XAAXZWYebRdnwQ7DmyfLHMLX1NcU5NeoU=\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
 						"url": {
-							"raw": ""
+							"raw": "http://{{url}}:{{port-issuer}}/{{version}}/group/:groupId/signature/verify",
+							"protocol": "http",
+							"host": [
+								"{{url}}"
+							],
+							"port": "{{port-issuer}}",
+							"path": [
+								"{{version}}",
+								"group",
+								":groupId",
+								"signature",
+								"verify"
+							],
+							"variable": [
+								{
+									"key": "groupId",
+									"value": "1"
+								}
+							]
 						}
 					},
 					"response": []
@@ -176,17 +338,42 @@
 				{
 					"name": "Convert signatures",
 					"request": {
-						"method": "GET",
+						"method": "POST",
 						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"bldkey\": \"AwMwAAAAaHbjBBLhG/vu+XoK/tkwGuydU2MGXiPRMLll44p0XkkU+SDX3kepx9DhB+PwDcIBIAAAABMNTKQ+WkAMGL2wKAw+Ic4/wkDAa2uQgZyiuEyZ7pQS\",\n    \"blindedSignatures\": [\n        \"AzAAAAAp4ZX6+jbpy9jZZXsxFVru03ggcvuAMZiPXPhfxS1ONRbRarNL9nPMNhqf3JxZLRQwAAAAkGUtljbNxsiYVkGINqNpcbD76r0n1WftRklijvQ5FPkrt1rS5q+divamDzaMzQcVMAAAAMF0TA3hquC7GOu5prwTbSyIlk3oeX9a9oaLk1tj3CPeFG265MOy86pH1k2Y5easCzAAAACyhdSNu9Hz3umSgCVI1bWi43tEJ57atoQT9HSTgdzJy6Lf6yAXZYW5Gmrt0KkfXAswAAAADZdW6bAiNXCGUZ7bOMFA8DbY36ynsz14t02PSxnaBDLEUhvTuZiOccrsfVltgbUK\",\n        \"AzAAAACI5rcgdDJgQQw5IyVgCwZzRcGTTyCp6bGEWHxohzMsjeROliKU3redIJneuWqMMoIwAAAA/CUyjBUD7BcvBjr8u10dGtCdG+4018h2f8A3MFvYKYsgsUHwBHkVZlppIxBmqS4JMAAAAFf5sbFqVp3H2d1RbiGQ3uKanlP+Jg+DJfYNLeohwTC8vmxK2o/BMj2K1wO3Ga7MkjAAAAC6r79BpH4AGxgu2aeqS5vbtyRfa8dzPrjsJ0vfORqvXmAWUBAWeoC3OtEjBZz8jQ0wAAAAlCug5IfpoH+NhZbarskpm6+PrbdsSFk7OTxsYWkEN+r4z4Flj58/01B78qLfEksD\"\n    ]\n    \n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
 						"url": {
-							"raw": ""
+							"raw": "http://{{url}}:{{port-converter}}/{{version}}/group/:groupId/signature/convert",
+							"protocol": "http",
+							"host": [
+								"{{url}}"
+							],
+							"port": "{{port-converter}}",
+							"path": [
+								"{{version}}",
+								"group",
+								":groupId",
+								"signature",
+								"convert"
+							],
+							"variable": [
+								{
+									"key": "groupId",
+									"value": "1"
+								}
+							]
 						}
 					},
 					"response": []
 				}
-			],
-			"protocolProfileBehavior": {}
+			]
 		}
-	],
-	"protocolProfileBehavior": {}
+	]
 }
