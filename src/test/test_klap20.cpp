@@ -442,7 +442,7 @@ namespace groupsig {
     sprintf(str, "Hello, World!\n");
     message_free(msgs[0]);
     msgs[0] = message_from_string(str);
-    EXPECT_NE(msgs[i], nullptr);
+    EXPECT_NE(msgs[0], nullptr);
 
     /* Verify the signatures */
     rc = groupsig_verify_batch(&b, sigs, msgs, 10, grpkey);
@@ -577,7 +577,7 @@ namespace groupsig {
     sprintf(str, "Hello, World!\n");
     message_free(msgs[0]);
     msgs[0] = message_from_string(str);
-    EXPECT_NE(msgs[i], nullptr);    
+    EXPECT_NE(msgs[0], nullptr);    
 
     /* Verify the signatures */
     rc = groupsig_verify_batch(&b, sigs, msgs, 10, grpkey);
