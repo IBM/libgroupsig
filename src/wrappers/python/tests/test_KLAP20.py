@@ -105,6 +105,7 @@ class TestGroupOps(unittest.TestCase):
             sig = groupsig.sign(msg, self.memkeys[0], self.grpkey)
             msgs.append(msg)
             sigs.append(sig)
+        msgs[0] = "Hello, World!"
         b = groupsig.verify_batch(sigs, msgs, self.grpkey)
         self.assertFalse(b)
 

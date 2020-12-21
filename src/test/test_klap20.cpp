@@ -436,6 +436,13 @@ namespace groupsig {
       EXPECT_EQ(rc, IOK);
 
     }
+    
+    /* Change one sig */
+    memset(str, 0, 100);
+    sprintf(str, "Hello, World!\n");
+    message_free(msgs[0]);
+    msgs[0] = message_from_string(str);
+    EXPECT_NE(msgs[i], nullptr);
 
     /* Verify the signatures */
     rc = groupsig_verify_batch(&b, sigs, msgs, 10, grpkey);
@@ -474,7 +481,7 @@ namespace groupsig {
     rc = groupsig_setup(GROUPSIG_KLAP20_CODE, grpkey, opnkey, gml);
     EXPECT_EQ(rc, IOK);    
 
-    /* Add one member */
+    /* Add ten members */
     addMembers(10);
 
     msgs = (message_t **) malloc(sizeof(message_t *)*10);
@@ -538,7 +545,7 @@ namespace groupsig {
     rc = groupsig_setup(GROUPSIG_KLAP20_CODE, grpkey, opnkey, gml);
     EXPECT_EQ(rc, IOK);    
 
-    /* Add one member */
+    /* Add ten member */
     addMembers(10);
 
     msgs = (message_t **) malloc(sizeof(message_t *)*10);
@@ -564,6 +571,13 @@ namespace groupsig {
       EXPECT_EQ(rc, IOK);
 
     }
+
+    /* Change one sig */
+    memset(str, 0, 100);
+    sprintf(str, "Hello, World!\n");
+    message_free(msgs[0]);
+    msgs[0] = message_from_string(str);
+    EXPECT_NE(msgs[i], nullptr);    
 
     /* Verify the signatures */
     rc = groupsig_verify_batch(&b, sigs, msgs, 10, grpkey);
