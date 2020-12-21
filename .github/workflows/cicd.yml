@@ -19,8 +19,8 @@ jobs:
       - name: Install Linux dependencies
         if: "contains( matrix.os, 'ubuntu')"
         run: |
-	  sudo sed -i 's/azure\.//' /etc/apt/sources.list
-	  sudo apt-get update
+          sudo sed -i 's/azure\.//' /etc/apt/sources.list
+          sudo apt-get update
           sudo apt-get install libssl-dev valgrind
       - name: Install Python dependencies for coverage
         run: |
@@ -59,7 +59,7 @@ jobs:
         run: |
           sudo sed -i 's/azure\.//' /etc/apt/sources.list
           sudo apt-get update
-	  sudo apt-get install libssl-dev
+          sudo apt-get install libssl-dev
       - name: Build Core
         uses: lukka/run-cmake@v1
         with:
@@ -116,7 +116,7 @@ jobs:
       - name: Install Linux dependencies
         run: |
           sudo sed -i 's/azure\.//' /etc/apt/sources.list
-	  sudo apt-get update
+          sudo apt-get update
           sudo apt-get install libssl-dev valgrind
       - name: Build with Unit Tests
         uses: lukka/run-cmake@v1
