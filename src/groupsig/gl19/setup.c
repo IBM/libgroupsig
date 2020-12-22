@@ -101,6 +101,10 @@ int gl19_setup(groupsig_key_t *grpkey,
     if(!(gkey->h2 = pbcext_element_G1_init())) GOTOENDRC(IERROR, gl19_setup);
     if(pbcext_element_G1_random(gkey->h2) == IERROR)
       GOTOENDRC(IERROR, gl19_setup);
+
+    if(!(gkey->h3 = pbcext_element_G1_init())) GOTOENDRC(IERROR, gl19_setup);
+    if(pbcext_element_G1_random(gkey->h3) == IERROR)
+      GOTOENDRC(IERROR, gl19_setup);    
     
     /* Compute random generator g2 in G2. Since G2 is a cyclic group of prime 
        order, just pick a random element. */
@@ -166,6 +170,7 @@ int gl19_setup(groupsig_key_t *grpkey,
       if (gkey->h) { pbcext_element_G1_free(gkey->h); gkey->h1 = NULL; }
       if (gkey->h1) { pbcext_element_G1_free(gkey->h1); gkey->h1 = NULL; }
       if (gkey->h2) { pbcext_element_G1_free(gkey->h2); gkey->h2 = NULL; }
+      if (gkey->h3) { pbcext_element_G1_free(gkey->h3); gkey->h3 = NULL; }      
       if (gkey->g2) { pbcext_element_G2_free(gkey->g2); gkey->g2 = NULL; }
       if (gkey->ipk) { pbcext_element_G2_free(gkey->ipk); gkey->ipk = NULL; }
     }

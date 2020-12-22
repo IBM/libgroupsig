@@ -146,7 +146,9 @@ int gl19_signature_copy(groupsig_signature_t *dst, groupsig_signature_t *src) {
   if(!(gl19_dst->ehy2 = pbcext_element_G1_init()))
     GOTOENDRC(IERROR, gl19_signature_copy);
   if(pbcext_element_G1_set(gl19_dst->ehy2, gl19_src->ehy2) == IERROR)
-    GOTOENDRC(IERROR, gl19_signature_copy);  
+    GOTOENDRC(IERROR, gl19_signature_copy);
+
+  gl19_dst->expiration = gl19_src->expiration;
   
  gl19_signature_copy_end:
 
@@ -236,8 +238,10 @@ int gl19_signature_get_size(groupsig_signature_t *sig) {
   if(pbcext_element_G1_byte_size(&sehy1) == IERROR) return -1;
   if(pbcext_element_G1_byte_size(&sehy2) == IERROR) return -1;  
 
-  if(sAA + sA_ + sd + sc + snym1 + snym2 + sehy1 + sehy2 + sizeof(int)*8+1 > INT_MAX) return -1;
-  size = (int) sAA + sA_ + sd + sc + snym1 + snym2 + sehy1 + sehy2 + sizeof(int)*8+1;
+  if(sAA + sA_ + sd + sc + snym1 + snym2 + sehy1 + sehy2 +
+     + sizeof(uint64_t) + sizeof(int)*8+1 > INT_MAX) return -1;
+  size = (int) sAA + sA_ + sd + sc + snym1 + snym2 + sehy1 + sehy2 +
+    sizeof(uint64_t) + sizeof(int)*8+1;
 
   for(i=0; i<gl19_sig->pi->ns; i++) {
     if(pbcext_element_Fr_byte_size(&ss) == IERROR)
@@ -335,7 +339,11 @@ int gl19_signature_export(byte_t **bytes,
   __bytes = &_bytes[ctr];
   if(pbcext_dump_element_G1_bytes(&__bytes, &len, gl19_sig->ehy2) == IERROR)
     GOTOENDRC(IERROR, gl19_signature_export);
-  ctr += len;  
+  ctr += len;
+
+  /* Dump expiration */
+  memcpy(&_bytes[ctr], &gl19_sig->expiration, sizeof(uint64_t));
+  ctr += sizeof(uint64_t);
 
   /* Prepare the return */
   if(!*bytes) {
@@ -493,7 +501,11 @@ groupsig_signature_t* gl19_signature_import(byte_t *source, uint32_t size) {
     ctr += sizeof(int);  // @TODO: this is an artifact of pbcext_get_element_XX_bytes
   } else {
     ctr += len;
-  }  
+  }
+
+  /* Get expiration */
+  memcpy(&gl19_sig->expiration, &source[ctr], sizeof(uint64_t));
+  ctr += sizeof(uint64_t);
 
  gl19_signature_import_end:
 

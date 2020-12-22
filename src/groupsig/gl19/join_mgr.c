@@ -30,6 +30,7 @@
 #include "groupsig/gl19/identity.h"
 #include "sys/mem.h"
 #include "shim/base64.h"
+#include "shim/hash.h"
 #include "crypto/spk.h"
 
 int gl19_get_joinseq(uint8_t *seq) {
@@ -45,17 +46,19 @@ int gl19_get_joinstart(uint8_t *start) {
 int gl19_join_mgr(message_t **mout, gml_t *gml, groupsig_key_t *mgrkey,
 		  int seq, message_t *min, groupsig_key_t *grpkey) {
 
-  pbcext_element_G1_t *n, *H, *h2s;
-  pbcext_element_Fr_t *aux;
+  pbcext_element_G1_t *n, *H, *h2s, *h3d;
+  pbcext_element_Fr_t *aux, *d;
   gl19_grp_key_t *gl19_grpkey;
   gl19_mgr_key_t *gl19_mgrkey;
   gl19_mem_key_t *gl19_memkey;
   groupsig_key_t *memkey;
   message_t *_mout;
   spk_dlog_t *spk;
-  byte_t *bn, *bkey;
+  hash_t *hexpiration;
+  byte_t *bn, *bkey, *bexpiration;
   char *b64key;
   uint64_t len, _len;
+  time_t expiration;
   uint32_t size;
   int rc, klen;
   uint8_t ok;
@@ -69,11 +72,12 @@ int gl19_join_mgr(message_t **mout, gml_t *gml, groupsig_key_t *mgrkey,
   }
 
   rc = IOK;
-  bn = NULL; bkey = NULL; b64key = NULL;
-  n = NULL; h2s = NULL; H = NULL;
+  bn = NULL; bkey = NULL; b64key = NULL; bexpiration = NULL;
+  n = NULL; h2s = NULL; h3d = NULL; H = NULL;
   spk = NULL;
-  aux = NULL;
+  aux = NULL; d = NULL;  
   memkey = NULL;
+  hexpiration = NULL;
   
   gl19_grpkey = (gl19_grp_key_t *) grpkey->key;
   gl19_mgrkey = (gl19_mgr_key_t *) mgrkey->key;
@@ -138,15 +142,46 @@ int gl19_join_mgr(message_t **mout, gml_t *gml, groupsig_key_t *mgrkey,
     if(pbcext_element_Fr_random(gl19_memkey->s) == IERROR)
       GOTOENDRC(IERROR, gl19_join_mgr);
 
-    /* Set A = (H*h_2^s*g_1)^(1/isk+x) */
+    /* Modification w.r.t. the GL19 paper: we add a maximum lifetime
+       for member credentials. This is done by adding a second message
+       to be signed in the BBS+ signatures. This message will then be
+       "revealed" (i.e., shared in cleartext) in the SPK computed for
+       signing. */
+
+    /* d = hash(l) */
+    expiration = time(NULL) + GL19_CRED_LIFETIME;
+    if (expiration == (time_t) -1) GOTOENDRC(IERROR, gl19_join_mgr);
+    gl19_memkey->l = (uint64_t) expiration;
+    if (!(bexpiration = mem_malloc(sizeof(byte_t)*sizeof(uint64_t))))     
+      GOTOENDRC(IERROR, gl19_join_mgr);
+    memcpy(bexpiration, &gl19_memkey->l, sizeof(uint64_t));
+    if (!(hexpiration = hash_get(HASH_SHA1, bexpiration, sizeof(uint64_t))))
+      GOTOENDRC(IERROR, gl19_join_mgr);
+
+    if (!(d = pbcext_element_Fr_init()))
+      GOTOENDRC(IERROR, gl19_join_mgr);
+    if (pbcext_element_Fr_from_hash(d,
+				    hexpiration->hash,
+				    hexpiration->length) == IERROR)
+      GOTOENDRC(IERROR, gl19_join_mgr);
+
+    /* Set A = (H*h_2^s*h3^d*g_1)^(1/isk+x) */
     if(!(gl19_memkey->A = pbcext_element_G1_init()))
       GOTOENDRC(IERROR, gl19_join_mgr);
     if(!(h2s = pbcext_element_G1_init()))
       GOTOENDRC(IERROR, gl19_join_mgr);
     if(pbcext_element_G1_mul(h2s, gl19_grpkey->h2, gl19_memkey->s) == IERROR)
       GOTOENDRC(IERROR, gl19_join_mgr);
+    if(!(h3d = pbcext_element_G1_init()))
+      GOTOENDRC(IERROR, gl19_join_mgr);
+    if(pbcext_element_G1_mul(h3d, gl19_grpkey->h3, d) == IERROR)
+      GOTOENDRC(IERROR, gl19_join_mgr);    
     if(pbcext_element_G1_add(gl19_memkey->A, h2s, gl19_grpkey->g1) == IERROR)
       GOTOENDRC(IERROR, gl19_join_mgr);
+    if(pbcext_element_G1_add(gl19_memkey->A,
+			     gl19_memkey->A,
+			     h3d) == IERROR)
+      GOTOENDRC(IERROR, gl19_join_mgr);    
     if(pbcext_element_G1_add(gl19_memkey->A, gl19_memkey->A, H) == IERROR)
       GOTOENDRC(IERROR, gl19_join_mgr);
     if(!(aux = pbcext_element_Fr_init()))
@@ -159,7 +194,7 @@ int gl19_join_mgr(message_t **mout, gml_t *gml, groupsig_key_t *mgrkey,
       GOTOENDRC(IERROR, gl19_join_mgr);
 
     /* 
-       Mout = (A,x,s) 
+       Mout = (A,x,s,l) 
        This is stored in a partially filled memkey, byte encoded into a 
        message_t struct
     */
@@ -187,12 +222,16 @@ int gl19_join_mgr(message_t **mout, gml_t *gml, groupsig_key_t *mgrkey,
   if (n) { pbcext_element_G1_free(n); n = NULL; }
   if (H) { pbcext_element_G1_free(H); H = NULL; }  
   if (aux) { pbcext_element_Fr_free(aux); aux = NULL; }
+  if (d) { pbcext_element_Fr_free(d); d = NULL; }  
   if (h2s) { pbcext_element_G1_free(h2s); h2s = NULL; }
+  if (h3d) { pbcext_element_G1_free(h3d); h3d = NULL; }  
   if (memkey) { gl19_mem_key_free(memkey); memkey = NULL; }
   if (bkey) { mem_free(bkey); bkey = NULL; }
   if (b64key) { mem_free(bkey); b64key = NULL; }  
   if (bn) { mem_free(bn); bn = NULL; }
   if (spk) { spk_dlog_free(spk); spk = NULL; }
+  if (bexpiration) { mem_free(bexpiration); bexpiration = NULL; }
+  if (hexpiration) { hash_free(hexpiration); hexpiration = NULL; }
   
   return rc;
 

@@ -29,6 +29,7 @@
 #include "sys/mem.h"
 #include "crypto/spk.h"
 #include "shim/pbc_ext.h"
+#include "shim/hash.h"
 
 int gl19_join_mem(message_t **mout, groupsig_key_t *memkey,
 		  int seq, message_t *min, groupsig_key_t *grpkey) {
@@ -39,9 +40,10 @@ int gl19_join_mem(message_t **mout, groupsig_key_t *memkey,
   gl19_mem_key_t *gl19_memkey;
   groupsig_key_t *_gl19_memkey;
   gl19_grp_key_t *gl19_grpkey;
-  message_t *_mout;
+  message_t *_mout;  
   spk_dlog_t *pi;
-  byte_t *bn, *bmsg, *bH, *bpi;
+  hash_t *hexpiration;
+  byte_t *bn, *bmsg, *bH, *bpi, *bexpiration;
   uint64_t len, nlen, Hlen, pilen;
   int rc;
 
@@ -58,7 +60,8 @@ int gl19_join_mem(message_t **mout, groupsig_key_t *memkey,
   n = NULL; H = NULL; aux = NULL;
   y = NULL;
   e1 = NULL; e2 = NULL; e3 = NULL;
-  bmsg = NULL; bH = NULL; bpi = NULL;
+  bmsg = NULL; bH = NULL; bpi = NULL; bexpiration = NULL;
+  hexpiration = NULL;
   _gl19_memkey = NULL;
   pi = NULL;
   
@@ -133,18 +136,40 @@ int gl19_join_mem(message_t **mout, groupsig_key_t *memkey,
     /* Second step by the member: Check correctness of computation 
        and update memkey */
 
-    /* Min = (A,x,s) */
+    /* Min = (A,x,s,l) */
     _gl19_memkey = gl19_mem_key_import(min->bytes, min->length);
     if(!_gl19_memkey) GOTOENDRC(IERROR, gl19_join_mem);
 
     if(gl19_mem_key_copy(memkey, _gl19_memkey) == IERROR)
       GOTOENDRC(IERROR, gl19_join_mem);
 
+    /* Recompute h2s from s */
     if(!(gl19_memkey->h2s = pbcext_element_G1_init()))
       GOTOENDRC(IERROR, gl19_join_mem);
     if(pbcext_element_G1_mul(gl19_memkey->h2s,
 			     gl19_grpkey->h2,
 			     gl19_memkey->s) == IERROR)
+      GOTOENDRC(IERROR, gl19_join_mem);   
+
+    /* Recompute d and h3d from l */
+    if (!(bexpiration = mem_malloc(sizeof(byte_t)*sizeof(uint64_t))))     
+      GOTOENDRC(IERROR, gl19_join_mem);
+    memcpy(bexpiration, &gl19_memkey->l, sizeof(uint64_t));
+    if (!(hexpiration = hash_get(HASH_SHA1, bexpiration, sizeof(uint64_t))))
+      GOTOENDRC(IERROR, gl19_join_mem);
+
+    if (!(gl19_memkey->d = pbcext_element_Fr_init()))
+      GOTOENDRC(IERROR, gl19_join_mem);
+    if (pbcext_element_Fr_from_hash(gl19_memkey->d,
+				    hexpiration->hash,
+				    hexpiration->length) == IERROR)
+      GOTOENDRC(IERROR, gl19_join_mem);
+
+    if(!(gl19_memkey->h3d = pbcext_element_G1_init()))
+      GOTOENDRC(IERROR, gl19_join_mem);
+    if(pbcext_element_G1_mul(gl19_memkey->h3d,
+			     gl19_grpkey->h3,
+			     gl19_memkey->d) == IERROR)
       GOTOENDRC(IERROR, gl19_join_mem);
 
     /* Check correctness */
@@ -153,7 +178,7 @@ int gl19_join_mem(message_t **mout, groupsig_key_t *memkey,
        it must not be 0) */
     if(pbcext_element_G1_is0(gl19_memkey->A)) GOTOENDRC(IOK, gl19_join_mem);
 
-    /* e(A,g2)e(A,ipk) = e(g1Yh2^s,g2) */
+    /* e(A,g2)e(A,ipk) = e(g1*Y*h2^s*h3^d,g2) */
     if(!(e1 = pbcext_element_GT_init())) GOTOENDRC(IERROR, gl19_join_mem);
     if(!(e2 = pbcext_element_GT_init())) GOTOENDRC(IERROR, gl19_join_mem);
     if(!(e3 = pbcext_element_GT_init())) GOTOENDRC(IERROR, gl19_join_mem);
@@ -173,6 +198,9 @@ int gl19_join_mem(message_t **mout, groupsig_key_t *memkey,
 
     if(pbcext_element_G1_set(aux, gl19_memkey->h2s) == IERROR)
       GOTOENDRC(IERROR, gl19_join_mem);
+
+    if(pbcext_element_G1_add(aux, aux, gl19_memkey->h3d) == IERROR)
+      GOTOENDRC(IERROR, gl19_join_mem);    
 
     if(pbcext_element_G1_add(aux, aux, gl19_memkey->H) == IERROR)
       GOTOENDRC(IERROR, gl19_join_mem);
@@ -202,6 +230,8 @@ int gl19_join_mem(message_t **mout, groupsig_key_t *memkey,
   if(e3) { pbcext_element_GT_free(e3); e3 = NULL; }
   if(_gl19_memkey) { gl19_mem_key_free(_gl19_memkey); _gl19_memkey = NULL; }
   if(pi) { spk_dlog_free(pi); pi = NULL; }
+  if(hexpiration) { hash_free(hexpiration); hexpiration = NULL; }
+  if(bexpiration) { mem_free(bexpiration); bexpiration = NULL; }
 
   return rc;
 

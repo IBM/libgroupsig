@@ -71,6 +71,11 @@ static const groupsig_description_t gl19_description = {
 /* Number of exchanged messages */
 #define GL19_JOIN_SEQ 3
 
+/* Member certs in GL19 will have a maximum lifetime of 2 weeks (60*60*24*14 
+   seconds). This is because no revocation is possible. Configure at will. 
+   A GL19_CRED_LIFETIME of 0 means the credentials do not expire. */
+#define GL19_CRED_LIFETIME 1209600
+
 /** 
  * @fn int gl19_init()
  * @brief Initializes the internal variables needed by GL19. In this case,
