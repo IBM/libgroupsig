@@ -101,7 +101,7 @@ def get_joinseq(scheme):
     if lib.groupsig_get_joinseq(scheme, msgs) == lib.IERROR:
         raise Exception('Error getting number of messages in Join.')
 
-    return msgs
+    return msgs[0]
 
 def get_joinstart(scheme):
     """
@@ -118,7 +118,7 @@ def get_joinstart(scheme):
     if lib.groupsig_get_joinstart(scheme, start) == lib.IERROR:
         raise Exception('Error getting starting party in Join.')
     
-    return start
+    return start[0]
 
 def join_mgr(step, mgrkey, grpkey, msgin = ffi.NULL, gml = ffi.NULL):
     """
