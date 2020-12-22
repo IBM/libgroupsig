@@ -39,6 +39,8 @@ class TestGroupOps(unittest.TestCase):
     def test_groupCreate(self):
         self.assertNotEqual(self.grpkey, ffi.NULL)
         self.assertNotEqual(self.mgrkey, ffi.NULL)
+        self.assertEqual(groupsig.get_joinseq(constants.BBS04_CODE), 1)
+        self.assertEqual(groupsig.get_joinstart(constants.BBS04_CODE), 0)
 
     # Adds one member
     def test_addMember(self):

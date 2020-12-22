@@ -46,6 +46,8 @@ class TestGroupOps(unittest.TestCase):
         self.assertNotEqual(self.grpkey, ffi.NULL)
         self.assertNotEqual(self.isskey, ffi.NULL)
         self.assertNotEqual(self.opnkey, ffi.NULL)
+        self.assertEqual(groupsig.get_joinseq(constants.KLAP20_CODE), 3)
+        self.assertEqual(groupsig.get_joinstart(constants.KLAP20_CODE), 0)   
 
     # Adds one member
     def test_addMember(self):
