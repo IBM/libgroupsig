@@ -127,7 +127,7 @@ describe('BBS04 Group operations', function() {
 	assert.notEqual(memkey, null);
     });
 
-    it('a VALID signature is accepted.', function() {
+    it('a VALID string signature is accepted.', function() {
 	let bbs04 = setupFull();
 	let memkey = addMember(bbs04.mgrkey, bbs04.grpkey, bbs04.gml);
 	let sig = jsgroupsig.sign("Hello, World!", memkey, bbs04.grpkey);
@@ -135,13 +135,35 @@ describe('BBS04 Group operations', function() {
 	assert.equal(b, true);
     });
 
-    it('a WRONG signature is rejected.', function() {
+    it('a WRONG string signature is rejected.', function() {
 	let bbs04 = setupFull();
 	let memkey = addMember(bbs04.mgrkey, bbs04.grpkey, bbs04.gml);
 	let sig = jsgroupsig.sign("Hello, World!", memkey, bbs04.grpkey);
 	let b = jsgroupsig.verify(sig, "Hello, World2!", bbs04.grpkey);
 	assert.equal(b, false);
     });
+
+    it('a VALID bytes signature is accepted.', function() {
+	let bbs04 = setupFull();
+	let memkey = addMember(bbs04.mgrkey, bbs04.grpkey, bbs04.gml);
+	let array = new Uint8Array(10);
+	for (let i = 0; i < 10; ++i) array[i] = i;
+	let sig = jsgroupsig.sign(array.buffer, memkey, bbs04.grpkey);
+	let b = jsgroupsig.verify(sig, array.buffer, bbs04.grpkey);
+	assert.equal(b, true);
+    });
+
+    it('a WRONG bytes signature is rejected.', function() {
+	let bbs04 = setupFull();
+	let memkey = addMember(bbs04.mgrkey, bbs04.grpkey, bbs04.gml);
+	let array = new Uint8Array(10);
+	for (let i = 0; i < 10; ++i) array[i] = i;
+	let sig = jsgroupsig.sign(array.buffer, memkey, bbs04.grpkey);
+	let array2 = new Uint8Array(10);
+	for (let i = 0; i < 10; ++i) array2[i] = i+1;	
+	let b = jsgroupsig.verify(sig, array2.buffer, bbs04.grpkey);
+	assert.equal(b, false);
+    });    
 
     it('correctly opens a signature.', function() {
 	let bbs04 = setupFull();

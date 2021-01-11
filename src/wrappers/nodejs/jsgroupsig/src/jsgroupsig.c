@@ -698,10 +698,13 @@ napi_value gs_sign
   groupsig_key_t *memkey, *grpkey;
   message_t *msg;
   char *str;
+  byte_t *bytes;
   napi_value js_sig, args[5];
+  napi_valuetype type;  
   napi_status status; 
   uint32_t seed;
-  size_t argc;
+  size_t argc, bytes_length;
+  bool isArrayBuff;  
 
   argc = 4;
   sig = NULL; js_sig = NULL; str = NULL;
@@ -714,8 +717,30 @@ napi_value gs_sign
   }
 
   /* Get message */
-  NAPI_GET_STRING_UTF8(env, args[0], str);
-  msg = message_from_string(str);
+
+  /* Check type. It can be a string or an array of bytes */
+  status = napi_typeof(env, args[0], &type);
+  assert(status == napi_ok);
+  if (type == napi_string) {
+    NAPI_GET_STRING_UTF8(env, args[0], str);
+    msg = message_from_string(str);
+  } else if (type == napi_object) {
+    isArrayBuff = 0;    
+    status = napi_is_arraybuffer(env, args[0], &isArrayBuff);
+    assert(status == napi_ok);
+    if (isArrayBuff != true)
+      napi_throw_error(env, "EINVAL", "Expected an ArrayBuffer");
+    bytes = NULL;
+    bytes_length = 0;
+    napi_get_arraybuffer_info(env, args[0], (void **) &bytes, &bytes_length);
+    assert(status == napi_ok);
+    msg = message_from_bytes(bytes, bytes_length);
+    
+  } else {
+    napi_throw_error(env, "EINVAL", "Wrong message format.");
+    goto gs_sign_end;
+  }
+  
   if (!msg) {
     napi_throw_error(env, NULL, "Error importing message.");
     goto gs_sign_end;
@@ -745,12 +770,10 @@ napi_value gs_sign
   }
 
   /* Run groupsig_sign */
-
   if (groupsig_sign(sig, msg, memkey, grpkey, seed) == IERROR) {
     napi_throw_error(env, NULL, "Internal error.");
     goto gs_sign_end;    
   }
-
   status = napi_create_external(env, sig, NULL, NULL, &js_sig);
   if (status != napi_ok) goto gs_sign_end;
 
@@ -771,13 +794,15 @@ napi_value gs_verify
   
   napi_status status;
   napi_value args[3], nb;
+  napi_valuetype type;  
   groupsig_signature_t *sig;
   groupsig_key_t *grpkey;
   char *str;
   message_t *msg;
-  size_t argc, result, length;
+  byte_t *bytes;
+  size_t argc, result, length, bytes_length;
   uint8_t ok;
-  bool b;
+  bool b, isArrayBuff;
 
   str = NULL; argc = 3;
   status = napi_get_cb_info(env, info, &argc, args, NULL, NULL);
@@ -795,17 +820,30 @@ napi_value gs_verify
   }
 
   /* Get message */
-  status = napi_get_value_string_utf8(env, args[1], NULL, 0, &length);
-  if(!(str = (char *) malloc(sizeof(char)*(length+1)))) {
-    napi_throw_error(env, NULL, "Internal error");
-    return NULL;    
+
+  /* Check type. It can be a string or an array of bytes */
+  status = napi_typeof(env, args[1], &type);
+  assert(status == napi_ok);
+  if (type == napi_string) {
+    NAPI_GET_STRING_UTF8(env, args[1], str);
+    msg = message_from_string(str);      
+  } else if (type == napi_object) {
+    isArrayBuff = 0;    
+    status = napi_is_arraybuffer(env, args[1], &isArrayBuff);
+    assert(status == napi_ok);
+    if (isArrayBuff != true)
+      napi_throw_error(env, "EINVAL", "Expected an ArrayBuffer");
+    bytes = NULL;
+    bytes_length = 0;
+    napi_get_arraybuffer_info(env, args[1], (void **) &bytes, &bytes_length);
+    assert(status == napi_ok);
+    msg = message_from_bytes(bytes, bytes_length);
+    
+  } else {
+    napi_throw_error(env, "EINVAL", "Wrong message format.");
+    return NULL;
   }
   
-  memset(str, 0, length+1);
-  status = napi_get_value_string_utf8(env, args[1], str, length+1, &result);
-  if (status != napi_ok) { free(str); str = NULL; return NULL; }
-
-  msg = message_from_string(str);
   if (!msg) {
     napi_throw_error(env, NULL, "Error importing message.");
     free(str); str = NULL;
@@ -1300,27 +1338,22 @@ napi_value gs_get_code_from_str
  ) {
   
   napi_status status;
-  napi_value args[2], ncode;
+  napi_value args[1], ncode;
   char *str;
   uint8_t code;
   size_t argc;
 
-  argc = 2;
+  argc = 1;
   status = napi_get_cb_info(env, info, &argc, args, NULL, NULL);
   assert(status == napi_ok);
 
-  if (argc != 2) {
+  if (argc != 1) {
     napi_throw_type_error(env, NULL, "Wrong number of arguments");
     return NULL;
   }
 
-  if (napi_get_value_external(env, args[0], (void **) &code) != napi_ok) { 
-    napi_throw_type_error(env, "EINVAL", "Expected external");	       
-    return NULL;
-  }
-
   /* Get the name */
-  NAPI_GET_STRING_UTF8(env, args[1], str);
+  NAPI_GET_STRING_UTF8(env, args[0], str);
     
   /* Get the code */
   if (groupsig_get_code_from_str(&code, str) == IERROR)  {
@@ -4030,9 +4063,10 @@ napi_value gs_identity_cmp
  ) {
 
   napi_status status;
-  napi_value args[2];
+  napi_value args[2], neq;
   identity_t *id1, *id2;
   size_t argc;
+  uint8_t eq;
 
   argc = 2;
   status = napi_get_cb_info(env, info, &argc, args, NULL, NULL);
@@ -4052,13 +4086,19 @@ napi_value gs_identity_cmp
     napi_throw_type_error(env, "EINVAL", "Expected external");	       
     return NULL;
   }
-  
-  if (identity_cmp(id1, id2) == IERROR) {
-    napi_throw_type_error(env, NULL, "Internal error.");
+
+  errno = 0;
+  eq = identity_cmp(id1, id2);
+  if (errno) {
+    napi_throw_type_error(env, NULL, "Identity comparison error.");	       
     return NULL;
   }
 
-  return NULL;  
+  /* Convert the code to NAPI format */
+  status = napi_create_int32(env, (int32_t) eq, &neq);
+  assert(status == napi_ok);
+
+  return neq;
   
 }
 

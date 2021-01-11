@@ -129,7 +129,7 @@ describe('PS16 Group operations', function() {
 	assert.notEqual(memkey, null);
     });
 
-    it('a VALID signature is accepted.', function() {
+    it('a VALID string signature is accepted.', function() {
 	let ps16 = setupFull();
 	let memkey = addMember(ps16.mgrkey, ps16.grpkey, ps16.gml);
 	let sig = jsgroupsig.sign("Hello, World!", memkey, ps16.grpkey);
@@ -137,7 +137,7 @@ describe('PS16 Group operations', function() {
 	assert.equal(b, true);
     });
 
-    it('a WRONG signature is rejected.', function() {
+    it('a WRONG string signature is rejected.', function() {
 	let ps16 = setupFull();
 	let memkey = addMember(ps16.mgrkey, ps16.grpkey, ps16.gml);
 	let sig = jsgroupsig.sign("Hello, World!", memkey, ps16.grpkey);
