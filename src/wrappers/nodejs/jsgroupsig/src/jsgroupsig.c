@@ -245,7 +245,7 @@ napi_value gs_init
   status = napi_get_cb_info(env, info, &argc, args, NULL, NULL);
   assert(status == napi_ok);
 
-  if (argc != 2) {
+  if (argc < 1 || argc > 2) {
     napi_throw_type_error(env, NULL, "Wrong number of arguments");
     return NULL;
   }
@@ -258,8 +258,13 @@ napi_value gs_init
     return NULL;
   }
 
-  NAPI_GET_ARG_UINT32(env, args[1], seed);
-    
+  if (argc > 1) {
+    NAPI_GET_ARG_UINT32(env, args[1], seed);
+  } else {
+    seed = UINT32_MAX;
+  }
+
+  
   /* Run groupsig_init */
   if (groupsig_init((uint8_t) code, (unsigned int) seed) == IERROR) {
     napi_throw_error(env, NULL, "Error initializing groupsig.");

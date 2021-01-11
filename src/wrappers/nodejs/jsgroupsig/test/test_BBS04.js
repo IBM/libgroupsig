@@ -9,7 +9,7 @@ function setupFull() {
        In the real world, the first call to setup should be done by the issuer,
        the second by the converter. See the repository documentation for more
        info. */
-    jsgroupsig.init(jsgroupsig.BBS04, 0);
+    jsgroupsig.init(jsgroupsig.BBS04);
     let bbs04 = jsgroupsig.get_groupsig_from_code(jsgroupsig.BBS04);
     let grpkey = jsgroupsig.grp_key_init(jsgroupsig.BBS04);
     let mgrkey = jsgroupsig.mgr_key_init(jsgroupsig.BBS04);
