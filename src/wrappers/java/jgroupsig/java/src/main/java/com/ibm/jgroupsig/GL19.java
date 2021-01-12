@@ -33,11 +33,6 @@ public class GL19 implements GS {
     public long ptr = 0;
 
     /**
-     * The pointer to the internal JNI GS configuration.
-     */
-    public long cfgPtr = 0;    
-
-    /**
      * The group key for this GS instance.
      */
     private GrpKey grpKey = null;
@@ -74,7 +69,7 @@ public class GL19 implements GS {
     {
 	this.code = GS.GL19_CODE;
 	this.ptr = groupsig_gsGetFromCode(this.code);
-	this.cfgPtr = groupsig_gsInit(this.code, 0);
+	groupsig_gsInit(this.code, 0);
     	this.mgrKey = new MgrKey[2];	
     }
 
@@ -103,7 +98,7 @@ public class GL19 implements GS {
 	throws IllegalArgumentException,
 	       Exception
     {
-	return groupsig_gsClear(this.code, this.cfgPtr);
+	return groupsig_gsClear(this.code);
     }
 
     /**
@@ -137,7 +132,7 @@ public class GL19 implements GS {
      * @return True or False.
      */    
     public boolean hasGml() {
-	return groupsig_gsHasGml(this.code, this.cfgPtr);
+	return groupsig_gsHasGml(this.code);
     }
 
     /**
@@ -166,8 +161,7 @@ public class GL19 implements GS {
     	groupsig_gsSetup(this.code,
 			 this.grpKey.getObject(),
 			 this.mgrKey[0].getObject(),
-			 0,
-			 this.cfgPtr);
+			 0);
 	this.issKey = this.mgrKey[0];
 	return;
     }
@@ -202,8 +196,7 @@ public class GL19 implements GS {
 	    groupsig_gsSetup(this.code,
 			     this.grpKey.getObject(),
 			     this.mgrKey[1].getObject(),
-			     0,
-			     this.cfgPtr);
+			     0);
 	    this.cnvKey = this.mgrKey[1];
 	}
 
@@ -502,11 +495,20 @@ public class GL19 implements GS {
 	
     }
 
-    public Identity open(Signature sig)
+    public IndexProof open(Signature sig)
 	throws IllegalArgumentException,
 	       Exception {
 	throw new Exception("Functionality not supported in GL19.");
     }
+
+    public boolean openVerify(IndexProof indexProof,
+			      Signature sig)
+	throws UnsupportedEncodingException,
+	       IllegalArgumentException,
+	       Exception	       
+    {
+	throw new Exception("Functionality not supported in GL19.");		
+    }      
 
     /**
      * For schemes supporting blinded conversion, encrypts the
@@ -776,16 +778,6 @@ public class GL19 implements GS {
     }
 
     /**
-     * Returns the internal native pointer to the current GL19 instance config.
-     *
-     * @return The pointer to the current GL19 instance config.
-     */         
-    @Override
-    public long getConfig() {
-    	return this.cfgPtr;
-    }
-
-    /**
      * Returns the internal native pointer to the current GL19 instance.
      *
      * @return The pointer to the current GL19 instance.
@@ -802,17 +794,14 @@ public class GL19 implements GS {
     private static native int groupsig_gsGetCodeFromStr(String str);
     private static native long groupsig_gsGetFromStr(String str);
     private static native long groupsig_gsGetFromCode(int code);
-    private static native long groupsig_gsInit(int code,
-    					       int seed);
-    private static native int groupsig_gsClear(int code,
-    					       long cfgPtr);
-    private static native boolean groupsig_gsHasGml(int code,
-    						    long cfg);
+    private static native int groupsig_gsInit(int code,
+					      int seed);
+    private static native int groupsig_gsClear(int code);
+    private static native boolean groupsig_gsHasGml(int code);
     private static native int groupsig_gsSetup(int code,
     					       long grpKeyPtr,
     					       long mgrKeyPtr,
-    					       long gmlPtr,
-    					       long cfgPtr);
+    					       long gmlPtr);
     private static native int groupsig_gsGetJoinSeq(int code);
     private static native int groupsig_gsGetJoinStart(int code);
     private static native long groupsig_gsJoinMem(long memKeyPtr,
@@ -834,13 +823,15 @@ public class GL19 implements GS {
     						    byte[] msg,
     						    int msgLen,
     						    long grpKeyPtr);
-    private static native int groupsig_gsOpen(long idPtr,
-					      long proofPtr,
-					      long crlPtr,
-					      long sigPtr,
-					      long grpKeyPtr,
-					      long mgrKeyPtr,
-					      long gmlPtr);    
+    private static native long groupsig_gsOpen(long proofPtr,
+					       long crlPtr,
+					       long sigPtr,
+					       long grpKeyPtr,
+					       long mgrKeyPtr,
+					       long gmlPtr);
+    private static native boolean groupsig_gsOpenVerify(long proofPtr,
+							long sigPtr,
+							long grpKeyPtr);        
     private static native int groupsig_gsBlind(long bSigPtr,
     					       long bldKeyPtr,
     					       long grpKeyPtr,

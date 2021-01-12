@@ -55,7 +55,11 @@ extern "C" {
  */
 static const groupsig_description_t gl19_description = {
   GROUPSIG_GL19_CODE, /**< GL19's scheme code. */
-  GROUPSIG_GL19_NAME /**< GL19's scheme name. */
+  GROUPSIG_GL19_NAME, /**< GL19's scheme name. */
+  0, /**< GL19 does not have a GML. */
+  0, /**< GL19 does not have a CRL. */
+  1, /**< GL19 uses PBC. */
+  0 /**< GL19 does not have verifiable openings. */  
 };
 
 /* Metadata for the join protocol */
@@ -67,64 +71,32 @@ static const groupsig_description_t gl19_description = {
 /* Number of exchanged messages */
 #define GL19_JOIN_SEQ 3
 
-/*
- * @def GL19_CONFIG_SET_DEFAULTS
- * @brief Sets the configuration structure to the default values for
- *  GL19.
- */
-#define GL19_CONFIG_SET_DEFAULTS(cfg) \
-  ((groupsig_config_t *) cfg)->scheme = GROUPSIG_GL19_CODE;	\
-  ((groupsig_config_t *) cfg)->has_gml = 0;			\
-  ((groupsig_config_t *) cfg)->has_crl = 0;			\
-  ((groupsig_config_t *) cfg)->has_pbc = 1;
+/* Member certs in GL19 will have a maximum lifetime of 2 weeks (60*60*24*14 
+   seconds). This is because no revocation is possible. Configure at will. 
+   A GL19_CRED_LIFETIME of 0 means the credentials do not expire. */
+#define GL19_CRED_LIFETIME 1209600
 
 /** 
- * @fn groupsig_config_t* gl19_config_init(void)
- * @brief Allocates memory for a GL19 config structure.
- * 
- * @return A pointer to the allocated structure or NULL if error.
- */
-groupsig_config_t* gl19_config_init(void);
-
-/** 
- * @fn int gl19_config_free(groupsig_config_t *cfg)
- * @brief Frees the memory of a GL19 config structure.
- * 
- * @param cfg The structure to free.
+ * @fn int gl19_init()
+ * @brief Initializes the internal variables needed by GL19. In this case,
+ *  it only sets up the pairing module.
  *
- * @return A pointer to the allocated structure or NULL if error.
- */
-int gl19_config_free(groupsig_config_t *cfg);
+ * @return IOK or IERROR.
+ */  
+int gl19_init();
 
 /** 
- * @fn int gl19_sysenv_update(void *data)
- * @brief Sets the GL19 internal environment data, i.e., the PBC params and pairings.
+ * @fn int gl19_clear()
+ * @brief Frees the memory initialized by gl19_init.
  *
- * @param data A gl19_sysenv_t structure containing the PBC params and pairings.
- * 
  * @return IOK or IERROR.
- */
-int gl19_sysenv_update(void *data);
+ */   
+int gl19_clear();  
 
 /** 
- * @fn void* gl19_sysenv_get(void)
- * @brief Returns the GL19 specific environment data.
- * 
- * @return A pointer to the GL19 specific environment data or NULL if error.
- */
-void* gl19_sysenv_get(void);
-
-/** 
- * @fn int gl19_sysenv_free(void)
- * @brief Frees the GL19 internal environment.
- * 
- * @return IOK or IERROR.
- */
-int gl19_sysenv_free(void);
-
-/** 
- * @fn int gl19_setup(groupsig_key_t *grpkey, groupsig_key_t *mgrkey, 
- *                     gml_t *gml, groupsig_config_t *config)
+ * @fn int gl19_setup(groupsig_key_t *grpkey, 
+ *                    groupsig_key_t *mgrkey, 
+ *                    gml_t *gml)
  * @brief The setup function for the GL19 scheme. Used to generate group public
  *  key and the managers keys.
  * 
@@ -150,11 +122,12 @@ int gl19_sysenv_free(void);
  *  be set to the Issuer's private key. In the second call, it will be set to 
  *  the converter's private key..
  * @param[in] gml Ignored.
- * @param[in] config Ignored.
  * 
  * @return IOK or IERROR.
  */
-int gl19_setup(groupsig_key_t *grpkey, groupsig_key_t *mgrkey, gml_t *gml, groupsig_config_t *config);
+int gl19_setup(groupsig_key_t *grpkey,
+	       groupsig_key_t *mgrkey,
+	       gml_t *gml);
 
 /**
  * @fn int gl19_get_joinseq(uint8_t *seq)
@@ -194,14 +167,19 @@ int gl19_get_joinstart(uint8_t *start);
  * 
  * @return IOK or IERROR.
  */
-int gl19_join_mem(message_t **mout, groupsig_key_t *memkey,
-		  int seq, message_t *min, groupsig_key_t *grpkey);
+int gl19_join_mem(message_t **mout,
+		  groupsig_key_t *memkey,
+		  int seq,
+		  message_t *min,
+		  groupsig_key_t *grpkey);
 
 /** 
- * @fn int gl19_join_mgr(message_t **mout, gml_t *gml,
- *                            groupsig_key_t *mgrkey,
- *                            int seq, message_t *min, 
- *			      groupsig_key_t *grpkey)
+ * @fn int gl19_join_mgr(message_t **mout, 
+ *                       gml_t *gml,
+ *                       groupsig_key_t *mgrkey,
+ *                       int seq, 
+ *                       message_t *min, 
+ *			 groupsig_key_t *grpkey)
  * @brief Executes the manager-side join of the join procedure.
  *
  * @param[in,out] mout Message to be produced by the current step of the join/
@@ -218,13 +196,19 @@ int gl19_join_mem(message_t **mout, groupsig_key_t *memkey,
  * 
  * @return IOK or IERROR.
  */
-int gl19_join_mgr(message_t **mout, gml_t *gml,
+int gl19_join_mgr(message_t **mout,
+		  gml_t *gml,
 		  groupsig_key_t *mgrkey,
-		  int seq, message_t *min, groupsig_key_t *grpkey);
+		  int seq,
+		  message_t *min,
+		  groupsig_key_t *grpkey);
 
 /** 
- * @fn int gl19_sign(groupsig_signature_t *sig, message_t *msg, groupsig_key_t *memkey, 
- *	              groupsig_key_t *grpkey, unsigned int seed)
+ * @fn int gl19_sign(groupsig_signature_t *sig, 
+ *                   message_t *msg, 
+ *                   groupsig_key_t *memkey, 
+ *	             groupsig_key_t *grpkey, 
+ *                   unsigned int seed)
  * @brief Issues GL19 group signatures.
  *
  * Using the specified member and group keys, issues a signature for the specified
@@ -241,12 +225,17 @@ int gl19_join_mgr(message_t **mout, gml_t *gml,
  * 
  * @return IOK or IERROR.
  */
-int gl19_sign(groupsig_signature_t *sig, message_t *msg, groupsig_key_t *memkey, 
-	       groupsig_key_t *grpkey, unsigned int seed);
+int gl19_sign(groupsig_signature_t *sig,
+	      message_t *msg,
+	      groupsig_key_t *memkey, 
+	      groupsig_key_t *grpkey,
+	      unsigned int seed);
 
 /** 
- * @fn int gl19_verify(uint8_t *ok, groupsig_signature_t *sig, message_t *msg, 
- *		        groupsig_key_t *grpkey);
+ * @fn int gl19_verify(uint8_t *ok, 
+ *                     groupsig_signature_t *sig, 
+ *                     message_t *msg, 
+ *		       groupsig_key_t *grpkey);
  * @brief Verifies a GL19 group signature.
  *
  * @param[in,out] ok Will be set to 1 if the verification succeeds, to 0 if
@@ -257,12 +246,16 @@ int gl19_sign(groupsig_signature_t *sig, message_t *msg, groupsig_key_t *memkey,
  * 
  * @return IOK or IERROR.
  */
-int gl19_verify(uint8_t *ok, groupsig_signature_t *sig, message_t *msg, 
-		 groupsig_key_t *grpkey);
+int gl19_verify(uint8_t *ok,
+		groupsig_signature_t *sig,
+		message_t *msg, 
+		groupsig_key_t *grpkey);
 
 /** 
- * @fn int gl19_blind(groupsig_blindsig_t *bsig, groupsig_key_t *bldkey, 
- *                    groupsig_key_t *grpkey, message_t *msg, 
+ * @fn int gl19_blind(groupsig_blindsig_t *bsig, 
+ *                    groupsig_key_t *bldkey, 
+ *                    groupsig_key_t *grpkey, 
+ *                    message_t *msg, 
  *                    groupsig_signature_t *sig)
  * @brief Blinding of group signatures.
  *
@@ -275,16 +268,21 @@ int gl19_verify(uint8_t *ok, groupsig_signature_t *sig, message_t *msg,
  * 
  * @return IOK or IERROR.
  */
-int gl19_blind(groupsig_blindsig_t *bsig, groupsig_key_t **bldkey,
-	       groupsig_key_t *grpkey, groupsig_signature_t *sig,
+int gl19_blind(groupsig_blindsig_t *bsig,
+	       groupsig_key_t **bldkey,
+	       groupsig_key_t *grpkey,
+	       groupsig_signature_t *sig,
 	       message_t *msg);
 
 
 /** 
  * @fn int gl19_convert(groupsig_blindsig_t **csig,
- *                      groupsig_blindsig_t **bsig, uint32_t n_bsigs,
- *	                groupsig_key_t *grpkey, groupsig_key_t *mgrkey,
- *                      groupsig_key_t *bldkey, message_t *msg)
+ *                      groupsig_blindsig_t **bsig, 
+ *                      uint32_t n_bsigs,
+ *	                groupsig_key_t *grpkey, 
+ *                      groupsig_key_t *mgrkey,
+ *                      groupsig_key_t *bldkey, 
+ *                      message_t *msg)
  * @brief Converts blinded group signatures.
  *
  * @param[in,out] csig Array to store the converted signatures.
@@ -299,14 +297,19 @@ int gl19_blind(groupsig_blindsig_t *bsig, groupsig_key_t **bldkey,
  * @return IOK or IERROR.
  */
 int gl19_convert(groupsig_blindsig_t **csig,
-		 groupsig_blindsig_t **bsig, uint32_t n_bsigs,
-		 groupsig_key_t *grpkey, groupsig_key_t *mgrkey,
-		 groupsig_key_t *bldkey, message_t *msg);
+		 groupsig_blindsig_t **bsig,
+		 uint32_t n_bsigs,
+		 groupsig_key_t *grpkey,
+		 groupsig_key_t *mgrkey,
+		 groupsig_key_t *bldkey,
+		 message_t *msg);
 
 /**
- * @fn int gl19_unblind(identity_t *nym, groupsig_signature_t *sig,
+ * @fn int gl19_unblind(identity_t *nym, 
+ *                      groupsig_signature_t *sig,
  *                      groupsig_blindsig_t *bsig,
- *                      groupsig_key_t *grpkey, groupsig_key_t *bldkey,
+ *                      groupsig_key_t *grpkey, 
+ *                      groupsig_key_t *bldkey,
  *                      message_t *msg)
  * @brief Unblinds the nym in a GL19 group signature.
  *
@@ -320,9 +323,11 @@ int gl19_convert(groupsig_blindsig_t **csig,
  * 
  * @return IOK or IERROR.
  */
-int gl19_unblind(identity_t *nym, groupsig_signature_t *sig,
+int gl19_unblind(identity_t *nym,
+		 groupsig_signature_t *sig,
 		 groupsig_blindsig_t *bsig,
-		 groupsig_key_t *grpkey, groupsig_key_t *bldkey,
+		 groupsig_key_t *grpkey,
+		 groupsig_key_t *bldkey,
 		 message_t *msg);
 
 /**
@@ -330,36 +335,34 @@ int gl19_unblind(identity_t *nym, groupsig_signature_t *sig,
  * @brief The set of functions to manage GL19 groups.
  */
 static const groupsig_t gl19_groupsig_bundle = {
-  &gl19_description, /**< Contains the GL19 scheme description. */
-  &gl19_config_init, /**< Initializes a GL19 config structure. */
-  &gl19_config_free, /**< Frees a GL19 config structure. */
-  &gl19_sysenv_update, /**< Updates GL19's environment data, if any. */
-  &gl19_sysenv_get, /**< Gets GL19's environment data, if any. */
-  &gl19_sysenv_free, /**< Frees GL19's environment data, if any. */
-  &gl19_setup, /**< Sets up GL19 groups. */
-  &gl19_get_joinseq, /**< Returns the number of messages in the join 
+ desc: &gl19_description, /**< Contains the GL19 scheme description. */
+ init: &gl19_init, /**< Initializes the variables needed by GL19. */
+ clear: &gl19_clear, /**< Frees the varaibles needed by GL19. */  
+ setup: &gl19_setup, /**< Sets up GL19 groups. */
+ get_joinseq: &gl19_get_joinseq, /**< Returns the number of messages in the join 
 			protocol. */
-  &gl19_get_joinstart, /**< Returns who begins the join protocol. */
-  &gl19_join_mem, /**< Executes member-side joins. */
-  &gl19_join_mgr, /**< Executes manager-side joins. */
-  &gl19_sign, /**< Issues GL19 signatures. */
-  &gl19_verify, /**< Verifies GL19 signatures. */
-  NULL, // &gl19_open, /**< Opens GL19 signatures. */
-  NULL, // &gl19_open_verify_f, /**< GL19 does not create proofs of opening. */
-  NULL, // &gl19_reveal, /**< Reveals the tracing trapdoor from GL19 signatures. */
-  NULL, // &gl19_trace, /**< Traces the issuer of a signature. */ 
-  NULL, // &gl19_claim, /**< Claims, in ZK, "ownership" of a signature. */
-  NULL, // &gl19_claim_verify, /**< Verifies claims. */
-  NULL, // &gl19_prove_equality, /**< Issues "same issuer" ZK proofs for several signatures. */
-  NULL, // &gl19_prove_equality_verify, /**< Verifies "same issuer" ZK proofs. */
-  &gl19_blind, /**< Blinds group signatures. */
-  &gl19_convert, /**< Converts blinded group signatures. */
-  &gl19_unblind, /**< Unblinds converted group signatures. */
-  NULL, // &identify, /**< Determines whether a signature has been issued by a member. */
-  NULL, // &link, 
-  NULL, // &link_verify
-  NULL, // &seqlink, 
-  NULL, // &seqlink_verify
+ get_joinstart: &gl19_get_joinstart, /**< Returns who begins the join protocol. */
+ join_mem: &gl19_join_mem, /**< Executes member-side joins. */
+ join_mgr: &gl19_join_mgr, /**< Executes manager-side joins. */
+ sign: &gl19_sign, /**< Issues GL19 signatures. */
+ verify: &gl19_verify, /**< Verifies GL19 signatures. */
+ verify_batch: NULL, 
+ open: NULL, // &gl19_open, /**< Opens GL19 signatures. */
+ open_verify: NULL, // &gl19_open_verify_f, /**< GL19 does not create proofs of opening. */
+ reveal: NULL, // &gl19_reveal, /**< Reveals the tracing trapdoor from GL19 signatures. */
+ trace: NULL, // &gl19_trace, /**< Traces the issuer of a signature. */ 
+ claim: NULL, // &gl19_claim, /**< Claims, in ZK, "ownership" of a signature. */
+ claim_verify: NULL, // &gl19_claim_verify, /**< Verifies claims. */
+ prove_equality: NULL, // &gl19_prove_equality, /**< Issues "same issuer" ZK proofs for several signatures. */
+ prove_equality_verify: NULL, // &gl19_prove_equality_verify, /**< Verifies "same issuer" ZK proofs. */
+ blind: &gl19_blind, /**< Blinds group signatures. */
+ convert: &gl19_convert, /**< Converts blinded group signatures. */
+ unblind: &gl19_unblind, /**< Unblinds converted group signatures. */
+ identify: NULL, // &identify, /**< Determines whether a signature has been issued by a member. */
+ link: NULL, // &link, 
+ verify_link: NULL, // &link_verify
+ seqlink: NULL, // &seqlink, 
+ verify_seqlink: NULL, // &seqlink_verify
 };
 
 #ifdef __cplusplus

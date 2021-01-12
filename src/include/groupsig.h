@@ -52,78 +52,37 @@ extern "C" {
 		     corresponding unique codes are defined in the therein
 		     included files. */
     char name[10]; /**< The scheme's name. */
-  } groupsig_description_t;
-
-  /**
-   * @struct groupsig_config_t
-   * @brief Stores the basic information necessary to "instantiate" a group
-   *  signature scheme (e.g. security parameters, limitations, etc.)
-   * 
-   *  All schemes must initialize these variables upon setup, depending on their 
-   *  needs.
-   */
-  typedef struct {
-    uint8_t scheme; /**< The group signature scheme's code. */
     uint8_t has_gml; /**< Whether the scheme requires a GML (1) or not (0). */
     uint8_t has_crl; /**< Whether the scheme requires a CRL (1) or not (0). */
     uint8_t has_pbc; /**< Whether the scheme requires PBC (1) or not (0). */
-    /* void *config; /\**< An opaque pointer to the scheme's specific configuration. *\/ */
-  } groupsig_config_t;
-
-  /** 
-   * @typedef groupsig_config_t* (*config_init_f)(void);
-   * @brief Functions for initializing config structures.
-   *
-   * @return An allocated config structure or NULL if error.
-   */
-  typedef groupsig_config_t* (*config_init_f)(void);
-
-  /** 
-   * @typedef int (*config_free_f)(groupsig_config_t *cfg);
-   * @brief Functions for freeing config structures.
-   *
-   * @param cfg The config structure to free.
-   *
-   * @return IOK or IERROR.
-   */
-  typedef int (*config_free_f)(groupsig_config_t *cfg);
-
-  /** 
-   * @typedef int (*sysenv_update_f)(void *data);
-   * @brief Sets the environment of the specific scheme to the received data.
-   *
-   *  Sets the <i>data</i> field of the global sysenv structure. This function is
-   *  useful for setting information that saves computation and/or communication
-   *  costs, but is specific to each scheme.
-   *
-   * @return IOK or IERROR.
-   */
-  typedef int (*sysenv_update_f)(void * data);
-
-  /** 
-   * @typedef (void *) (*sysenv_get_f)(void);
-   * @brief Returns the current environment data.
-   *
-   * @return A pointer to the current environment data or NULL if error.
-   */
-  typedef void* (*sysenv_get_f)(void);
+    uint8_t has_open_proof; /**< Whether the scheme supports verifiable openings. */    
+  } groupsig_description_t;
 
   /**
-   * @typedef int (*sysenv_free_f)(void);
-   * @brief Frees the scheme specific environment information.
+   * @typedef int (*init_f)(void);
+   * @brief Initializes internal data structures used by the schemes.
    *
    * @return IOK or IERROR.
    */
-  typedef int (*sysenv_free_f)(void);
+  typedef int (*init_f)(void);
+  
+  /**
+   * @typedef int (*clear_f)(void);
+   * @brief Clears the internal data structures initialized by init_f functions.
+   *
+   * @return IOK or IERROR.
+   */
+  typedef int (*clear_f)(void);  
 
   /**
-   * @typedef int (*setup_f)(groupsig_key_t *grpkey, groupsig_key_t *mgrkey, gml_t *gml, 
-   *		       groupsig_config_t *config)
+   * @typedef int (*setup_f)(groupsig_key_t *grpkey, 
+   *                         groupsig_key_t *mgrkey, 
+   *                         gml_t *gml)
    * @brief Type for setup functions.
    *
-   * All schemes' setup functions must follow this scheme. By using the specified
-   * configuration information, functions following this prototype will create
-   * a specific scheme instance, setting the group and manager keys, and the GML.
+   * All schemes' setup functions must follow this scheme. Functions following 
+   * this prototype will create a specific scheme instance, setting the group 
+   * and manager keys, and the GML.
    *
    * @param[in,out] grpkey An initialized group key, will be updated with the
    *  generated group key.
@@ -131,12 +90,11 @@ extern "C" {
    *  generated manager key.
    * @param[in,out] gml An initialized GML, will be updated with the generated
    *  GML.
-   * @param[in] config The scheme's specific configuration information.
-   *
    * @return IOK or IERROR.
    */
-  typedef int (*setup_f)(groupsig_key_t *grpkey, groupsig_key_t *mgrkey, gml_t *gml, 
-			 groupsig_config_t *config);
+  typedef int (*setup_f)(groupsig_key_t *grpkey,
+			 groupsig_key_t *mgrkey,
+			 gml_t *gml);
 
   /**
    * @typedef int (*get_joinseq_f)(uint8_t *seq)
@@ -181,8 +139,11 @@ extern "C" {
    * 
    * @return IOK or IERROR.
    */
-  typedef int (*join_mem_f)(message_t **mout, groupsig_key_t *memkey,
-			    int seq, message_t *min, groupsig_key_t *grpkey);
+  typedef int (*join_mem_f)(message_t **mout,
+			    groupsig_key_t *memkey,
+			    int seq,
+			    message_t *min,
+			    groupsig_key_t *grpkey);
 
   /** 
    * @typedef int (*join_mgr_f)(message_t **mout, gml_t *gml,
@@ -235,8 +196,11 @@ extern "C" {
    * 
    * @return IOK or IERROR.
    */
-  typedef int (*sign_f)(groupsig_signature_t *sig, message_t *msg, groupsig_key_t *memkey, 
-			groupsig_key_t *grpkey, unsigned int seed);
+  typedef int (*sign_f)(groupsig_signature_t *sig,
+			message_t *msg,
+			groupsig_key_t *memkey, 
+			groupsig_key_t *grpkey,
+			unsigned int seed);
 
   /** 
    * @typedef int (*verify_f)(uint8_t *ok, groupsig_signature_t *sig, message_t *msg, 
@@ -250,9 +214,34 @@ extern "C" {
    * 
    * @return IOK or IERROR.
    */
-  typedef int (*verify_f)(uint8_t *ok, groupsig_signature_t *sig, message_t *msg, 
+  typedef int (*verify_f)(uint8_t *ok,
+			  groupsig_signature_t *sig,
+			  message_t *msg, 
 			  groupsig_key_t *grpkey);
 
+  /** 
+   * @typedef int (*verify_batch_f)(uint8_t *ok, 
+   *                                groupsig_signature_t **sig, 
+   *                                message_t **msg, 
+   *                                uint32_t n,
+   *                                groupsig_key_t *grpkey)
+   * @brief Type of functions for verifying batches of signatures.
+   *
+   * @param[in,out] ok Will be set to 1 if all the signatures are correct.
+   *  To 0 otherwise.
+   * @param[in] sigs The signatures to verify.
+   * @param[in] msgs The messages related to the signatures.
+   * @param[in] n The size of the sigs and msgs arrays.
+   * @param[in] grpkey The group key.
+   * 
+   * @return IOK or IERROR.
+   */    
+  typedef int (*verify_batch_f)(uint8_t *ok,
+				groupsig_signature_t **sigs,
+				message_t **msgs,
+				uint32_t n,
+				groupsig_key_t *grpkey);
+    
   /** 
    * @typedef int (*reveal_f)(trapdoor_t *trap, crl_t *crl, gml_t *gml, uint64_t index)
    * @brief Type of functions for revealing the tracing trapdoor of group members.7
@@ -273,16 +262,19 @@ extern "C" {
    * @todo Using <i>index</i>es to refer to specific members may not be general
    *  enough (e.g. for dynamic acccumulator based schemes).
    */
-  typedef int (*reveal_f)(trapdoor_t *trap, crl_t *crl, gml_t *gml, uint64_t index);
+  typedef int (*reveal_f)(trapdoor_t *trap,
+			  crl_t *crl,
+			  gml_t *gml,
+			  uint64_t index);
 
   /** 
-   * @typedef int (*open_f)(identity_t *id, groupsig_proof_t *proof, crl_t *crl, 
+   * @typedef int (*open_f)(uint64_t *id, groupsig_proof_t *proof, crl_t *crl, 
    *                        groupsig_signature_t *sig, groupsig_key_t *grpkey, 
    *		          groupsig_key_t *mgrkey, gml_t *gml)
    * @brief Type of functions for opening group signatures, revealing the identity
    *  of the issuer of the given signature.
    *
-   * @param[in,out] id Will be set to the identity of the member who issued the
+   * @param[in,out] index Will be set to the index of the member who issued the
    *  signature.
    * @param[in,out] proof If opening proofs are produced, this parameter will be set
    *  to a proof of correctness of the opening.
@@ -296,26 +288,32 @@ extern "C" {
    * @return IOK if it was possible to open the signature. IFAIL if the open
    *  trapdoor was not found, IERROR otherwise.
    */
-  typedef int (*open_f)(identity_t *id, groupsig_proof_t *proof, crl_t *crl, 
-			groupsig_signature_t *sig, groupsig_key_t *grpkey, 
-			groupsig_key_t *mgrkey, gml_t *gml);
+  typedef int (*open_f)(uint64_t *index,
+			groupsig_proof_t *proof,
+			crl_t *crl, 
+			groupsig_signature_t *sig,
+			groupsig_key_t *grpkey, 
+			groupsig_key_t *mgrkey,
+			gml_t *gml);
 
   /** 
-   * @typedef typedef int (*open_verify_f)(uint8_t *ok, identity_t *id,
-   *                       groupsig_proof_t *proof, 
-   *                       groupsig_signature_t *sig, groupsig_key_t *grpkey)
+   * @typedef typedef int (*open_verify_f)(uint8_t *ok, 
+   *                                       groupsig_proof_t *proof, 
+   *                                       groupsig_signature_t *sig, 
+   *                                       groupsig_key_t *grpkey)
    * 
    * @param[in,out] ok Will be set to 1 if the proof is correct, to 0 otherwise.
    *  signature.
-   * @param[in] id The identity produced by the open algorithm.
    * @param[in] proof The proof of opening.
    * @param[in] sig The group signature associated to the proof.
    * @param[in] grpkey The group key.
    * 
    * @return IOK or IERROR
    */
-  typedef int (*open_verify_f)(uint8_t *ok, identity_t *id, groupsig_proof_t *proof, 
-			       groupsig_signature_t *sig, groupsig_key_t *grpkey);
+  typedef int (*open_verify_f)(uint8_t *ok,
+			       groupsig_proof_t *proof, 
+			       groupsig_signature_t *sig,
+			       groupsig_key_t *grpkey);
 
   /** 
    * @typedef int (*trace_f)(uint8_t *ok, groupsig_signature_t *sig, groupsig_key_t *grpkey, 
@@ -340,8 +338,12 @@ extern "C" {
    * 
    * @return IOK or IERROR.
    */
-  typedef int (*trace_f)(uint8_t *ok, groupsig_signature_t *sig, groupsig_key_t *grpkey, 
-			 crl_t *crl, groupsig_key_t *mgrkey, gml_t *gml);
+  typedef int (*trace_f)(uint8_t *ok,
+			 groupsig_signature_t *sig,
+			 groupsig_key_t *grpkey, 
+			 crl_t *crl,
+			 groupsig_key_t *mgrkey,
+			 gml_t *gml);
 
   /** 
    * @typedef int (*claim_f)(groupsig_proof_t *proof, groupsig_key_t *memkey, 
@@ -357,8 +359,10 @@ extern "C" {
    * 
    * @return IOK or IERROR.
    */
-  typedef int (*claim_f)(groupsig_proof_t *proof, groupsig_key_t *memkey, 
-			 groupsig_key_t *grpkey, groupsig_signature_t *sig);
+  typedef int (*claim_f)(groupsig_proof_t *proof,
+			 groupsig_key_t *memkey, 
+			 groupsig_key_t *grpkey,
+			 groupsig_signature_t *sig);
 
   /** 
    * @typedef int (*claim_verify_f)(uint8_t *ok, groupsig_proof_t *proof, 
@@ -372,8 +376,10 @@ extern "C" {
    * 
    * @return IOK or IERROR.
    */
-  typedef int (*claim_verify_f)(uint8_t *ok, groupsig_proof_t *proof, 
-				groupsig_signature_t *sig, groupsig_key_t *grpkey);
+  typedef int (*claim_verify_f)(uint8_t *ok,
+				groupsig_proof_t *proof, 
+				groupsig_signature_t *sig,
+				groupsig_key_t *grpkey);
 
   /** 
    * @typedef int (*prove_equality_f)(groupsig_proof_t *proof, groupsig_key_t *memkey, 
@@ -391,8 +397,10 @@ extern "C" {
    * 
    * @return IOK or IERROR.
    */
-  typedef int (*prove_equality_f)(groupsig_proof_t *proof, groupsig_key_t *memkey, 
-				  groupsig_key_t *grpkey, groupsig_signature_t **sigs, 
+  typedef int (*prove_equality_f)(groupsig_proof_t *proof,
+				  groupsig_key_t *memkey, 
+				  groupsig_key_t *grpkey,
+				  groupsig_signature_t **sigs, 
 				  uint16_t n_sigs);
 
   /** 
@@ -409,9 +417,11 @@ extern "C" {
    * 
    * @return IOK or IERROR.
    */
-  typedef int (*prove_equality_verify_f)(uint8_t *ok, groupsig_proof_t *proof, 
+  typedef int (*prove_equality_verify_f)(uint8_t *ok,
+					 groupsig_proof_t *proof, 
 					 groupsig_key_t *grpkey,
-					 groupsig_signature_t **sigs, uint16_t n_sigs);
+					 groupsig_signature_t **sigs,
+					 uint16_t n_sigs);
 
   /** 
    * @typedef int (*blind_f)(groupsig_blindsig_t *bsig, groupsig_key_t **bldkey, 
@@ -429,8 +439,10 @@ extern "C" {
    * 
    * @return IOK or IERROR.
    */
-  typedef int (*blind_f)(groupsig_blindsig_t *bsig, groupsig_key_t **bldkey,
-			 groupsig_key_t *grpkey, groupsig_signature_t *sig,
+  typedef int (*blind_f)(groupsig_blindsig_t *bsig,
+			 groupsig_key_t **bldkey,
+			 groupsig_key_t *grpkey,
+			 groupsig_signature_t *sig,
 			 message_t *msg);
 
   /** 
@@ -453,9 +465,12 @@ extern "C" {
    * @return IOK or IERROR.
    */
   typedef int (*convert_f)(groupsig_blindsig_t **csig,
-			   groupsig_blindsig_t **bsig, uint32_t n_bsigs,
-			   groupsig_key_t *grpkey, groupsig_key_t *mgrkey,
-			   groupsig_key_t *bldkey, message_t *msg);
+			   groupsig_blindsig_t **bsig,
+			   uint32_t n_bsigs,
+			   groupsig_key_t *grpkey,
+			   groupsig_key_t *mgrkey,
+			   groupsig_key_t *bldkey,
+			   message_t *msg);
 
   /** 
    * @typedef int (*unblind_f)(identity_t *nym, groupsig_signature_t *sig,
@@ -477,7 +492,8 @@ extern "C" {
   typedef int (*unblind_f)(identity_t *nym,
 			   groupsig_signature_t *sig,
 			   groupsig_blindsig_t *bsig,
-			   groupsig_key_t *grpkey, groupsig_key_t *bldkey,
+			   groupsig_key_t *grpkey,
+			   groupsig_key_t *bldkey,
 			   message_t *msg);
   
   /** 
@@ -635,12 +651,8 @@ extern "C" {
    */
   typedef struct {
     const groupsig_description_t *desc; /**< The scheme's description. */
-    config_init_f config_init; /**< The config struct initialization function.  */
-    config_free_f config_free; /**< The config struct free function.  */
-    sysenv_update_f sysenv_update; /**< Function for initializing scheme specific
-				      environment information. */
-    sysenv_get_f sysenv_get; /**< Gets the current environment specific data. */
-    sysenv_free_f sysenv_free; /**< Frees the scheme specific environment info. */
+    init_f init; /**< Initializes internal data structures used by the schemes. */
+    clear_f clear; /**< Frees the internal data structures used by the schemes. */
     setup_f setup; /**< The schemes setup function. */
     get_joinseq_f get_joinseq; /**< Returns the number of messages in the 
 				  join protocol. */
@@ -649,6 +661,7 @@ extern "C" {
     join_mgr_f join_mgr; /**< The manager side join function. */
     sign_f sign; /**< Signs messages. */
     verify_f verify; /**< Verifies group signatures. */
+    verify_batch_f verify_batch; /**< Verifies batches of group signatures. */
     open_f open; /**< Opens group signatures. */
     open_verify_f open_verify; /**< Verifies proofs of opening. */
     reveal_f reveal; /**< Reveals tracing trapdoors. */
@@ -726,77 +739,26 @@ extern "C" {
    * 
    * @return IOK or IERROR.
    */
-  groupsig_config_t* groupsig_init(uint8_t code, unsigned int seed);
+  int groupsig_init(uint8_t code, unsigned int seed);
 
 
   /** 
-   * @fn groupsig_clear(uint8_t code, groupsig_config_t *cfg)
+   * @fn groupsig_clear(uint8_t code)
    * @brief Frees all the memory allocated for a group signature scheme environment.
    * 
    * @param[in] code The groupsig code.
-   * @param[in] cfg A groupsig config structure to free.
    *
    * @return IOK or IERROR.
    */
-  int groupsig_clear(uint8_t code, groupsig_config_t *cfg);
-
-  /* /\**  */
-  /*  * @fn groupsig_config_t* groupsig_config_init(uint8_t code) */
-  /*  * @brief Allocates memory for a config structure of the given scheme. */
-  /*  * */
-  /*  * @param[in] code The scheme's code. */
-  /*  *  */
-  /*  * @return A pointer to the initialized structure or NULL if error. */
-  /*  *\/ */
-  /* groupsig_config_t* groupsig_config_init(uint8_t code); */
-
-  /* /\**  */
-  /*  * @fn int groupsig_config_free(groupsig_config_t *cfg) */
-  /*  * @brief Frees memory for a config structure of the given scheme. */
-  /*  * */
-  /*  * @param[in] cfg The groupsig config structure to free. */
-  /*  *  */
-  /*  * @return IOK or IERROR. */
-  /*  *\/ */
-  /* int groupsig_config_free(groupsig_config_t *cfg); */
-
-  /** 
-   * @fn int groupsig_sysenv_update(uint8_t code, void *data)
-   * @brief Updates the scheme's specific environment data. 
-   *
-   * @param[in] code The scheme's code.
-   * @param[in] data The scheme's specific environment data.
-   * 
-   * @return IOK or IERROR.
-   */
-  int groupsig_sysenv_update(uint8_t code, void *data);
-
-  /** 
-   * @fn void* groupsig_sysenv_get()
-   * @brief Returns the current sysenv data.
-   * 
-   * @return A pointer to the current sysenv data or NULL if error.
-   */
-  void* groupsig_sysenv_get(uint8_t code);
-
-  /** 
-   * @fn int groupsig_sysenv_free(uint8_t code)
-   * @brief  Frees the specific scheme environment data.
-   *
-   * @param[in] code The scheme's code.
-   * 
-   * @return IOK or IERROR.
-   */
-  int groupsig_sysenv_free(uint8_t code);
+  int groupsig_clear(uint8_t code);
 
   /** 
    * @fn int groupsig_setup(uint8_t code, groupsig_key_t *grpkey, groupsig_key_t *mgrkey, 
-   *		          gml_t *gml, groupsig_config_t *config)
+   *		          gml_t *gml)
    * @brief Executes the setup function of the scheme with the specified code. 
    *
    *  Executes the setup function of the scheme with the specified code, filling
-   *  the group key, manager key and GML. Uses the input parameters contained in the
-   *  specified config structure.
+   *  the group key, manager key and GML.
    *
    * @param[in] code The group signature scheme code.
    * @param[in,out] grpkey An initialized group key. Will be set to the final group
@@ -804,14 +766,14 @@ extern "C" {
    * @param[in,out] mgrkey An initialized group manager key. Will be set to the final
    *  group manager key.
    * @param[in,out] gml An initialized GML. Will be set to the created GML.
-   * @param[in] config The configuration strcture with the input parameters of the
-   *  scheme. For details, see the main header file of the given scheme.
    * 
    * @return IOK or IERROR.
    * 
    */
-  int groupsig_setup(uint8_t code, groupsig_key_t *grpkey, groupsig_key_t *mgrkey, 
-		     gml_t *gml, groupsig_config_t *config);
+  int groupsig_setup(uint8_t code,
+		     groupsig_key_t *grpkey,
+		     groupsig_key_t *mgrkey, 
+		     gml_t *gml);
 
   /**
    * @fn int groupsig_get_joinseq(uint8_t code, uint8_t *seq)
@@ -858,8 +820,11 @@ extern "C" {
    * @return IOK or IERROR.
    *
    */
-  int groupsig_join_mem(message_t **mout, groupsig_key_t *memkey,
-			int seq, message_t *min, groupsig_key_t *grpkey);
+  int groupsig_join_mem(message_t **mout,
+			groupsig_key_t *memkey,
+			int seq,
+			message_t *min,
+			groupsig_key_t *grpkey);
 
   /** 
    * @fn int groupsig_join_mgr(message_t *mout, gml_t *gml, groupsig_key_t *mgrkey,
@@ -883,8 +848,12 @@ extern "C" {
    * @return IOK or IERROR.
    *
    */
-  int groupsig_join_mgr(message_t **mout, gml_t *gml, groupsig_key_t *mgrkey,
-			int seq, message_t *min, groupsig_key_t *grpkey);
+  int groupsig_join_mgr(message_t **mout,
+			gml_t *gml,
+			groupsig_key_t *mgrkey,
+			int seq,
+			message_t *min,
+			groupsig_key_t *grpkey);
 
   /** 
    * @fn int groupsig_sign(groupsig_signature_t *sig, message_t *msg, 
@@ -905,9 +874,11 @@ extern "C" {
    * @return IOK or IERROR.
    *
    */
-  int groupsig_sign(groupsig_signature_t *sig, message_t *msg, 
+  int groupsig_sign(groupsig_signature_t *sig,
+		    message_t *msg, 
 		    groupsig_key_t *memkey, 
-		    groupsig_key_t *grpkey, unsigned int seed);
+		    groupsig_key_t *grpkey,
+		    unsigned int seed);
 
   /** 
    * @fn int groupsig_verify(uint8_t *ok, groupsig_signature_t *sig, 
@@ -920,11 +891,35 @@ extern "C" {
    * @param[in] grpkey The group key.
    * 
    * @return IOK or IERROR.
-   *
    */
-  int groupsig_verify(uint8_t *ok, groupsig_signature_t *sig, message_t *msg, 
+  int groupsig_verify(uint8_t *ok,
+		      groupsig_signature_t *sig,
+		      message_t *msg, 
 		      groupsig_key_t *grpkey);
 
+  /** 
+   * @fn int groupsig_verify_batch(uint8_t *ok, 
+   *                               groupsig_signature_t **sig, 
+   *                               message_t **msg, 
+   *                               uint32_t n,
+   *                               groupsig_key_t *grpkey)
+   * @brief Verifies batches of signatures.
+   *
+   * @param[in,out] ok Will be set to 1 if all the signatures are correct.
+   *  To 0 otherwise.
+   * @param[in] sigs The signatures to verify.
+   * @param[in] msgs The messages related to the signatures.
+   * @param[in] n The size of the sigs and msgs arrays.
+   * @param[in] grpkey The group key.
+   * 
+   * @return IOK or IERROR.
+   */  
+  int groupsig_verify_batch(uint8_t *ok,
+			    groupsig_signature_t **sigs,
+			    message_t **msgs,
+			    uint32_t n,
+			    groupsig_key_t *grpkey);
+    
   /** 
    * @fn int groupsig_reveal(trapdoor_t *trap, crl_t *crl, gml_t *gml, uint64_t index)
    * @brief Reveals the tracing trapdoor of the member in position <i>index</i> within 
@@ -944,10 +939,13 @@ extern "C" {
    * @return IOK or IERROR.
    *
    */
-  int groupsig_reveal(trapdoor_t *trap, crl_t *crl, gml_t *gml, uint64_t index);
+  int groupsig_reveal(trapdoor_t *trap,
+		      crl_t *crl,
+		      gml_t *gml,
+		      uint64_t index);
 
   /** 
-   * @fn int groupsig_open(identity_t *id, groupsig_proof_t *proof, 
+   * @fn int groupsig_open(uint64_t *index, groupsig_proof_t *proof, 
    *                       crl_t *crl, groupsig_signature_t *sig,  
    *		           groupsig_key_t *grpkey, groupsig_key_t *mgrkey, 
    *                       gml_t *gml)
@@ -956,8 +954,8 @@ extern "C" {
    * Returns the real identity of the issuer of the given signature. Currently, the
    * identity is the index within the given GML.
    *
-   * @param[in,out] id An initialized identity. Will be set to the identity of the
-   *  issuer of the given signature.
+   * @param[in,out] index Will be set to the index of the user who created
+   *  the given signature.
    * @param[in,out] proof An initialized proof of opening, or NULL if the called 
    *  scheme does not produce proofs of opening.
    * @param[in] crl If not NULL, a new entry will be added to the CRL, associated
@@ -970,9 +968,13 @@ extern "C" {
    * @return IOK if it was possible to open the signature. IFAIL if the open
    *  trapdoor was not found, IERROR otherwise.
    */
-  int groupsig_open(identity_t *id, groupsig_proof_t *proof, crl_t *crl, 
-		    groupsig_signature_t *sig, groupsig_key_t *grpkey, 
-		    groupsig_key_t *mgrkey, gml_t *gml);
+  int groupsig_open(uint64_t *index,
+		    groupsig_proof_t *proof,
+		    crl_t *crl, 
+		    groupsig_signature_t *sig,
+		    groupsig_key_t *grpkey, 
+		    groupsig_key_t *mgrkey,
+		    gml_t *gml);
 
   /** 
    * @fn int open_verify(uint8_t *ok, groupsig_proof_t *proof, 
@@ -980,14 +982,13 @@ extern "C" {
    * 
    * @param[in,out] ok Will be set to 1 if the proof is correct, to 0 otherwise.
    *  signature.
-   * @param[in] id The identity produced by the open algorithm.
    * @param[in] proof The proof of opening.
    * @param[in] sig The group signature associated to the proof.
    * @param[in] grpkey The group key.
    * 
    * @return IOK or IERROR
    */
-  int groupsig_open_verify(uint8_t *ok, identity_t *id,
+  int groupsig_open_verify(uint8_t *ok, 
 			   groupsig_proof_t *proof, 
 			   groupsig_signature_t *sig, 
 			   groupsig_key_t *grpkey);
@@ -1012,8 +1013,12 @@ extern "C" {
    * 
    * @return IOK or IERROR.
    */
-  int groupsig_trace(uint8_t *ok, groupsig_signature_t *sig, groupsig_key_t *grpkey,
-		     crl_t *crl, groupsig_key_t *mgrkey, gml_t *gml);
+  int groupsig_trace(uint8_t *ok,
+		     groupsig_signature_t *sig,
+		     groupsig_key_t *grpkey,
+		     crl_t *crl,
+		     groupsig_key_t *mgrkey,
+		     gml_t *gml);
 
   /** 
    * @fn int groupsig_claim(groupsig_proof_t *proof, groupsig_key_t *memkey, 
@@ -1031,12 +1036,16 @@ extern "C" {
    * @return IOK or IERROR.
    *
    */
-  int groupsig_claim(groupsig_proof_t *proof, groupsig_key_t *memkey, groupsig_key_t *grpkey, 
+  int groupsig_claim(groupsig_proof_t *proof,
+		     groupsig_key_t *memkey,
+		     groupsig_key_t *grpkey, 
 		     groupsig_signature_t *sig);
 
   /** 
-   * @fn int groupsig_claim_verify(uint8_t *ok, groupsig_proof_t *proof, groupsig_signature_t *sig, 
-   *			  groupsig_key_t *grpkey)
+   * @fn int groupsig_claim_verify(uint8_t *ok, 
+   *                               groupsig_proof_t *proof, 
+   *                               groupsig_signature_t *sig, 
+   *			           groupsig_key_t *grpkey)
    * @brief Verifies a "claim" proof.
    *
    * @param[in,out] ok Will be set to 1 if the proof is correct, to 0 otherwise.
@@ -1047,7 +1056,9 @@ extern "C" {
    * @return IOK or IERROR.
    *
    */
-  int groupsig_claim_verify(uint8_t *ok, groupsig_proof_t *proof, groupsig_signature_t *sig, 
+  int groupsig_claim_verify(uint8_t *ok,
+			    groupsig_proof_t *proof,
+			    groupsig_signature_t *sig, 
 			    groupsig_key_t *grpkey);
 
   /** 
@@ -1068,8 +1079,11 @@ extern "C" {
    * 
    * @return IOK or IERROR.
    */
-  int groupsig_prove_equality(groupsig_proof_t *proof, groupsig_key_t *memkey, 
-			      groupsig_key_t *grpkey, groupsig_signature_t **sigs, uint16_t n_sigs);
+  int groupsig_prove_equality(groupsig_proof_t *proof,
+			      groupsig_key_t *memkey, 
+			      groupsig_key_t *grpkey,
+			      groupsig_signature_t **sigs,
+			      uint16_t n_sigs);
 
   /** 
    * @fn int groupsig_prove_equality_verify(uint8_t *ok, groupsig_proof_t *proof, 
@@ -1085,8 +1099,10 @@ extern "C" {
    * 
    * @return IOK or IERROR.
    */
-  int groupsig_prove_equality_verify(uint8_t *ok, groupsig_proof_t *proof, 
-				     groupsig_key_t *grpkey, groupsig_signature_t **sigs, 
+  int groupsig_prove_equality_verify(uint8_t *ok,
+				     groupsig_proof_t *proof, 
+				     groupsig_key_t *grpkey,
+				     groupsig_signature_t **sigs, 
 				     uint16_t n_sigs);
 
   /** 
@@ -1105,8 +1121,10 @@ extern "C" {
    * 
    * @return IOK or IERROR.
    */
-  int groupsig_blind(groupsig_blindsig_t *bsig, groupsig_key_t **bldkey,
-		     groupsig_key_t *grpkey, groupsig_signature_t *sig,
+  int groupsig_blind(groupsig_blindsig_t *bsig,
+		     groupsig_key_t **bldkey,
+		     groupsig_key_t *grpkey,
+		     groupsig_signature_t *sig,
 		     message_t *msg);
 
   /** 
@@ -1128,9 +1146,12 @@ extern "C" {
    * @return IOK or IERROR.
    */
   int groupsig_convert(groupsig_blindsig_t **csig,
-		       groupsig_blindsig_t **bsig, uint32_t n_bsigs,
-		       groupsig_key_t *grpkey, groupsig_key_t *mgrkey,
-		       groupsig_key_t *bldkey, message_t *msg);
+		       groupsig_blindsig_t **bsig,
+		       uint32_t n_bsigs,
+		       groupsig_key_t *grpkey,
+		       groupsig_key_t *mgrkey,
+		       groupsig_key_t *bldkey,
+		       message_t *msg);
 
   /**
    * @fn int groupsig_unblind(identity_t *nym, groupsig_signature_t *sig,
@@ -1149,9 +1170,11 @@ extern "C" {
    * 
    * @return IOK or IERROR.
    */
-  int groupsig_unblind(identity_t *nym, groupsig_signature_t *sig,
+  int groupsig_unblind(identity_t *nym,
+		       groupsig_signature_t *sig,
 		       groupsig_blindsig_t *bsig,
-		       groupsig_key_t *grpkey, groupsig_key_t *bldkey,
+		       groupsig_key_t *grpkey,
+		       groupsig_key_t *bldkey,
 		       message_t *msg);
 
 

@@ -3,6 +3,14 @@ from . import constants
 import base64
 
 def signature_export(sig):
+    """
+    Exports the given group signature a Base64 string.
+
+    Parameters:
+        sig: The native group signature data structure.
+    Returns:
+        A Base64 string. On error, an Exception is thrown.
+    """
 
     bsig = ffi.new("byte_t **")
     bsig[0] = ffi.NULL
@@ -15,6 +23,15 @@ def signature_export(sig):
     return b64sig    
 
 def signature_import(code, b64sig):
+    """
+    Imports a group signature from a Base64 string.
+
+    Parameters:
+        code: The code corresponding to the group signature scheme.
+        b64sig: The Base64 string.
+    Returns:
+        A group signature. On error, an Exception is thrown.
+    """    
 
     b = base64.b64decode(b64sig)
     sig = lib.groupsig_signature_import(code, b, len(b))
@@ -23,7 +40,15 @@ def signature_import(code, b64sig):
     return sig
 
 def signature_to_string(sig):
-
+    """
+    Returns a human readable string for the given group signature.
+    
+    Parameters:
+        sig: The group signature.
+    Returns:
+        A human readable string. On error, an Exception is thrown.
+    """
+    
     _str = ffi.new("char *")
     _str = lib.groupsig_signature_to_string(sig)
     if _str == ffi.NULL:

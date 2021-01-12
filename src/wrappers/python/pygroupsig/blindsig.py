@@ -3,6 +3,14 @@ from . import constants
 import base64
 
 def blindsig_export(sig):
+    """
+    Exports the given blinded signature to a Base64 string.
+    
+    Parameters:
+        sig: The blinded signature to export.
+    Returns:
+        The produced Base64 string. On error, an Exception is thrown.
+    """
 
     bsig = ffi.new("byte_t **")
     bsig[0] = ffi.NULL
@@ -15,6 +23,14 @@ def blindsig_export(sig):
     return b64sig
 
 def blindsig_import(code, b64sig):
+    """
+    Imports the given blinded signature from a Base64 string.
+    
+    Parameters:
+        sig: The blinded signature to import.
+    Returns:
+        The imported blinded signature. On error, an Exception is thrown.
+    """    
 
     b = base64.b64decode(b64sig)
     sig = lib.groupsig_blindsig_import(code, b, len(b))
@@ -24,7 +40,14 @@ def blindsig_import(code, b64sig):
 
 
 def blindsig_to_string(sig):
-
+    """
+    Returns a human readable string corresponding to the given blinded signature.
+    
+    Parameters:
+        sig: The blinded signature to print.
+    Returns:
+        The produced string. On error, an Exception is thrown.
+    """
     _str = ffi.new("char *")
     _str = lib.groupsig_blindsig_to_string(sig)
     if _str == ffi.NULL:

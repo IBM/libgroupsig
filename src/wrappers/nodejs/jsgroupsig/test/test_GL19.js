@@ -9,7 +9,7 @@ function setupFull() {
        In the real world, the first call to setup should be done by the issuer,
        the second by the converter. See the repository documentation for more
        info. */
-    jsgroupsig.init(jsgroupsig.GL19, 0);
+    jsgroupsig.init(jsgroupsig.GL19);
     let gl19 = jsgroupsig.get_groupsig_from_code(jsgroupsig.GL19);
     let grpkey = jsgroupsig.grp_key_init(jsgroupsig.GL19);
     let isskey = jsgroupsig.mgr_key_init(jsgroupsig.GL19);
@@ -184,6 +184,38 @@ describe('GL19 Identity operations', function() {
 	let nymStr = jsgroupsig.identity_to_string(usig['nym']);
 	expect(nymStr).to.be.a('string');
     });
+
+    it('same identity comparison returns 0.', function() {
+	let gl19 = setupFull();
+	let memkey = addMember(gl19.isskey, gl19.grpkey);
+	let sig = jsgroupsig.sign("Hello, World!", memkey, gl19.grpkey);
+	let bldkey = jsgroupsig.bld_key_random(gl19.grpkey);
+	let bsig = jsgroupsig.blind(bldkey, gl19.grpkey, sig, "Hello, World!");
+	let csigs = jsgroupsig.convert([bsig], gl19.grpkey, gl19.cnvkey, bldkey);
+	let usig = jsgroupsig.unblind(csigs[0], bldkey);
+	let nymStr1 = jsgroupsig.identity_to_string(usig['nym']);
+	let nymStr2 = jsgroupsig.identity_to_string(usig['nym']);
+	let eq = jsgroupsig.identity_cmp(usig['nym'], usig['nym']);	
+	expect(eq).equal(0);
+    });
+
+    it('same identity comparison returns != 0.', function() {
+	let gl19 = setupFull();
+	let memkey1 = addMember(gl19.isskey, gl19.grpkey);
+	let memkey2 = addMember(gl19.isskey, gl19.grpkey);
+	let sig1 = jsgroupsig.sign("Hello, World!", memkey1, gl19.grpkey);
+	let sig2 = jsgroupsig.sign("Hello, World!", memkey2, gl19.grpkey);	
+	let bldkey = jsgroupsig.bld_key_random(gl19.grpkey);
+	let bsig1 = jsgroupsig.blind(bldkey, gl19.grpkey, sig1, "Hello, World!");
+	let bsig2 = jsgroupsig.blind(bldkey, gl19.grpkey, sig2, "Hello, World!");
+	let csigs = jsgroupsig.convert([bsig1, bsig2], gl19.grpkey, gl19.cnvkey, bldkey);
+	let usig1 = jsgroupsig.unblind(csigs[0], bldkey);
+	let usig2 = jsgroupsig.unblind(csigs[1], bldkey);	
+	let nymStr1 = jsgroupsig.identity_to_string(usig1['nym']);
+	let nymStr2 = jsgroupsig.identity_to_string(usig2['nym']);
+	let eq = jsgroupsig.identity_cmp(usig1['nym'], usig2['nym']);	
+	expect(eq).not.equal(0);
+    });    
     
 });
 
@@ -220,7 +252,7 @@ describe('GL19 Group operations', function() {
 	assert.notEqual(memkey, null);
     });
 
-    it('a VALID signature is accepted.', function() {
+    it('a VALID string signature is accepted.', function() {
 	let gl19 = setupFull();
 	let memkey = addMember(gl19.isskey, gl19.grpkey);
 	let sig = jsgroupsig.sign("Hello, World!", memkey, gl19.grpkey);
@@ -228,13 +260,35 @@ describe('GL19 Group operations', function() {
 	assert.equal(b, true);
     });
 
-    it('a WRONG signature is rejected.', function() {
+    it('a WRONG string signature is rejected.', function() {
 	let gl19 = setupFull();
 	let memkey = addMember(gl19.isskey, gl19.grpkey);
 	let sig = jsgroupsig.sign("Hello, World!", memkey, gl19.grpkey);
 	let b = jsgroupsig.verify(sig, "Hello, World2!", gl19.grpkey);
 	assert.equal(b, false);
     });
+
+    it('a VALID bytes signature is accepted.', function() {
+	let gl19 = setupFull();
+	let memkey = addMember(gl19.isskey, gl19.grpkey);
+	let array = new Uint8Array(10);
+	for (let i = 0; i < 10; ++i) array[i] = i;
+	let sig = jsgroupsig.sign(array.buffer, memkey, gl19.grpkey);
+	let b = jsgroupsig.verify(sig, array.buffer, gl19.grpkey);
+	assert.equal(b, true);
+    });
+
+    it('a WRONG bytes signature is rejected.', function() {
+	let gl19 = setupFull();
+	let memkey = addMember(gl19.isskey, gl19.grpkey);
+	let array = new Uint8Array(10);
+	for (let i = 0; i < 10; ++i) array[i] = i;
+	let sig = jsgroupsig.sign(array.buffer, memkey, gl19.grpkey);
+	let array2 = new Uint8Array(10);
+	for (let i = 0; i < 10; ++i) array2[i] = i+1;	
+	let b = jsgroupsig.verify(sig, array2.buffer, gl19.grpkey);
+	assert.equal(b, false);
+    });    
 
     it('correctly links (blind-convert-unblind) two signatures by the same member.',
        function() {

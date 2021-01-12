@@ -72,15 +72,15 @@ int bbs04_grp_key_free(groupsig_key_t *key) {
 
   if(key->key) {
     bbs04_key = key->key;
-    if(bbs04_key->g1) { pbcext_element_G1_clear(bbs04_key->g1); bbs04_key->g1 = NULL; }
-    if(bbs04_key->g2) { pbcext_element_G2_clear(bbs04_key->g2); bbs04_key->g2 = NULL; }
-    if(bbs04_key->h) { pbcext_element_G1_clear(bbs04_key->h); bbs04_key->h = NULL; }
-    if(bbs04_key->u) { pbcext_element_G1_clear(bbs04_key->u); bbs04_key->u = NULL; }
-    if(bbs04_key->v) { pbcext_element_G1_clear(bbs04_key->v); bbs04_key->v = NULL; }
-    if(bbs04_key->w) { pbcext_element_G2_clear(bbs04_key->w); bbs04_key->w = NULL; }
-    if(bbs04_key->hg2) { pbcext_element_GT_clear(bbs04_key->hg2); bbs04_key->hg2 = NULL; }
-    if(bbs04_key->hw) { pbcext_element_GT_clear(bbs04_key->hw); bbs04_key->hw = NULL; }
-    if(bbs04_key->g1g2) { pbcext_element_GT_clear(bbs04_key->g1g2); bbs04_key->g1g2 = NULL; }
+    if(bbs04_key->g1) { pbcext_element_G1_free(bbs04_key->g1); bbs04_key->g1 = NULL; }
+    if(bbs04_key->g2) { pbcext_element_G2_free(bbs04_key->g2); bbs04_key->g2 = NULL; }
+    if(bbs04_key->h) { pbcext_element_G1_free(bbs04_key->h); bbs04_key->h = NULL; }
+    if(bbs04_key->u) { pbcext_element_G1_free(bbs04_key->u); bbs04_key->u = NULL; }
+    if(bbs04_key->v) { pbcext_element_G1_free(bbs04_key->v); bbs04_key->v = NULL; }
+    if(bbs04_key->w) { pbcext_element_G2_free(bbs04_key->w); bbs04_key->w = NULL; }
+    if(bbs04_key->hg2) { pbcext_element_GT_free(bbs04_key->hg2); bbs04_key->hg2 = NULL; }
+    if(bbs04_key->hw) { pbcext_element_GT_free(bbs04_key->hw); bbs04_key->hw = NULL; }
+    if(bbs04_key->g1g2) { pbcext_element_GT_free(bbs04_key->g1g2); bbs04_key->g1g2 = NULL; }
     mem_free(key->key); key->key = NULL;
   }
 
@@ -146,15 +146,15 @@ int bbs04_grp_key_copy(groupsig_key_t *dst, groupsig_key_t *src) {
  bbs04_grp_key_copy_end:
 
   if(rc == IERROR) {
-    if (bbs04_dst->g1) { pbcext_element_G1_clear(bbs04_dst->g1); bbs04_dst->g1 = NULL; }
-    if (bbs04_dst->g2) { pbcext_element_G2_clear(bbs04_dst->g2); bbs04_dst->g2 = NULL; }
-    if (bbs04_dst->h) { pbcext_element_G1_clear(bbs04_dst->h); bbs04_dst->h = NULL; }
-    if (bbs04_dst->u) { pbcext_element_G1_clear(bbs04_dst->u); bbs04_dst->u = NULL; }
-    if (bbs04_dst->v) { pbcext_element_G1_clear(bbs04_dst->v); bbs04_dst->v = NULL; }
-    if (bbs04_dst->w) { pbcext_element_G2_clear(bbs04_dst->w); bbs04_dst->w = NULL; }
-    if (bbs04_dst->hw) { pbcext_element_GT_clear(bbs04_dst->hw); bbs04_dst->hw = NULL; }
-    if (bbs04_dst->hg2) { pbcext_element_GT_clear(bbs04_dst->hg2); bbs04_dst->hg2 = NULL; }
-    if (bbs04_dst->g1g2) { pbcext_element_GT_clear(bbs04_dst->g1g2); bbs04_dst->g1g2 = NULL; }
+    if (bbs04_dst->g1) { pbcext_element_G1_free(bbs04_dst->g1); bbs04_dst->g1 = NULL; }
+    if (bbs04_dst->g2) { pbcext_element_G2_free(bbs04_dst->g2); bbs04_dst->g2 = NULL; }
+    if (bbs04_dst->h) { pbcext_element_G1_free(bbs04_dst->h); bbs04_dst->h = NULL; }
+    if (bbs04_dst->u) { pbcext_element_G1_free(bbs04_dst->u); bbs04_dst->u = NULL; }
+    if (bbs04_dst->v) { pbcext_element_G1_free(bbs04_dst->v); bbs04_dst->v = NULL; }
+    if (bbs04_dst->w) { pbcext_element_G2_free(bbs04_dst->w); bbs04_dst->w = NULL; }
+    if (bbs04_dst->hw) { pbcext_element_GT_free(bbs04_dst->hw); bbs04_dst->hw = NULL; }
+    if (bbs04_dst->hg2) { pbcext_element_GT_free(bbs04_dst->hg2); bbs04_dst->hg2 = NULL; }
+    if (bbs04_dst->g1g2) { pbcext_element_GT_free(bbs04_dst->g1g2); bbs04_dst->g1g2 = NULL; }
   }
   
   return rc;

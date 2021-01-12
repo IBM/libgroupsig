@@ -10,6 +10,7 @@ from pygroupsig import memkey
 from pygroupsig import identity
 from pygroupsig import message
 from pygroupsig import signature
+from pygroupsig import gml
 from pygroupsig import constants
 
 # Tests for group operations
@@ -26,20 +27,20 @@ class TestGroupOps(unittest.TestCase):
         groupsig.init(constants.BBS04_CODE, 0)
         group = groupsig.setup(constants.BBS04_CODE)
         self.code = constants.BBS04_CODE
-        self.config = group['config']
         self.mgrkey = group['mgrkey']
         self.grpkey = group['grpkey']
         self.gml = group['gml']
         self.memkeys = []
         
     def tearDown(self):
-        groupsig.clear(self.code, self.config)
+        groupsig.clear(self.code)
 
     # Creates a group
     def test_groupCreate(self):
         self.assertNotEqual(self.grpkey, ffi.NULL)
         self.assertNotEqual(self.mgrkey, ffi.NULL)
-        self.assertNotEqual(self.config, ffi.NULL)
+        self.assertEqual(groupsig.get_joinseq(constants.BBS04_CODE), 1)
+        self.assertEqual(groupsig.get_joinstart(constants.BBS04_CODE), 0)
 
     # Adds one member
     def test_addMember(self):
@@ -81,9 +82,8 @@ class TestGroupOps(unittest.TestCase):
         self.addMember()
         self.addMember()
         sig = groupsig.sign(b"Hello, World!", self.memkeys[1], self.grpkey)
-        id = groupsig.open(sig, self.mgrkey, self.grpkey, gml = self.gml)
-        idStr = identity.identity_to_string(id)
-        self.assertEqual(idStr, "1")
+        gsopen = groupsig.open(sig, self.mgrkey, self.grpkey, gml = self.gml)
+        self.assertEqual(gsopen["index"], 1)
         
 # Tests for signature operations
 class TestSignatureOps(unittest.TestCase):
@@ -100,7 +100,6 @@ class TestSignatureOps(unittest.TestCase):
         groupsig.init(constants.BBS04_CODE, 0)
         group = groupsig.setup(constants.BBS04_CODE)
         self.code = constants.BBS04_CODE
-        self.config = group['config']
         self.mgrkey = group['mgrkey']
         self.grpkey = group['grpkey']
         self.gml = group['gml']
@@ -109,7 +108,7 @@ class TestSignatureOps(unittest.TestCase):
         self.sig = groupsig.sign("Hello, World!", self.memkeys[0], self.grpkey)
         
     def tearDown(self):
-        groupsig.clear(self.code, self.config)
+        groupsig.clear(self.code)
 
     # Exports and reimports a signature, and it verifies correctly
     def test_sigExportImport(self):
@@ -132,13 +131,12 @@ class TestGrpkeyOps(unittest.TestCase):
         groupsig.init(constants.BBS04_CODE, 0)
         group = groupsig.setup(constants.BBS04_CODE)
         self.code = constants.BBS04_CODE
-        self.config = group['config']
         self.mgrkey = group['mgrkey']
         self.grpkey = group['grpkey']
         self.gml = group['gml']
         
     def tearDown(self):
-        groupsig.clear(self.code, self.config)
+        groupsig.clear(self.code)
 
     # Exports and reimports a group key
     def test_grpkeyExportImport(self):
@@ -157,13 +155,12 @@ class TestManagerkeyOps(unittest.TestCase):
         groupsig.init(constants.BBS04_CODE, 0)
         group = groupsig.setup(constants.BBS04_CODE)
         self.code = constants.BBS04_CODE
-        self.config = group['config']
         self.mgrkey = group['mgrkey']
         self.grpkey = group['grpkey']
         self.gml = group['gml']
         
     def tearDown(self):
-        groupsig.clear(self.code, self.config)
+        groupsig.clear(self.code)
 
     # Exports and reimports an manager key
     def test_mgrkeyExportImport(self):
@@ -189,14 +186,13 @@ class TestMemkeyOps(unittest.TestCase):
         groupsig.init(constants.BBS04_CODE, 0)
         group = groupsig.setup(constants.BBS04_CODE)
         self.code = constants.BBS04_CODE
-        self.config = group['config']
         self.mgrkey = group['mgrkey']
         self.grpkey = group['grpkey']
         self.gml = group['gml']
         self.addMember()
         
     def tearDown(self):
-        groupsig.clear(self.code, self.config)
+        groupsig.clear(self.code)
 
     # Exports and reimports a member key
     def test_memkeyExportImport(self):
@@ -206,6 +202,38 @@ class TestMemkeyOps(unittest.TestCase):
         # method returns ffi.NULL. Maybe implementing a cmp function for
         # mem keys would be good for testing this (and also in general?)
         self.assertIsNot(ffi.NULL, mkey)
+
+# Tests for GML operations
+class TestGmlOps(unittest.TestCase):
+
+    # Non-test functions
+    def addMember(self):
+        msg1 = groupsig.join_mgr(0, self.mgrkey, self.grpkey, gml = self.gml)
+        msg2 = groupsig.join_mem(1, self.grpkey, msgin = msg1)
+        usk = msg2['memkey']
+        self.memkey = usk
+        
+    # Creates a group, adds a member and generates a signature
+    def setUp(self):
+        groupsig.init(constants.BBS04_CODE, 0)
+        group = groupsig.setup(constants.BBS04_CODE)
+        self.code = constants.BBS04_CODE
+        self.mgrkey = group['mgrkey']
+        self.grpkey = group['grpkey']
+        self.gml = group['gml']
+        self.addMember()
+        
+    def tearDown(self):
+        groupsig.clear(self.code)
+
+    # Exports and reimports a member key
+    def test_gmlExportImport(self):
+        gml_str = gml.gml_export(self.gml)
+        _gml = gml.gml_import(self.code, gml_str)
+        # This is quite useless, as import returns an exception if the FFI
+        # method returns ffi.NULL. Maybe implementing a cmp function for
+        # GMLs would be good for testing this (and also in general?)
+        self.assertIsNot(ffi.NULL, _gml)   
                                 
 # Define test suites
 def suiteGroupOps():
@@ -239,6 +267,11 @@ def suiteMemkeyOps():
     suiteMemkeyOps = unittest.TestSuite()    
     suiteMemkeyOps.addTest(WidgetTestCase('test_memkeyExportImport'))
     return suiteMemkeyOps
+
+def suiteGmlOps():
+    suiteGmlOps = unittest.TestSuite()    
+    suiteGmlOps.addTest(WidgetTestCase('test_gmlExportImport'))
+    return suiteGmlOps
         
 if __name__ == '__main__':
     runner = unittest.TextTestRunner()
@@ -247,3 +280,4 @@ if __name__ == '__main__':
     runner.run(suiteGrpkeyOps())
     runner.run(suiteManagerkeyOps())
     runner.run(suiteMemkeyOps())
+    runner.run(suiteGmlOps())

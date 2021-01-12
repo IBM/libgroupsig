@@ -610,12 +610,31 @@ namespace bigz {
     b2 = bigz_init();
     EXPECT_NE(b2, nullptr);
 
-    /* Export to string */
-    str = bigz_get_str(b1);
+    /* Export to hex string */
+    str = bigz_get_str16(b1);
     EXPECT_NE(str, nullptr);
 
     /* Import back */
-    rc = bigz_set_str(b2, str);
+    rc = bigz_set_str16(b2, str);
+    EXPECT_EQ(rc, IOK);
+
+    rc = bigz_cmp(b1, b2);
+    EXPECT_EQ(rc, 0);
+
+    rc = bigz_free(b2);
+    EXPECT_EQ(rc, IOK);
+
+    free(str); str = nullptr;
+
+    /* Export to decimal string */
+    str = bigz_get_str10(b1);
+    EXPECT_NE(str, nullptr);
+
+    b2 = bigz_init();
+    EXPECT_NE(b2, nullptr);    
+
+    /* Import back */
+    rc = bigz_set_str10(b2, str);
     EXPECT_EQ(rc, IOK);
 
     rc = bigz_cmp(b1, b2);
@@ -682,9 +701,6 @@ namespace bigz {
     fd = fopen("test", "r");
     EXPECT_NE(fd, nullptr);
 
-    b2 = bigz_init();
-    EXPECT_NE(b2, nullptr);
-
     b2 = bigz_get_bigz_fd(fd);
     EXPECT_NE(b2, nullptr);
 
@@ -694,9 +710,6 @@ namespace bigz {
     rc = bigz_cmp(b1, b2);
     EXPECT_EQ(rc, 0);
 
-    rc = bigz_free(b2);
-    EXPECT_EQ(rc, IOK);    
-    
     /* Free */
     rc = bigz_free(b1);
     EXPECT_EQ(rc, IOK);

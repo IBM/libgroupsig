@@ -29,24 +29,25 @@
 #include "groupsig/bbs04/mgr_key.h"
 #include "groupsig/bbs04/signature.h"
 #include "groupsig/bbs04/gml.h"
-#include "groupsig/bbs04/identity.h"
-#include "groupsig/bbs04/trapdoor.h"
 
-int bbs04_open(identity_t *id, groupsig_proof_t *proof, 
-	       crl_t *crl, groupsig_signature_t *sig, 
-	       groupsig_key_t *grpkey, groupsig_key_t *mgrkey,
+int bbs04_open(uint64_t *index,
+	       groupsig_proof_t *proof, 
+	       crl_t *crl,
+	       groupsig_signature_t *sig, 
+	       groupsig_key_t *grpkey,
+	       groupsig_key_t *mgrkey,
 	       gml_t *gml) {
 
   pbcext_element_G1_t *A, *aux;
   bbs04_signature_t *bbs04_sig;
   bbs04_grp_key_t *bbs04_grpkey;
   bbs04_mgr_key_t *bbs04_mgrkey;
-  bbs04_gml_entry_t *entry;
+  gml_entry_t *entry;
   uint64_t i;
   uint8_t match;
   int rc;
 
-  if(!id || !sig || sig->scheme != GROUPSIG_BBS04_CODE ||
+  if(!index || !sig || sig->scheme != GROUPSIG_BBS04_CODE ||
      !grpkey || grpkey->scheme != GROUPSIG_BBS04_CODE ||
      !mgrkey || mgrkey->scheme != GROUPSIG_BBS04_CODE ||
      !gml) {
@@ -81,11 +82,10 @@ int bbs04_open(identity_t *id, groupsig_proof_t *proof,
 
     if(!(entry = gml_get(gml, i))) GOTOENDRC(IERROR, bbs04_open);
 
-    if(!pbcext_element_G1_cmp(((bbs04_trapdoor_t *) entry->trapdoor->trap)->open, A)) {
+    if(!pbcext_element_G1_cmp(entry->data, A)) {
 
-      /* Get the identity from the matched entry. */
-      if(bbs04_identity_copy(id, entry->id) == IERROR)
-	GOTOENDRC(IERROR, bbs04_open);
+      /* Get the index from the matched entry. */
+      *index = entry->id;
       match = 1;
       break;
 
@@ -119,8 +119,8 @@ int bbs04_open(identity_t *id, groupsig_proof_t *proof,
 
  bbs04_open_end:
 
-  if(A) { pbcext_element_G1_clear(A); A = NULL; }
-  if(aux) { pbcext_element_G1_clear(aux); aux = NULL; }
+  if(A) { pbcext_element_G1_free(A); A = NULL; }
+  if(aux) { pbcext_element_G1_free(aux); aux = NULL; }
 
   return rc;
   

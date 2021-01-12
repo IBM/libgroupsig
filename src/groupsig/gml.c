@@ -48,7 +48,7 @@ gml_t* gml_init(uint8_t scheme) {
     return NULL;
   }
   
-  return gh->gml_init();  
+  return gh->init();  
 
 }
 
@@ -63,11 +63,11 @@ int gml_free(gml_t *gml) {
     return IERROR;
   }
   
-  return gh->gml_free(gml);  
+  return gh->free(gml);  
 
 }
 
-int gml_insert(gml_t *gml, void *entry) {
+int gml_insert(gml_t *gml, gml_entry_t *entry) {
 
   const gml_handle_t *gh;
 
@@ -83,7 +83,7 @@ int gml_insert(gml_t *gml, void *entry) {
     return IERROR;
   }
 
-  return gh->gml_insert(gml, entry);
+  return gh->insert(gml, entry);
 
 }
 
@@ -103,11 +103,11 @@ int gml_remove(gml_t *gml, uint64_t index) {
     return IERROR;
   }
 
-  return gh->gml_remove(gml, index);
+  return gh->remove(gml, index);
 
 }
 
-void* gml_get(gml_t *gml, uint64_t index) {
+gml_entry_t* gml_get(gml_t *gml, uint64_t index) {
 
   const gml_handle_t *gh;
 
@@ -123,35 +123,15 @@ void* gml_get(gml_t *gml, uint64_t index) {
     return NULL;
   }
 
-  return gh->gml_get(gml, index);
+  return gh->get(gml, index);
     
 }
 
-gml_t* gml_import(uint8_t code, gml_format_t format, void *source) {
+int gml_export(byte_t **bytes, uint32_t *size, gml_t *gml) {
 
   const gml_handle_t *gh;
 
-  if(!source) {
-    LOG_EINVAL(&logger, __FILE__, "gml_import", __LINE__, LOGERROR);
-    return NULL;
-  }
-
-  /* Get the GML handles from the code */
-  if(!(gh = gml_handle_from_code(code))) {
-    LOG_EINVAL_MSG(&logger, __FILE__, "gml_import", __LINE__, 
-		   "Unsupported scheme.", LOGERROR);
-    return NULL;
-  }
-
-  return gh->gml_import(format, source);
-
-}
-
-int gml_export(gml_t *gml, void *dst, gml_format_t format) {
-
-  const gml_handle_t *gh;
-
-  if(!gml || !dst) {
+  if(!bytes || !size || !gml) {
     LOG_EINVAL(&logger, __FILE__, "gml_export", __LINE__, LOGERROR);
     return IERROR;
   }
@@ -163,47 +143,117 @@ int gml_export(gml_t *gml, void *dst, gml_format_t format) {
     return IERROR;
   }
 
-  return gh->gml_export(gml, dst, format);
+  return gh->gexport(bytes, size, gml);
 
 }
 
-int gml_export_new_entry(uint8_t scheme, void *entry, void *dst, 
-			 gml_format_t format) {
+gml_t* gml_import(uint8_t code, byte_t *bytes, uint32_t size) {
 
   const gml_handle_t *gh;
 
-  if(!entry || !dst) {
-    LOG_EINVAL(&logger, __FILE__, "gml_export_new_entry", __LINE__, LOGERROR);
-    return IERROR;
+  if(!bytes || !size) {
+    LOG_EINVAL(&logger, __FILE__, "gml_import", __LINE__, LOGERROR);
+    return NULL;
   }
 
   /* Get the GML handles from the code */
-  if(!(gh = gml_handle_from_code(scheme))) {
-    LOG_EINVAL_MSG(&logger, __FILE__, "gml_export", __LINE__, 
+  if(!(gh = gml_handle_from_code(code))) {
+    LOG_EINVAL_MSG(&logger, __FILE__, "gml_import", __LINE__, 
+		   "Unsupported scheme.", LOGERROR);
+    return NULL;
+  }
+
+  return gh->gimport(bytes, size);
+
+}
+
+gml_entry_t* gml_entry_init(uint8_t code) {
+
+  const gml_handle_t *gh;
+
+  /* Get the GML handles from the code */
+  if(!(gh = gml_handle_from_code(code))) {
+    LOG_EINVAL_MSG(&logger, __FILE__, "gml_import", __LINE__, 
+		   "Unsupported scheme.", LOGERROR);
+    return NULL;
+  }
+
+  return gh->entry_init();
+  
+}
+
+int gml_entry_free(gml_entry_t *entry) {
+
+  const gml_handle_t *gh;  
+
+  /* Get the GML handles from the code */
+  if(!(gh = gml_handle_from_code(entry->scheme))) {
+    LOG_EINVAL_MSG(&logger, __FILE__, "gml_import", __LINE__, 
 		   "Unsupported scheme.", LOGERROR);
     return IERROR;
   }
 
-  return gh->gml_export_new_entry(entry, dst, format);
+  return gh->entry_free(entry);  
 
 }
 
-int gml_compare_entries(int *eq, void *entry1, void *entry2, gml_cmp_entries_f cmp) {
+int gml_entry_get_size(gml_entry_t *entry) {
 
-  if(!eq || !entry1 || !entry2) {
-    LOG_EINVAL(&logger, __FILE__, "gml_compare_entries", __LINE__, LOGERROR);
+  const gml_handle_t *gh;    
+
+  /* Get the GML handles from the code */
+  if(!(gh = gml_handle_from_code(entry->scheme))) {
+    LOG_EINVAL_MSG(&logger, __FILE__, "gml_import", __LINE__, 
+		   "Unsupported scheme.", LOGERROR);
     return IERROR;
   }
 
-  errno = 0;
-  *eq = cmp(entry1, entry2);
-  if(errno) {
-    LOG_ERRORCODE(&logger, __FILE__, "gml_compare_entries (cmp)", __LINE__, 
-		  errno, LOGERROR);
+  return gh->entry_get_size(entry);
+
+}
+
+int gml_entry_export(byte_t **bytes, uint32_t *size, gml_entry_t *entry) {
+
+  const gml_handle_t *gh;    
+
+  /* Get the GML handles from the code */
+  if(!(gh = gml_handle_from_code(entry->scheme))) {
+    LOG_EINVAL_MSG(&logger, __FILE__, "gml_import", __LINE__, 
+		   "Unsupported scheme.", LOGERROR);
     return IERROR;
   }
 
-  return IOK;
+  return gh->entry_export(bytes, size, entry);
+
+}
+
+gml_entry_t* gml_entry_import(uint8_t code, byte_t *bytes, uint32_t size) {
+
+  const gml_handle_t *gh;    
+
+  /* Get the GML handles from the code */
+  if(!(gh = gml_handle_from_code(code))) {
+    LOG_EINVAL_MSG(&logger, __FILE__, "gml_import", __LINE__, 
+		   "Unsupported scheme.", LOGERROR);
+    return NULL;
+  }
+
+  return gh->entry_import(bytes, size);
+  
+}
+
+char* gml_entry_to_string(gml_entry_t *entry) {
+
+  const gml_handle_t *gh;  
+
+  /* Get the GML handles from the code */
+  if(!(gh = gml_handle_from_code(entry->scheme))) {
+    LOG_EINVAL_MSG(&logger, __FILE__, "gml_import", __LINE__, 
+		   "Unsupported scheme.", LOGERROR);
+    return NULL;
+  }
+
+  return gh->entry_to_string(entry);
 
 }
 

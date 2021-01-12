@@ -7,11 +7,11 @@
   <parent>
     <groupId>com.ibm.jgroupsig</groupId>
     <artifactId>jgroupsig</artifactId>
-    <version>0.1.0</version>
+    <version>1.0.0</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
   <groupId>com.ibm.jgroupsig</groupId>
-  <version>0.1.0</version>  
+  <version>1.0.0</version>  
   <artifactId>libjnigroupsig</artifactId>
   <packaging>so</packaging>
 
@@ -88,7 +88,7 @@
                 <artifactItem>
                   <groupId>com.ibm.jgroupsig</groupId>
                   <artifactId>libjnigroupsig</artifactId>
-                  <version>0.1.0</version>
+                  <version>1.0.0</version>
                   <type>so</type>
                   <overWrite>false</overWrite>
                   <outputDirectory>${project.build.directory}/main/resources</outputDirectory>

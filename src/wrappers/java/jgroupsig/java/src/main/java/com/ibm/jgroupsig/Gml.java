@@ -1,5 +1,7 @@
 package com.ibm.jgroupsig;
 
+import java.util.Base64;
+
 /**
  * Class for Group Membership Lists (GMLs) in the groupsig package.
  * 
@@ -38,16 +40,49 @@ public class Gml {
     }
 
     /**
-     * Frees the memory allocated for the current signature instance.
+     * Creates a new instance of gml for the given scheme, importing
+     * the gml data from the given string.
+     *
+     * @param code The code identifying the GS scheme.
+     * @param str A string containing a previously exported gml.
+     * @exception IllegalArgumentException
+     * @exception Exception
+     */    
+    public Gml(int code, String str)
+	throws IllegalArgumentException,
+	       Exception
+    {
+	byte[] b = Base64.getMimeDecoder().decode(str);
+	this.ptr = groupsig_gmlImport(code, b, b.length); 
+	this.code = code;
+    }        
+
+    /**
+     * Exports this instance of a GML (currently, to a base64 string).
+     *
+     * @return A base64-encoded string.
+     * @exception IllegalArgumentException
+     * @exception Exception
+     */     
+    public String export()
+	throws IllegalArgumentException,
+	       Exception
+    {
+	byte[] b = groupsig_gmlExport(this.ptr);
+	return Base64.getMimeEncoder().encodeToString(b);
+    }     
+
+    /**
+     * Frees the memory allocated for the current gml instance.
      */    
     protected void finalize() {
 	groupsig_gmlFree(this.ptr);
     }
 
     /**
-     * Returns the pointer of the internal JNI object for this signature.
+     * Returns the pointer of the internal JNI object for this gml.
      * 
-     * @return A pointer to the internal JNI object for this signature.
+     * @return A pointer to the internal JNI object for this gml.
      */    
     public long getObject() { return ptr; }
 
@@ -62,5 +97,6 @@ public class Gml {
     
     private static native long groupsig_gmlInit(int code);
     private static native int groupsig_gmlFree(long ptr);
-    
+    private static native byte[] groupsig_gmlExport(long ptr);
+    private static native long groupsig_gmlImport(int code, byte[] b, int size);    
 }

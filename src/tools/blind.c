@@ -43,7 +43,6 @@ int main(int argc, char *argv[]) {
 
   int argnum = 1; // Next argument to process
   char *s_proof, *s_grpkey, *s_bldkey, *s_bldkey_pub, *s_bsig;
-  groupsig_config_t *cfg;  
   groupsig_signature_t **sigs;
   groupsig_blindsig_t **bsigs;
   message_t **msgs;
@@ -68,7 +67,7 @@ int main(int argc, char *argv[]) {
   }
   argnum++;
 
-  if(!(cfg = groupsig_init(scheme, 0))) {
+  if(groupsig_init(scheme, 0) == IERROR) {
     return IERROR;
   }
 
@@ -206,7 +205,7 @@ int main(int argc, char *argv[]) {
   mem_free(sigs); sigs = NULL;
   mem_free(bsigs); bsigs = NULL;
 
-  groupsig_clear(scheme, cfg); cfg = NULL;
+  groupsig_clear(scheme);
   if(bldkey) { groupsig_bld_key_free(bldkey); bldkey = NULL; }
   if(grpkey) { groupsig_grp_key_free(grpkey); grpkey = NULL; }
   

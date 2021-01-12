@@ -29,7 +29,6 @@
 /**
  * @struct gl19_signature_t
  * @brief Defines the structure of a GL19 signature.
- * Defineme.
  */
 typedef struct {
   uint8_t scheme; /**< Metainformation: the gs scheme this key belongs to. */
@@ -39,6 +38,13 @@ typedef struct {
   spk_rep_t *pi;
   pbcext_element_G1_t *nym1;
   pbcext_element_G1_t *nym2;
+  pbcext_element_G1_t *ehy1;
+  pbcext_element_G1_t *ehy2;
+  uint64_t expiration; /**< Expiration date. This is metainformation actually 
+			  pertaining to the signer's credential. The verify 
+			  process checks that the signature was produced by a
+			  signer controlling a credential with the corresponding
+			  expiration date. */
 } gl19_signature_t;
 
 /** 
@@ -100,6 +106,7 @@ int gl19_signature_get_size(groupsig_signature_t *sig);
  * 
  *    | GL19_CODE | sizeof(AA) | AA | sizeof(A_) | A_ | sizeof(d) | d | 
  *      sizeof(spk) | spk | sizeof(nym1) | nym1 | sizeof(nym2) | nym2 |
+ *      expiration (uint64_t) |
  *
  * @param[in,out] bytes A pointer to the array of bytes. If <i>*bytes</i> is NULL,
  *  memory is internally allocated.

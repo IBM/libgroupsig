@@ -12,41 +12,22 @@ ffibuilder.cdef("""
 typedef struct {
 uint8_t code; 
 char name[10];
+uint8_t has_gml;
+uint8_t has_crl;
+uint8_t has_pbc;
 } groupsig_description_t;
 """)
 
 ffibuilder.cdef("""
-typedef struct {
-uint8_t scheme;
-uint8_t has_gml;
-uint8_t has_crl;
-uint8_t has_pbc;
-} groupsig_config_t;
+typedef int (*init_f)(void);
 """)
 
 ffibuilder.cdef("""
-typedef groupsig_config_t* (*config_init_f)(void);
+typedef int (*clear_f)(void);  
 """)
 
 ffibuilder.cdef("""
-typedef int (*config_free_f)(groupsig_config_t *cfg);
-""")
-
-ffibuilder.cdef("""
-typedef int (*sysenv_update_f)(void * data);
-""")
-
-ffibuilder.cdef("""
-typedef void* (*sysenv_get_f)(void);
-""")
-
-ffibuilder.cdef("""
-typedef int (*sysenv_free_f)(void);
-""")
-
-ffibuilder.cdef("""
-typedef int (*setup_f)(groupsig_key_t *grpkey, groupsig_key_t *mgrkey, gml_t *gml,
-groupsig_config_t *config);
+typedef int (*setup_f)(groupsig_key_t *grpkey, groupsig_key_t *mgrkey, gml_t *gml);
 """)
 
 ffibuilder.cdef("""
@@ -80,6 +61,14 @@ groupsig_key_t *grpkey);
 """)
 
 ffibuilder.cdef("""
+typedef int (*verify_batch_f)(uint8_t *ok,
+groupsig_signature_t **sigs,
+message_t **msgs,
+uint32_t n,
+groupsig_key_t *grpkey);
+""")
+
+ffibuilder.cdef("""
 typedef int (*reveal_f)(
 trapdoor_t *trap, 
 crl_t *crl, 
@@ -89,7 +78,7 @@ uint64_t index);
 
 ffibuilder.cdef("""
 typedef int (*open_f)(
-identity_t *id, 
+uint64_t *index, 
 groupsig_proof_t *proof, 
 crl_t *crl, 
 groupsig_signature_t *sig, 
@@ -101,7 +90,6 @@ gml_t *gml);
 ffibuilder.cdef("""
 typedef int (*open_verify_f)(
 uint8_t *ok, 
-identity_t *id, 
 groupsig_proof_t *proof, 
 groupsig_signature_t *sig, 
 groupsig_key_t *grpkey);
@@ -228,35 +216,33 @@ uint32_t n);
 """)
 
 ffibuilder.cdef("""
-  typedef struct {
-    const groupsig_description_t *desc; 
-    config_init_f config_init; 
-    config_free_f config_free; 
-    sysenv_update_f sysenv_update; 
-    sysenv_get_f sysenv_get; 
-    sysenv_free_f sysenv_free;
-    setup_f setup; 
-    get_joinseq_f get_joinseq; 
-    get_joinstart_f get_joinstart; 
-    join_mem_f join_mem;
-    join_mgr_f join_mgr; 
-    sign_f sign; 
-    verify_f verify;
-    open_f open;
-    open_verify_f open_verify;
-    reveal_f reveal; 
-    trace_f trace; 
-    claim_f claim; 
-    claim_verify_f claim_verify; 
-    prove_equality_f prove_equality; 
-    prove_equality_verify_f prove_equality_verify; 
-    blind_f blind; 
-    convert_f convert; 
-    unblind_f unblind; 
-    identify_f identify; 
-    link_f link; 
-    verify_link_f verify_link;
-    seqlink_f seqlink; 
-    verify_seqlink_f verify_seqlink;
-  } groupsig_t;
+typedef struct {
+const groupsig_description_t *desc; 
+init_f init; 
+clear_f clear;
+setup_f setup; 
+get_joinseq_f get_joinseq; 
+get_joinstart_f get_joinstart; 
+join_mem_f join_mem;
+join_mgr_f join_mgr; 
+sign_f sign; 
+verify_f verify;
+verify_batch_f verify_batch;
+open_f open;
+open_verify_f open_verify;
+reveal_f reveal; 
+trace_f trace; 
+claim_f claim; 
+claim_verify_f claim_verify; 
+prove_equality_f prove_equality; 
+prove_equality_verify_f prove_equality_verify; 
+blind_f blind; 
+convert_f convert; 
+unblind_f unblind; 
+identify_f identify; 
+link_f link; 
+verify_link_f verify_link;
+seqlink_f seqlink; 
+verify_seqlink_f verify_seqlink;
+} groupsig_t;
 """)

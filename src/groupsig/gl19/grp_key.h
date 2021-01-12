@@ -41,8 +41,12 @@ typedef struct {
   pbcext_element_G1_t *h; /**< Params. Random generator of G1. */
   pbcext_element_G1_t *h1; /**< Params. Random generator of G1. */
   pbcext_element_G1_t *h2; /**< Params. Random generator of G1. */
+  pbcext_element_G1_t *h3; /**< Params. Random generator of G1. 
+			      Used for setting expiration date of
+			      member creds. */
   pbcext_element_G2_t *ipk; /**< Issuer public key. */
   pbcext_element_G1_t *cpk; /**< Converter public key. */
+  pbcext_element_G1_t *epk; /**< Extractor public key. */
 } gl19_grp_key_t;
 
 /**
@@ -105,8 +109,8 @@ int gl19_grp_key_get_size(groupsig_key_t *key);
  *  with format:
  *
  *  | GL19_CODE | KEYTYPE | size_g1 | g1 | size_g2 | g2 |
- *    size_g | g | size_h | h | size_h1 | h1 | size_h2 | h2 | size_ipk | ipk | 
- *    size_cpk | cpk |
+ *    size_g | g | size_h | h | size_h1 | h1 | size_h2 | h2 | size_h3 | h3 |
+ *    size_ipk | ipk | size_cpk | cpk | size_epk | epk |
  *
  * @param[in,out] bytes A pointer to the array that will contain the exported
  *  group key. If <i>*bytes</i> is NULL, memory will be internally allocated.

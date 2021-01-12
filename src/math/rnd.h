@@ -23,16 +23,17 @@
 #include "types.h"
 
 /** 
- * @fn uint64_t random_get_random_int_in_range(uint64_t n)
+ * @fn int random_get_random_int_in_range(uint64_t *r, uint64_t n)
  * @brief Returns a random integer in the interval [0,n]. The system's
  *  random number generator must have been initialized with a call to srand
  *  before calling this function. (This can be done by calling groupsig_init.)
  *
+ * @param[in,out] r Pointer to uint64_t to store the produced number.
  * @param[in] n The upper limit of the interval.
  * 
- * @return The produced random number, or -1 if error.
+ * @return IOK or IERROR.
  */
-uint64_t rnd_get_random_int_in_range(uint64_t n);
+int rnd_get_random_int_in_range(uint64_t *r, uint64_t n);
 
 #endif
 

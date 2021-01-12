@@ -42,6 +42,16 @@ public interface GS {
     public static final String GL19_STR = "GL19";
 
     /**
+     * Code for instances corresponding to the PS16 group signature scheme.
+     */
+    public static final int PS16_CODE = 4;
+
+    /**
+     * Name for the instances corresponding to the PS16 group signature scheme.
+     */
+    public static final String PS16_STR = "PS16";    
+
+    /**
      * Frees the memory internally allocated for the current GS instance.
      *
      * @exception IllegalArgumentException
@@ -245,14 +255,30 @@ public interface GS {
      * Opens the given signature.
      *
      * @param sig The signature to open.
-     * @return The identity of the signer.
+     * @return An object wrapping the index of the signer and, optionally,
+     *  a proof of opening (for schemes that support it).
      * @exception UnsupportedEncodingException
      * @exception IllegalArgumentException
      * @exception Exception
      */
-    public Identity open(Signature sig)
+    public IndexProof open(Signature sig)
 	throws IllegalArgumentException,
 	       Exception;
+
+    /**
+     * Verifies an opening of a signature.
+     *
+     * @param indexProof The object wrapping the signer index and opening 
+     *  proof object.
+     * @param sig The signature to open.
+     * @return True if the proof is valid, False otherwise.
+     * @exception UnsupportedEncodingException
+     * @exception IllegalArgumentException
+     * @exception Exception
+     */
+    public boolean openVerify(IndexProof indexProof, Signature sig)
+	throws IllegalArgumentException,
+	       Exception;    
 
     /**
      * For schemes supporting blinded conversion, encrypts the
@@ -339,13 +365,6 @@ public interface GS {
      * @return The code of the current GS instance.
      */         
     public int getCode();
-
-    /**
-     * Returns the internal native pointer to the current GS instance config.
-     *
-     * @return The pointer to the current GS instance config.
-     */         
-    public long getConfig();
 
     /**
      * Returns the internal native pointer to the current GS instance.

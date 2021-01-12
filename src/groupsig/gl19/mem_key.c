@@ -54,8 +54,11 @@ groupsig_key_t* gl19_mem_key_init() {
   gl19_key->x = NULL;
   gl19_key->y = NULL;
   gl19_key->s = NULL;
+  gl19_key->l = 0;
+  gl19_key->d = NULL;  
   gl19_key->H = NULL;
-  gl19_key->h2s = NULL;  
+  gl19_key->h2s = NULL;
+  gl19_key->h3d = NULL;    
 
   key->scheme = GROUPSIG_GL19_CODE;
   
@@ -84,11 +87,16 @@ int gl19_mem_key_free(groupsig_key_t *key) {
     if(gl19_key->x) { pbcext_element_Fr_free(gl19_key->x); gl19_key->x = NULL; }
     if(gl19_key->y) { pbcext_element_Fr_free(gl19_key->y); gl19_key->y = NULL; }
     if(gl19_key->s) { pbcext_element_Fr_free(gl19_key->s); gl19_key->s = NULL; }
+    if(gl19_key->d) { pbcext_element_Fr_free(gl19_key->d); gl19_key->d = NULL; }
     if(gl19_key->H) { pbcext_element_G1_free(gl19_key->H); gl19_key->H = NULL; }
     if(gl19_key->h2s) {
       pbcext_element_G1_free(gl19_key->h2s);
       gl19_key->h2s = NULL;
     }
+    if(gl19_key->h3d) {
+      pbcext_element_G1_free(gl19_key->h3d);
+      gl19_key->h3d = NULL;
+    }    
     mem_free(key->key);
     key->key = NULL;
   }
@@ -144,6 +152,15 @@ int gl19_mem_key_copy(groupsig_key_t *dst, groupsig_key_t *src) {
       GOTOENDRC(IERROR, gl19_mem_key_copy);
   }
 
+  gl19_dst->l = gl19_src->l;
+
+  if(gl19_src->d) {
+    if(!(gl19_dst->d = pbcext_element_Fr_init()))
+      GOTOENDRC(IERROR, gl19_mem_key_copy);
+    if(pbcext_element_Fr_set(gl19_dst->s, gl19_src->d) == IERROR)
+      GOTOENDRC(IERROR, gl19_mem_key_copy);
+  }  
+
   if(gl19_src->H) {
     if(!(gl19_dst->H = pbcext_element_G1_init()))
       GOTOENDRC(IERROR, gl19_mem_key_copy);
@@ -157,6 +174,13 @@ int gl19_mem_key_copy(groupsig_key_t *dst, groupsig_key_t *src) {
     if(pbcext_element_G1_set(gl19_dst->h2s, gl19_src->h2s) == IERROR)
       GOTOENDRC(IERROR, gl19_mem_key_copy);
   }
+
+  if(gl19_src->h3d) {
+    if(!(gl19_dst->h3d = pbcext_element_G1_init()))
+      GOTOENDRC(IERROR, gl19_mem_key_copy);
+    if(pbcext_element_G1_set(gl19_dst->h3d, gl19_src->h3d) == IERROR)
+      GOTOENDRC(IERROR, gl19_mem_key_copy);
+  }
     
  gl19_mem_key_copy_end:
   
@@ -165,11 +189,16 @@ int gl19_mem_key_copy(groupsig_key_t *dst, groupsig_key_t *src) {
     if(gl19_dst->x) { pbcext_element_Fr_free(gl19_dst->x); gl19_dst->x = NULL; }
     if(gl19_dst->y) { pbcext_element_Fr_free(gl19_dst->y); gl19_dst->y = NULL; }
     if(gl19_dst->s) { pbcext_element_Fr_free(gl19_dst->s); gl19_dst->s = NULL; }
+    if(gl19_dst->d) { pbcext_element_Fr_free(gl19_dst->d); gl19_dst->d = NULL; }
     if(gl19_dst->H) { pbcext_element_G1_free(gl19_dst->H); gl19_dst->H = NULL; }
     if(gl19_dst->h2s) {
       pbcext_element_G1_free(gl19_dst->h2s);
       gl19_dst->h2s = NULL;
     }
+    if(gl19_dst->h3d) {
+      pbcext_element_G1_free(gl19_dst->h3d);
+      gl19_dst->h3d = NULL;
+    }    
   }
   
   return rc;
@@ -180,7 +209,7 @@ int gl19_mem_key_get_size(groupsig_key_t *key) {
 
   gl19_mem_key_t *gl19_key;
   int size;
-  uint64_t sA, sx, sy, ss, sH, sh2s;
+  uint64_t sA, sx, sy, ss, sd, sH, sh2s, sh3d;
   
   if(!key || key->scheme != GROUPSIG_GL19_CODE) {
     LOG_EINVAL(&logger, __FILE__, "gl19_mem_key_get_size", __LINE__, LOGERROR);
@@ -189,17 +218,21 @@ int gl19_mem_key_get_size(groupsig_key_t *key) {
 
   gl19_key = key->key;
 
-  sA = sx = sy = ss = sH = sh2s = 0;
+  sA = sx = sy = ss = sd = sH = sh2s = sh3d = 0;
   
   if(gl19_key->A) { if(pbcext_element_G1_byte_size(&sA) == -1) return -1; }
   if(gl19_key->x) { if(pbcext_element_Fr_byte_size(&sx) == -1) return -1; }
   if(gl19_key->y) { if(pbcext_element_Fr_byte_size(&sy) == -1) return -1; }
   if(gl19_key->s) { if(pbcext_element_Fr_byte_size(&ss) == -1) return -1; }
+  if(gl19_key->d) { if(pbcext_element_Fr_byte_size(&sd) == -1) return -1; }  
   if(gl19_key->H) { if(pbcext_element_G1_byte_size(&sH) == -1) return -1; }
   if(gl19_key->h2s) { if(pbcext_element_G1_byte_size(&sh2s) == -1) return -1; }
+  if(gl19_key->h3d) { if(pbcext_element_G1_byte_size(&sh3d) == -1) return -1; }
 
-  if (sA + sx + sy + ss + sH + sh2s + sizeof(int)*6+2 > INT_MAX) return -1;
-  size = (int) sA + sx + sy + ss + sH + sh2s + sizeof(int)*6+2;
+  if (sA + sx + sy + ss + sizeof(uint64_t) + sd + sH + sh2s + sh3d +
+      sizeof(int)*8+2 > INT_MAX) return -1;
+  size = (int) sA + sx + sy + ss + sizeof(uint64_t) +
+    sd + sH + sh2s + sh3d + sizeof(int)*8+2;
   
   return size;  
 
@@ -269,7 +302,19 @@ int gl19_mem_key_export(byte_t **bytes, uint32_t *size, groupsig_key_t *key) {
     if(pbcext_dump_element_Fr_bytes(&__bytes, &len, gl19_key->s) == IERROR)
       GOTOENDRC(IERROR, gl19_mem_key_export);
     ctr += len;
-  } else { ctr += sizeof(int); }    
+  } else { ctr += sizeof(int); }
+
+  /* Dump l */
+  memcpy(&_bytes[ctr], &gl19_key->l, sizeof(uint64_t));
+  ctr += sizeof(uint64_t);
+
+  /* Dump d */
+  if (gl19_key->d) {
+    __bytes = &_bytes[ctr];
+    if(pbcext_dump_element_Fr_bytes(&__bytes, &len, gl19_key->d) == IERROR)
+      GOTOENDRC(IERROR, gl19_mem_key_export);
+    ctr += len;
+  } else { ctr += sizeof(int); }  
 
   /* Dump H */
   if (gl19_key->H) {
@@ -285,7 +330,22 @@ int gl19_mem_key_export(byte_t **bytes, uint32_t *size, groupsig_key_t *key) {
     if(pbcext_dump_element_G1_bytes(&__bytes, &len, gl19_key->h2s) == IERROR)
       GOTOENDRC(IERROR, gl19_mem_key_export);
     ctr += len;
-  } else { ctr += sizeof(int); }     
+  } else { ctr += sizeof(int); }
+
+  /* Dump h3d */
+  if (gl19_key->h3d) {
+    __bytes = &_bytes[ctr];    
+    if(pbcext_dump_element_G1_bytes(&__bytes, &len, gl19_key->h3d) == IERROR)
+      GOTOENDRC(IERROR, gl19_mem_key_export);
+    ctr += len;
+  } else { ctr += sizeof(int); }  
+
+  /* Sanity check */
+  if (ctr != _size) {
+    LOG_ERRORCODE_MSG(&logger, __FILE__, "gl19_mem_key_export", __LINE__, 
+		      EDQUOT, "Unexpected key scheme.", LOGERROR);
+    GOTOENDRC(IERROR, gl19_mem_key_export);
+  }  
 
   /* Prepare the return */
   if(!*bytes) {
@@ -293,13 +353,6 @@ int gl19_mem_key_export(byte_t **bytes, uint32_t *size, groupsig_key_t *key) {
   } else {
     memcpy(*bytes, _bytes, ctr);
     mem_free(_bytes); _bytes = NULL;
-  }
-
-  /* Sanity check */
-  if (ctr != _size) {
-    LOG_ERRORCODE_MSG(&logger, __FILE__, "gl19_mem_key_export", __LINE__, 
-		      EDQUOT, "Unexpected key scheme.", LOGERROR);
-    GOTOENDRC(IERROR, gl19_mem_key_export);
   }
 
   *size = ctr;
@@ -397,6 +450,22 @@ groupsig_key_t* gl19_mem_key_import(byte_t *source, uint32_t size) {
     ctr += len;
   }
 
+  /* Get l */
+  memcpy(&gl19_key->l, &source[ctr], sizeof(uint64_t));
+  ctr += sizeof(uint64_t);
+
+  /* Get d */
+  if(!(gl19_key->d = pbcext_element_Fr_init()))
+    GOTOENDRC(IERROR, gl19_mem_key_import);
+  if(pbcext_get_element_Fr_bytes(gl19_key->d, &len, &source[ctr]) == IERROR)
+    GOTOENDRC(IERROR, gl19_mem_key_import);
+  if(!len) {
+    ctr += sizeof(int); // @TODO: this is an artifact of pbcext_get_element_XX_bytes
+    pbcext_element_Fr_free(gl19_key->d); gl19_key->d = NULL;
+  } else {
+    ctr += len;
+  }  
+
   /* Get H */
   if(!(gl19_key->H = pbcext_element_G1_init()))
     GOTOENDRC(IERROR, gl19_mem_key_import);
@@ -420,6 +489,18 @@ groupsig_key_t* gl19_mem_key_import(byte_t *source, uint32_t size) {
   } else {
     ctr += len;
   }
+
+  /* Get h3d */
+  if(!(gl19_key->h3d = pbcext_element_G1_init()))
+    GOTOENDRC(IERROR, gl19_mem_key_import);
+  if(pbcext_get_element_G1_bytes(gl19_key->h3d, &len, &source[ctr]) == IERROR)
+    GOTOENDRC(IERROR, gl19_mem_key_import);
+  if(!len) {
+    ctr += sizeof(int); // @TODO: this is an artifact of pbcext_get_element_XX_bytes
+    pbcext_element_G1_free(gl19_key->h3d); gl19_key->h3d = NULL;
+  } else {
+    ctr += len;
+  }  
   
  gl19_mem_key_import_end:
 

@@ -19,8 +19,7 @@ SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_LINKER_FLAGS} ${GCC_COVERAGE_LINK_FLAGS}" )
 
 add_custom_command(OUTPUT _run_gcovr_parser
   POST_BUILD
-
-  COMMAND python -m ${GCOVR} -r ${CMAKE_SOURCE_DIR} --html --html-details -o ${CMAKE_BINARY_DIR}/coverage.html --object-dir=${CMAKE_BINARY_DIR} -e test_* --exclude-directories=gtest*
-  #    COMMAND python -m ${GCOVR} -r ${CMAKE_SOURCE_DIR} --html --html-details -o ${CMAKE_BINARY_DIR}/coverage-branches.html --object-dir=${CMAKE_BINARY_DIR} --branches --exclude-unreachable-branches -e test_* --exclude-directories=gtest*
+  COMMAND python -m ${GCOVR} -r ${CMAKE_SOURCE_DIR} --xml -o ${CMAKE_BINARY_DIR}/coverage.xml --object-dir=${CMAKE_BINARY_DIR} -e test_* --exclude-directories=gtest*,src/wrappers
+#  COMMAND python -m ${GCOVR} -r ${CMAKE_SOURCE_DIR} --html --html-details -o ${CMAKE_BINARY_DIR}/coverage.html --object-dir=${CMAKE_BINARY_DIR} -e test_* --exclude-directories=gtest*
   WORKING_DIRECTORY ${source_dir})
 add_custom_target (coverage DEPENDS _run_gcovr_parser)

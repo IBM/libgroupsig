@@ -26,8 +26,6 @@
 #include "groupsig/bbs04/mgr_key.h"
 #include "groupsig/bbs04/mem_key.h"
 #include "groupsig/bbs04/gml.h"
-#include "groupsig/bbs04/identity.h"
-#include "groupsig/bbs04/trapdoor.h"
 #include "shim/pbc_ext.h"
 #include "sys/mem.h"
 
@@ -50,8 +48,7 @@ int bbs04_join_mgr(message_t **mout, gml_t *gml,
   bbs04_mem_key_t *bbs04_memkey;
   bbs04_mgr_key_t *bbs04_mgrkey;
   bbs04_grp_key_t *bbs04_grpkey;
-  bbs04_gml_entry_t *bbs04_entry;
-  bbs04_trapdoor_t *bbs04_trap;
+  gml_entry_t *bbs04_entry;
   pbcext_element_Fr_t *gammax;
   message_t *_mout;
   byte_t *bkey;
@@ -68,7 +65,9 @@ int bbs04_join_mgr(message_t **mout, gml_t *gml,
   bbs04_mgrkey = (bbs04_mgr_key_t *) mgrkey->key;
   bbs04_grpkey = (bbs04_grp_key_t *) grpkey->key;
   rc = IOK;
+  bkey = NULL;
   gammax = NULL;
+  memkey = NULL;
   
   if(!(memkey = bbs04_mem_key_init())) GOTOENDRC(IERROR, bbs04_join_mgr);
   bbs04_memkey = (bbs04_mem_key_t *) memkey->key;
@@ -105,15 +104,12 @@ int bbs04_join_mgr(message_t **mout, gml_t *gml,
   /* Initialize the GML entry */
   if(!(bbs04_entry = bbs04_gml_entry_init()))
     GOTOENDRC(IERROR, bbs04_join_mgr);
-    
-  bbs04_trap = (bbs04_trapdoor_t *) bbs04_entry->trapdoor->trap;
-  if(!(bbs04_trap->open = pbcext_element_G1_init()))
+
+  if(!(bbs04_entry->data = pbcext_element_G1_init()))
     GOTOENDRC(IERROR, bbs04_join_mgr);
-  if(pbcext_element_G1_set(bbs04_trap->open, bbs04_memkey->A) == IERROR)
+  if(pbcext_element_G1_set(bbs04_entry->data, bbs04_memkey->A) == IERROR)
     GOTOENDRC(IERROR, bbs04_join_mgr);
-  
-  /* Currently, BBS04 identities are just uint64_t's */
-  *(bbs04_identity_t *) bbs04_entry->id->id = gml->n;
+  bbs04_entry->id = gml->n;
   
   if(gml_insert(gml, bbs04_entry) == IERROR) GOTOENDRC(IERROR, bbs04_join_mgr);
 
@@ -136,7 +132,9 @@ int bbs04_join_mgr(message_t **mout, gml_t *gml,
   
  bbs04_join_mgr_end:
 
-  if(gammax) { pbcext_element_Fr_clear(gammax); gammax = NULL; }
+  if (gammax) { pbcext_element_Fr_free(gammax); gammax = NULL; }
+  if (memkey) { bbs04_mem_key_free(memkey); memkey = NULL; }
+  if (bkey) { mem_free(bkey); bkey = NULL; }
   if (rc == IERROR) { bbs04_gml_entry_free(bbs04_entry); bbs04_entry = NULL; }
   
   return rc;

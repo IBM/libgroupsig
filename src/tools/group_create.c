@@ -83,9 +83,6 @@ typedef struct {
   char *gs_mem; /**< Relative directory for storing groupsig members info. */
   char *gs_grp; /**< Relative directory for storing groupsig public group info. */
 
-  /* Group signature creation parameters */
-  groupsig_config_t *cfg;
-
 #ifdef PROFILE
   uint64_t n; /**< Number of iterations to run. */
 #endif
@@ -171,11 +168,6 @@ static int _options_check(options_t *opt) {
     return IERROR;
   }
 
-  if(!opt->cfg) {
-    fprintf(stderr, "Error: configuration parameters missing.\n");
-    return IERROR;
-  }
-
 #ifdef PROFILE
   if(!opt->n) {
     fprintf(stderr, "Error: -n is required.\n");
@@ -209,7 +201,7 @@ static int _options_parse(options_t *opt, int argc, char **argv) {
     return IERROR;
   }
   
-  if(!(opt->cfg = groupsig_init(opt->scheme, time(NULL)))) {
+  if(groupsig_init(opt->scheme, time(NULL)) == IERROR) {
     return IERROR;
   }
 
@@ -440,14 +432,15 @@ int main(int argc, char **argv) {
     NULL, /* char *gs_mgr; */
     NULL, /* char *gs_mem; */
     NULL, /* char *gs_grp; */
-    NULL, /* groupsig_config_t *cfg; */
     /* 0, /\* uint64_t n *\/ */
   };
   char *dir_gs_mgr, *dir_gs_mem, *dir_gs_grp, *keyfile;
   groupsig_key_t *grpkey, *mgrkey, *mgrkey2;
+  const groupsig_t *gs;
   gml_t *gml;
-  byte_t *b_mgrkey, *b_grpkey;
-  uint32_t b_len;
+  byte_t *b_mgrkey, *b_grpkey, *b_gml;
+  FILE *fd;
+  uint32_t b_len, gml_len;
 #ifdef PROFILE
   uint64_t i;
   profile_t *prof;
@@ -528,12 +521,16 @@ int main(int argc, char **argv) {
       }
     }
 
+    if(!(gs = groupsig_get_groupsig_from_code(opt.scheme))) {
+      return IERROR;
+    }
+
     if(!(grpkey = groupsig_grp_key_init(opt.scheme))) {
       return IERROR;
     }
     
     gml = NULL;
-    if(opt.cfg->has_gml) {
+    if(gs->desc->has_gml) {
       if(!(gml = gml_init(opt.scheme))) {
 	fprintf(stderr, "Error: invalid GML.\n");
 	return IERROR;
@@ -550,14 +547,14 @@ int main(int argc, char **argv) {
 
     /* "Construct" the group (this actually fills the keys and GML with
        all the cryptographic data) */
-    if(groupsig_setup(opt.scheme, grpkey, mgrkey, gml, opt.cfg) == IERROR) {
+    if(groupsig_setup(opt.scheme, grpkey, mgrkey, gml) == IERROR) {
       fprintf(stdout, "Setup went wrong\n");
       return IERROR;
     }
 
     /* In GL19, we have to call the setup function twice. */
     if (opt.scheme == GROUPSIG_GL19_CODE) {
-      if(groupsig_setup(opt.scheme, grpkey, mgrkey2, gml, opt.cfg) == IERROR) {
+      if(groupsig_setup(opt.scheme, grpkey, mgrkey2, gml) == IERROR) {
 	fprintf(stdout, "Setup went wrong\n");
 	return IERROR;
       }
@@ -632,24 +629,37 @@ int main(int argc, char **argv) {
     mem_free(keyfile);
 
     /* GML */
-    if(opt.cfg->has_gml) {
+    if(gs->desc->has_gml) {
       if(!(keyfile = str_ncat(3, "%s %s %s", dir_gs_mgr, "/", DFLT_GML_FILE))) {
 	return IERROR;
       }
       
-      if(gml_export(gml, keyfile, GML_FILE) == IERROR) {
+      /* Dump the GML into a byte array */
+      b_gml = NULL;
+      if(gml_export(&b_gml, &gml_len, gml) == IERROR) {
 	return IERROR;
       }
 
-      mem_free(keyfile); keyfile = NULL;
+      /* Write the byte array into a file */
+      if(!(fd = fopen(keyfile, "w"))) {
+	return IERROR;
+      }
 
+      if (fwrite(b_gml, gml_len, 1, fd) != 1) {
+	fclose(fd); fd = NULL;
+	return IERROR;
+      }
+      
+      fclose(fd); fd = NULL;    
+      mem_free(keyfile); keyfile = NULL;
+      
     }
 
     /* 3. Done. Free stuff. */
     groupsig_mgr_key_free(mgrkey); mgrkey = NULL;
     groupsig_grp_key_free(grpkey); grpkey = NULL;
     
-    if(opt.cfg->has_gml) {
+    if(gs->desc->has_gml) {
       gml_free(gml); gml = NULL;
     }
     
@@ -659,7 +669,7 @@ int main(int argc, char **argv) {
   profile_free(prof); prof = NULL;
 #endif
   
-  groupsig_clear(opt.scheme, opt.cfg); opt.cfg = NULL;
+  groupsig_clear(opt.scheme);
   mem_free(dir_gs_mgr); dir_gs_mgr = NULL;
   mem_free(dir_gs_grp); dir_gs_grp = NULL;  
   mem_free(dir_gs_mem); dir_gs_mem = NULL;

@@ -42,7 +42,6 @@ sysenv_t *sysenv;
 int main(int argc, char *argv[]) {
   int argnum = 1; // Next argument to process
   char *s_sig, *s_msg, *s_grpkey, *s_memkey;
-  groupsig_config_t *cfg;  
   groupsig_key_t *grpkey, *memkey;
   groupsig_signature_t *sig;
   message_t *msg;
@@ -74,7 +73,7 @@ int main(int argc, char *argv[]) {
   argnum++;
 
 
-  if(!(cfg = groupsig_init(scheme, 0))) {
+  if(groupsig_init(scheme, 0) == IERROR) {
     return IERROR;
   }
 
@@ -213,7 +212,7 @@ int main(int argc, char *argv[]) {
 #endif
   
   /* Free resources */
-  groupsig_clear(scheme, cfg); cfg = NULL;
+  groupsig_clear(scheme);
   if(sig) { groupsig_signature_free(sig); sig = NULL; }
   if(grpkey) { groupsig_grp_key_free(grpkey); grpkey = NULL; }
   if(memkey) { groupsig_mem_key_free(memkey); memkey = NULL; }

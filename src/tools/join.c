@@ -79,10 +79,12 @@ int main(int argc, char **argv) {
   message_t *mout, *min;
   char *dir_mem, *keyfile, *s_grpkey, *s_mgrkey, *s_gml;
   groupsig_key_t *grpkey, *mgrkey, *memkey;
-  groupsig_config_t *cfg;  
+  const groupsig_t *gs;  
   gml_t *gml;
-  byte_t *b_grpkey, *b_mgrkey, *b_memkey;
+  byte_t *b_grpkey, *b_mgrkey, *b_memkey, *b_gml;
+  FILE *fd;
   uint64_t i, n, b_len;
+  uint32_t gml_len;
   int key_format;
   uint8_t scheme, start, seq, msgs;
 #ifdef PROFILE
@@ -105,8 +107,12 @@ int main(int argc, char **argv) {
   }
   argnum++;
 
+  if(!(gs = groupsig_get_groupsig_from_code(scheme))) {
+    return IERROR;
+  }
+
   /* Initialize the group signature environment */
-  if(!(cfg = groupsig_init(scheme, time(NULL)))) {
+  if(groupsig_init(scheme, time(NULL)) == IERROR) {
     return IERROR;
   }
 
@@ -116,7 +122,7 @@ int main(int argc, char **argv) {
   s_mgrkey = argv[argnum];
   argnum++;
   
-  if(cfg->has_gml) {
+  if(gs->desc->has_gml) {
     s_gml = argv[argnum];
     argnum++;
   }
@@ -156,11 +162,23 @@ int main(int argc, char **argv) {
 
   /* GML */
   gml = NULL;
-  if(cfg->has_gml) {
-    if(!(gml = gml_import(scheme, GML_FILE, s_gml))) {
+  if(gs->desc->has_gml) {
+
+    /* Read file into bytes */
+    b_gml = NULL;
+    if(misc_read_file_to_bytestring(s_gml, &b_gml, (uint64_t *) &gml_len) == IERROR) {
+      fprintf(stderr, "Error: Could not read GML file %s\n", s_gml);
+      return IERROR;
+    }
+      
+    /* Import the GML from the bytes */
+    if(!(gml = gml_import(scheme, b_gml, gml_len))) {
       fprintf(stderr, "Error: invalid GML %s.\n", s_gml);
       return IERROR;
     }
+
+    mem_free(b_gml); b_gml = NULL;
+    
   }
 
 #ifdef PROFILE
@@ -279,21 +297,37 @@ int main(int argc, char **argv) {
 
   }
 
-  if(cfg->has_gml) {
-    if(gml_export(gml, s_gml, GML_FILE) == IERROR) {
+  if(gs->desc->has_gml) {
+
+    /* Dump the GML into a byte array */
+    b_gml = NULL;
+    if(gml_export(&b_gml, &gml_len, gml) == IERROR) {
       return IERROR;
     }
+
+    /* Write the byte array into a file */
+    if(!(fd = fopen(s_gml, "w"))) {
+      return IERROR;
+    }
+
+    if (fwrite(b_gml, gml_len, 1, fd) != 1) {
+      fclose(fd); fd = NULL;
+      return IERROR;
+    }
+
+    fclose(fd); fd = NULL;    
+    
   }
 
   /* 3. Done. */
   groupsig_mgr_key_free(mgrkey); mgrkey = NULL;
   groupsig_grp_key_free(grpkey); grpkey = NULL;
 
-  if(cfg->has_gml) {
+  if(gs->desc->has_gml) {
     gml_free(gml); gml = NULL;
   }
 
-  groupsig_clear(scheme, cfg); cfg = NULL;
+  groupsig_clear(scheme);
   
 #ifdef PROFILE
   profile_free(prof); prof = NULL;

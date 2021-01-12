@@ -803,9 +803,9 @@ int pbcext_element_GT_pow(pbcext_element_GT_t *dst,
 }
 
 int pbcext_pairing(pbcext_element_GT_t *dst,
-			   pbcext_element_G1_t *e1,
-			   pbcext_element_G2_t *e2) {
-
+		   pbcext_element_G1_t *e1,
+		   pbcext_element_G2_t *e2) {
+  
   if (!dst || !e1 || !e2) {
     LOG_EINVAL(&logger, __FILE__, "pbcext_pairing", __LINE__, LOGERROR);
     return IERROR; 
@@ -1304,154 +1304,6 @@ int pbcext_element_Fp_from_unformat_bytes(pbcext_element_Fp_t *e,
 
 }
 
-/* int pbcext_element_Fp_length_in_bytes(uint64_t *len, */
-/* 				      pbcext_element_Fp_t *e) { */
-
-/*   // @TODO The serialize/deserialize functions are probably more efficient. */
-/*   // But the documentation is not good no this. Until I have the time to check, */
-/*   // just go for {to,from}String methods. */
-  
-/*   byte_t bytes[MAX_Fp_SIZE_STR+1]; */
-/*   int _len; */
-  
-/*   if (!len || !e) { */
-/*     LOG_EINVAL(&logger, __FILE__, "pbcext_element_Fp_length_in_bytes", */
-/* 	       __LINE__, LOGERROR); */
-/*     return IERROR;  */
-/*   } */
- 
-/*   memset(bytes, 0, MAX_Fp_SIZE_STR+1); */
-
-/*   if(!(_len = mclBnFp_getStr(bytes, MAX_Fp_SIZE_STR, e, 16))) { */
-/*     LOG_ERRORCODE(&logger, __FILE__, "pbcext_element_Fp_to_bytes", */
-/* 		  __LINE__, errno, LOGERROR); */
-/*     return IERROR; */
-/*   } */
-
-/*   *len = _len; */
-  
-/*   return IOK; */
-  
-/* } */
-
-/* int pbcext_element_Fr_length_in_bytes(uint64_t *len, */
-/* 				      pbcext_element_Fr_t *e) { */
-
-/*     // @TODO The serialize/deserialize functions are probably more efficient. */
-/*   // But the documentation is not good no this. Until I have the time to check, */
-/*   // just go for {to,from}String methods. */
-  
-/*   byte_t bytes[MAX_Fr_SIZE_STR+1]; */
-/*   int _len; */
-  
-/*   if (!len || !e) { */
-/*     LOG_EINVAL(&logger, __FILE__, "pbcext_element_Fr_length_in_bytes", */
-/* 	       __LINE__, LOGERROR); */
-/*     return IERROR;  */
-/*   } */
- 
-/*   memset(bytes, 0, MAX_Fr_SIZE_STR+1); */
-
-/*   if(!(_len = mclBnFr_getStr(bytes, MAX_Fr_SIZE_STR, e, 16))) { */
-/*     LOG_ERRORCODE(&logger, __FILE__, "pbcext_element_Fr_to_bytes", */
-/* 		  __LINE__, errno, LOGERROR); */
-/*     return IERROR; */
-/*   } */
-
-/*   *len = _len; */
-  
-/*   return IOK; */
-
-/* } */
-
-/* int pbcext_element_G1_length_in_bytes(uint64_t *len, */
-/* 				      pbcext_element_G1_t *e) { */
-
-/*     // @TODO The serialize/deserialize functions are probably more efficient. */
-/*   // But the documentation is not good no this. Until I have the time to check, */
-/*   // just go for {to,from}String methods. */
-  
-/*   byte_t bytes[MAX_G1_SIZE_STR+1]; */
-/*   int _len; */
-  
-/*   if (!len || !e) { */
-/*     LOG_EINVAL(&logger, __FILE__, "pbcext_element_G1_length_in_bytes", */
-/* 	       __LINE__, LOGERROR); */
-/*     return IERROR;  */
-/*   } */
- 
-/*   memset(bytes, 0, MAX_G1_SIZE_STR+1); */
-
-/*   if(!(_len = mclBnG1_getStr(bytes, MAX_G1_SIZE_STR, e, 16))) { */
-/*     LOG_ERRORCODE(&logger, __FILE__, "pbcext_element_G1_to_bytes", */
-/* 		  __LINE__, errno, LOGERROR); */
-/*     return IERROR; */
-/*   } */
-
-/*   *len = _len; */
-  
-/*   return IOK; */
-
-/* } */
-
-/* int pbcext_element_G2_length_in_bytes(uint64_t *len, */
-/* 				      pbcext_element_G2_t *e) { */
-/*     // @TODO The serialize/deserialize functions are probably more efficient. */
-/*   // But the documentation is not good no this. Until I have the time to check, */
-/*   // just go for {to,from}String methods. */
-  
-/*   byte_t bytes[MAX_G2_SIZE_STR+1]; */
-/*   int _len; */
-  
-/*   if (!len || !e) { */
-/*     LOG_EINVAL(&logger, __FILE__, "pbcext_element_G2_length_in_bytes", */
-/* 	       __LINE__, LOGERROR); */
-/*     return IERROR;  */
-/*   } */
- 
-/*   memset(bytes, 0, MAX_G2_SIZE_STR+1); */
-
-/*   if(!(_len = mclBnG2_getStr(bytes, MAX_G2_SIZE_STR, e, 16))) { */
-/*     LOG_ERRORCODE(&logger, __FILE__, "pbcext_element_G2_to_bytes", */
-/* 		  __LINE__, errno, LOGERROR); */
-/*     return IERROR; */
-/*   } */
-
-/*   *len = _len; */
-  
-/*   return IOK; */
-
-/* } */
-
-/* int pbcext_element_GT_length_in_bytes(uint64_t *len, */
-/* 				      pbcext_element_GT_t *e) { */
-/*     // @TODO The serialize/deserialize functions are probably more efficient. */
-/*   // But the documentation is not good no this. Until I have the time to check, */
-/*   // just go for {to,from}String methods. */
-  
-/*   byte_t bytes[MAX_GT_SIZE_STR+1]; */
-/*   int _len; */
-  
-/*   if (!len || !e) { */
-/*     LOG_EINVAL(&logger, __FILE__, "pbcext_element_GT_length_in_bytes", */
-/* 	       __LINE__, LOGERROR); */
-/*     return IERROR;  */
-/*   } */
- 
-/*   memset(bytes, 0, MAX_GT_SIZE_STR+1); */
-
-/*   if(!(_len = mclBnGT_getStr(bytes, MAX_GT_SIZE_STR, e, 16))) { */
-/*     LOG_ERRORCODE(&logger, __FILE__, "pbcext_element_GT_to_bytes", */
-/* 		  __LINE__, errno, LOGERROR); */
-/*     return IERROR; */
-/*   } */
-
-/*   *len = _len; */
-  
-/*   return IOK; */
-
-/* } */
-
 int pbcext_element_Fr_from_hash(pbcext_element_Fr_t *dst,
 				byte_t *h,
 				uint64_t len) {
@@ -1523,69 +1375,6 @@ int pbcext_element_G2_from_hash(pbcext_element_G2_t *dst,
   return IOK;
 
 }
-
-/************ OLD FUNCTIONS BELOW ***********/
-
-/* int pbcext_element_export_bytes(byte_t **be, int *n, element_t e) { */
-
-/*   byte_t *_be; */
-/*   int _n; */
-
-/*   if(!be || !n) { */
-/*     LOG_EINVAL(&logger, __FILE__, "pbcext_element_export_bytes", __LINE__, LOGERROR); */
-/*     return IERROR; */
-/*   } */
-
-/*   _n = element_length_in_bytes(e); */
-
-/*   /\* Allocate internal memory when necessary *\/ */
-/*   if(!*be) { */
-/*     if(!(_be = mem_malloc(sizeof(byte_t)*_n))) { */
-/*       return IERROR; */
-/*     } */
-/*   } else { */
-/*     _be = *be; */
-/*   } */
-
-/*   if(element_to_bytes(_be, e) != _n) { */
-/*     LOG_ERRORCODE_MSG(&logger, __FILE__, "pbcext_element_export_bytes", __LINE__, */
-/* 		      EDQUOT, "element_to_bytes: unexpected number of bytes written.",  */
-/* 		      LOGERROR); */
-/*     if(!*be) { mem_free(_be); _be = NULL; } */
-/*     return IERROR; */
-/*   } */
-
-/*   if(!*be) { */
-/*     *be = _be; */
-/*   }   */
-
-/*   *n = _n; */
-
-/*   return IOK; */
-  
-/* } */
-
-
-/* char* pbcext_element_export_b64(element_t e) { */
-
-/*   byte_t *bytes; */
-/*   char *s; */
-/*   int n; */
-
-/*   /\* Get the byte representation *\/ */
-/*   bytes = NULL; */
-/*   if(pbcext_element_export_bytes(&bytes, &n, e) == IERROR) { */
-/*     return NULL; */
-/*   } */
-
-/*   /\* Convert it to Base64 *\/ */
-/*   s = base64_encode(bytes, n); */
-
-/*   return s; */
-
-/* } */
-
-/** Helper functions **/
 
 char* pbcext_element_Fr_to_b64(pbcext_element_Fr_t *e) {
 
@@ -2747,9 +2536,10 @@ int pbcext_get_element_GT_bytes(pbcext_element_GT_t *e,
 
 int pbcext_element_Fr_to_string(char **str,
 				uint64_t *len,
+				int base,
 				pbcext_element_Fr_t *e) {
 
-  if(!str || !e) {
+  if(!str || !e || (base != 10 && base != 16)) {
     LOG_EINVAL(&logger, __FILE__, "pbcext_element_Fr_to_string",
 	       __LINE__, LOGERROR);
     return IERROR;
@@ -2761,7 +2551,7 @@ int pbcext_element_Fr_to_string(char **str,
       return IERROR;
     }
     
-    if(!mclBnFr_getStr(*str, 1024, e, 16)) {
+    if(!mclBnFr_getStr(*str, 1024, e, base)) {
       LOG_ERRORCODE(&logger, __FILE__, "pbcext_element_Fr_to_string",
   		    __LINE__, ENOLINK, LOGERROR);
       return IERROR;
@@ -2771,7 +2561,7 @@ int pbcext_element_Fr_to_string(char **str,
 
   } else {
     
-    mclBnFr_getStr(*str, *len, e, 16);
+    mclBnFr_getStr(*str, *len, e, base);
 
   }
 
@@ -2781,9 +2571,10 @@ int pbcext_element_Fr_to_string(char **str,
 
 int pbcext_element_G1_to_string(char **str,
 				uint64_t *len,
+				int base,
 				pbcext_element_G1_t *e) {
 
-  if(!str || !e) {
+  if(!str || !e || (base != 10 && base != 16)) {
     LOG_EINVAL(&logger, __FILE__, "pbcext_element_G1_to_string",
 	       __LINE__, LOGERROR);
     return IERROR;
@@ -2795,7 +2586,7 @@ int pbcext_element_G1_to_string(char **str,
       return IERROR;
     }
 
-    if(!mclBnG1_getStr(*str, 1024, e, 16)) {
+    if(!mclBnG1_getStr(*str, 1024, e, base)) {
       LOG_ERRORCODE(&logger, __FILE__, "pbcext_element_G1_to_string",
 		    __LINE__, ENOLINK, LOGERROR);
       return IERROR;
@@ -2805,12 +2596,214 @@ int pbcext_element_G1_to_string(char **str,
 
   } else {
     
-    mclBnG1_getStr(*str, *len, e, 16);
+    mclBnG1_getStr(*str, *len, e, base);
 
   }
 
   return IOK;
 
+}
+
+int pbcext_element_G2_to_string(char **str,
+				uint64_t *len,
+				int base,
+				pbcext_element_G2_t *e) {
+
+  if(!str || !e || (base != 10 && base != 16)) {
+    LOG_EINVAL(&logger, __FILE__, "pbcext_element_G2_to_string",
+	       __LINE__, LOGERROR);
+    return IERROR;
+  }
+	 
+  if(!(*str)) {
+
+    if(!(*str = mem_malloc(sizeof(char) * 2048))) {
+      return IERROR;
+    }
+
+    if(!mclBnG2_getStr(*str, 2048, e, base)) {
+      LOG_ERRORCODE(&logger, __FILE__, "pbcext_element_G2_to_string",
+		    __LINE__, ENOLINK, LOGERROR);
+      return IERROR;
+    }
+
+    *len = strlen(*str);
+
+  } else {
+    
+    mclBnG2_getStr(*str, *len, e, base);
+
+  }
+
+  return IOK;
+
+}
+
+int pbcext_element_GT_to_string(char **str,
+				uint64_t *len,
+				int base,
+				pbcext_element_GT_t *e) {
+
+  if(!str || !e || (base != 10 && base != 16)) {
+    LOG_EINVAL(&logger, __FILE__, "pbcext_element_GT_to_string",
+	       __LINE__, LOGERROR);
+    return IERROR;
+  }
+	 
+  if(!(*str)) {
+
+    if(!(*str = mem_malloc(sizeof(char) * 2048))) {
+      return IERROR;
+    }
+
+    if(!mclBnGT_getStr(*str, 2048, e, base)) {
+      LOG_ERRORCODE(&logger, __FILE__, "pbcext_element_GT_to_string",
+		    __LINE__, ENOLINK, LOGERROR);
+      return IERROR;
+    }
+
+    *len = strlen(*str);
+
+  } else {
+    
+    mclBnGT_getStr(*str, *len, e, base);
+
+  }
+
+  return IOK;
+
+}
+
+int pbcext_element_Fr_from_string(pbcext_element_Fr_t **e,
+				  char *str,
+				  int base) {
+
+  pbcext_element_Fr_t *_e;
+  
+  if (!e || !str || (base != 10 && base != 16)) {
+    LOG_EINVAL(&logger, __FILE__, "pbcext_element_Fr_from_string",
+	       __LINE__, LOGERROR);
+    return IERROR;
+  }
+
+  if (!(_e = pbcext_element_Fr_init()))
+    return IERROR;
+
+  if (mclBnFr_setStr(_e, (const char *) str, strlen(str), base) == -1) {
+    pbcext_element_Fr_free(_e); _e = NULL;
+    return IERROR;
+  }
+
+  if (!e) *e = _e;
+  else {
+    if (pbcext_element_Fr_set(*e, _e) == IERROR) {
+      pbcext_element_Fr_free(_e); _e = NULL;
+      return IERROR;    
+    }
+    pbcext_element_Fr_free(_e); _e = NULL;    
+  }
+
+  return IOK;
+  
+}
+
+int pbcext_element_G1_from_string(pbcext_element_G1_t **e,
+				  char *str,
+				  int base) {
+
+  pbcext_element_G1_t *_e;
+  
+  if (!e || !str || (base != 10 && base != 16)) {
+    LOG_EINVAL(&logger, __FILE__, "pbcext_element_G1_from_string",
+	       __LINE__, LOGERROR);
+    return IERROR;
+  }
+
+  if (!(_e = pbcext_element_G1_init()))
+    return IERROR;
+
+  if (mclBnG1_setStr(_e, (const char *) str, strlen(str), base) == -1) {
+    pbcext_element_G1_free(_e); _e = NULL;
+    return IERROR;
+  }
+
+  if (!e) *e = _e;
+  else {
+    if (pbcext_element_G1_set(*e, _e) == IERROR) {
+      pbcext_element_G1_free(_e); _e = NULL;
+      return IERROR;    
+    }
+    pbcext_element_G1_free(_e); _e = NULL;    
+  }
+
+  return IOK;
+  
+}
+
+int pbcext_element_G2_from_string(pbcext_element_G2_t **e,
+				  char *str,
+				  int base) {
+
+  pbcext_element_G2_t *_e;
+  
+  if (!e || !str || (base != 10 && base != 16)) {
+    LOG_EINVAL(&logger, __FILE__, "pbcext_element_G2_from_string",
+	       __LINE__, LOGERROR);
+    return IERROR;
+  }
+
+  if (!(_e = pbcext_element_G2_init()))
+    return IERROR;
+
+  if (mclBnG2_setStr(_e, (const char *) str, strlen(str), base) == -1) {
+    pbcext_element_G2_free(_e); _e = NULL;
+    return IERROR;
+  }
+
+  if (!e) *e = _e;
+  else {
+    if (pbcext_element_G2_set(*e, _e) == IERROR) {
+      pbcext_element_G2_free(_e); _e = NULL;
+      return IERROR;    
+    }
+    pbcext_element_G2_free(_e); _e = NULL;    
+  }
+
+  return IOK;
+  
+}
+
+int pbcext_element_GT_from_string(pbcext_element_GT_t **e,
+				  char *str,
+				  int base) {
+
+  pbcext_element_GT_t *_e;
+  
+  if (!e || !str || (base != 10 && base != 16)) {
+    LOG_EINVAL(&logger, __FILE__, "pbcext_element_GT_from_string",
+	       __LINE__, LOGERROR);
+    return IERROR;
+  }
+
+  if (!(_e = pbcext_element_GT_init()))
+    return IERROR;
+
+  if (mclBnGT_setStr(_e, (const char *) str, strlen(str), base) == -1) {
+    pbcext_element_GT_free(_e); _e = NULL;
+    return IERROR;
+  }
+
+  if (!e) *e = _e;
+  else {
+    if (pbcext_element_GT_set(*e, _e) == IERROR) {
+      pbcext_element_GT_free(_e); _e = NULL;
+      return IERROR;    
+    }
+    pbcext_element_GT_free(_e); _e = NULL;    
+  }
+
+  return IOK;
+  
 }
 
 /* pbc_ext.c ends here */

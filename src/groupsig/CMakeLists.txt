@@ -27,6 +27,8 @@ target_link_libraries (groupsig
   PUBLIC bbs04 
   #PUBLIC cpy06
   PUBLIC gl19
+  PUBLIC ps16
+  PUBLIC klap20
   PUBLIC sys 
   PUBLIC math
   PUBLIC base64 
@@ -51,3 +53,5 @@ add_subdirectory(bbs04)
 #add_subdirectory(kty04)
 #add_subdirectory(cpy06)
 add_subdirectory(gl19)
+add_subdirectory(ps16)
+add_subdirectory(klap20)

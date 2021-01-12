@@ -7,12 +7,12 @@
   <parent>
     <groupId>com.ibm.jgroupsig</groupId>
     <artifactId>jgroupsig</artifactId>
-    <version>0.1.0</version>
+    <version>1.0.0</version>
     <relativePath>../pom.xml</relativePath>    
   </parent>
 
   <groupId>com.ibm.jgroupsig</groupId>
-  <version>0.1.0</version>  
+  <version>1.0.0</version>  
   <artifactId>libjgroupsig</artifactId>
   <packaging>jar</packaging>
 
@@ -34,6 +34,11 @@
       <artifactId>junit-jupiter-engine</artifactId>
       <version>5.4.2</version>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+	<groupId>org.jacoco</groupId>
+	<artifactId>jacoco-maven-plugin</artifactId>
+	<version>0.8.3</version>
     </dependency>
   </dependencies>
 
@@ -62,7 +67,7 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <version>3.0.0-M5</version>
         <configuration>
-	  <argLine>-Djava.library.path=${project.build.directory}/main/resources</argLine>	  
+	  <argLine>${argLine} -Djava.library.path=${project.build.directory}/main/resources</argLine>	  
     </configuration>
       </plugin>
       <plugin>
@@ -81,7 +86,7 @@
                 <artifactItem>
                   <groupId>com.ibm.jgroupsig</groupId>
                   <artifactId>libjnigroupsig</artifactId>
-                  <version>0.1.0</version>
+                  <version>1.0.0</version>
                   <type>so</type>
                   <overWrite>false</overWrite>
                   <outputDirectory>${project.build.directory}/main/resources</outputDirectory>
@@ -92,6 +97,27 @@
           </execution>
         </executions>
       </plugin>
+
+      <plugin>
+	    <groupId>org.jacoco</groupId>
+	    <artifactId>jacoco-maven-plugin</artifactId>
+	    <version>0.8.3</version>
+	    <executions>
+	        <execution>
+	            <goals>
+	                <goal>prepare-agent</goal>
+	            </goals>
+	        </execution>
+	        <execution>
+	            <id>report</id>
+	            <phase>test</phase>
+	            <goals>
+	                <goal>report</goal>
+	            </goals>
+	        </execution>
+	    </executions>
+	</plugin>
+
     </plugins>
   </build>
 </project>

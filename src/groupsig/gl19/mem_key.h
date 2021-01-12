@@ -48,12 +48,12 @@ typedef struct {
   pbcext_element_Fr_t *x; /**< Randomly picked by the Issuer. */
   pbcext_element_Fr_t *y; /**< Randomly picked by the Member. */
   pbcext_element_Fr_t *s; /**< Randomly picked by the Issuer. */
+  uint64_t l; /**< Lifetime of the credential (UNIX time seconds). */
   /* Precomputations */
-  pbcext_element_G1_t *H; /**< Member's "public key". H = h1^y. */
+  pbcext_element_Fr_t *d; /**< Fr element mapped from Hash(lifetime). */  
+  pbcext_element_G1_t *H; /**< Member's "public key". H = h1^y. */  
   pbcext_element_G1_t *h2s; /**< Used in signatures. h2s = h2^s. */
-  /* @TODO Stuff that should not be here, but I leave it be for the moment... */
-  /* spk_dlog_t *pi; /\**< SPK sent in the second message. No need to store this. *\/ */
-  /* element_t n; /\**< Random number (should be chosen by the Issuer...) No need to store this. *\/ */
+  pbcext_element_G1_t *h3d; /**< Used in signatures. h3d = h3^d. */
 } gl19_mem_key_t;
 
 /** 
@@ -101,8 +101,8 @@ int gl19_mem_key_get_size(groupsig_key_t *key);
  * @brief Writes a bytearray representation of the given member key to an array
  *  with format:
  *
- *  | GL19_CODE | KEYTYPE | size_A | A | size_x | x | 
- *    size_y | y | size_s | s | size_H | H | size_h2s | h2s |
+ *  | GL19_CODE | KEYTYPE | size_A | A | size_x | x | size_y | y | size_s | s | 
+ *    l (uint64_t) | size_d | d | size_H | H | size_h2s | h2s | size_h3d | h3d |
  *
  * @param[in,out] bytes A pointer to the array that will contain the exported
  *  member key. If <i>*bytes</i> is NULL, memory will be internally allocated.

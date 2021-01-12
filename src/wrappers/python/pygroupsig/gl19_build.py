@@ -8,15 +8,15 @@ ffibuilder.cdef("#define GL19_JOIN_START 0")
 ffibuilder.cdef("#define GL19_JOIN_SEQ 3")
 
 ffibuilder.cdef("""
-groupsig_config_t* gl19_config_init(void);
+int gl19_init();
 """)
 
 ffibuilder.cdef("""
-int gl19_config_free(groupsig_config_t *cfg);
+int gl19_clear();
 """)
 
 ffibuilder.cdef("""                
-int gl19_setup(groupsig_key_t *grpkey, groupsig_key_t *mgrkey, gml_t *gml, groupsig_config_t *config);
+int gl19_setup(groupsig_key_t *grpkey, groupsig_key_t *mgrkey, gml_t *gml);
 """)
                 
 ffibuilder.cdef("""

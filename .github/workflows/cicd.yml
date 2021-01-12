@@ -18,7 +18,10 @@ jobs:
         uses: actions/checkout@v2
       - name: Install Linux dependencies
         if: "contains( matrix.os, 'ubuntu')"
-        run: sudo apt-get install libssl-dev valgrind
+        run: |
+          sudo sed -i 's/azure\.//' /etc/apt/sources.list
+          sudo apt-get update
+          sudo apt-get install libssl-dev valgrind
       - name: Install Python dependencies for coverage
         run: |
           python -m pip install --upgrade pip
@@ -35,9 +38,8 @@ jobs:
 #        if: "contains( matrix.os, 'ubuntu')"
         shell: bash
         working-directory: ${{ github.workspace }}/build
-        run: |
-          ctest --output-on-failure .
-#          ctest -VV --output-on-failure -T memcheck .
+        # Memcheck fails on Github Actions due to some Illegal instruction error I have not been able to debug...
+        run: ctest -VV --output-on-failure . #--overwrite MemoryCheckCommandOptions="--leak-check=full" -T memcheck .
       - name: Process coverage
         working-directory: ${{ github.workspace }}/build
         run: | 
@@ -55,7 +57,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
       - name: Install Linux dependencies for Core
-        run: sudo apt-get install libssl-dev
+        run: |
+          sudo sed -i 's/azure\.//' /etc/apt/sources.list
+          sudo apt-get update
+          sudo apt-get install libssl-dev
       - name: Build Core
         uses: lukka/run-cmake@v1
         with:
@@ -75,29 +80,6 @@ jobs:
           pytest -v --cov-report xml --cov-report annotate --cov-report term --cov=pygroupsig
       - name: Upload coverage
         uses: codecov/codecov-action@v1
-#
-#      - name: Install dependencies
-#        working-directory: ${{ github.workspace }}/src/wrappers/python
-#        run: |
-#          python -m pip install --upgrade pip
-##          pip install -r requirements.txt
-##          pip install -r requirements-dev.txt
-#      - name: Lint with flake8
-#        run: |
-#          # stop the build if there are Python syntax errors or undefined names
-#          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-#          # all Python files should follow PEP8 (except some notebooks, see setup.cfg)
-#          flake8 jupytext tests
-#          # exit-zero treats all errors as warnings.  The GitHub editor is 127 chars wide
-#          flake8 . --count --exit-zero --max-complexity=10 --statistics
-#      - name: Install from source (required for the pre-commit tests)
-#        run: pip install .
-#      - name: Test with pytest
-#        run: pytest --cov=./ --cov-report=xml
-#      - name: Upload coverage
-#        uses: codecov/codecov-action@v1
-#
-#
   test-jsgroupsig:
     runs-on: ubuntu-latest
     strategy:
@@ -107,7 +89,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
       - name: Install CMake
-        run: sudo apt-get install libssl-dev cmake
+        run: |
+          sudo sed -i 's/azure\.//' /etc/apt/sources.list
+          sudo apt-get update
+          sudo apt-get install libssl-dev cmake
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v1
         with:
@@ -130,7 +115,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
       - name: Install Linux dependencies
-        run: sudo apt-get install libssl-dev valgrind
+        run: |
+          sudo sed -i 's/azure\.//' /etc/apt/sources.list
+          sudo apt-get update
+          sudo apt-get install libssl-dev valgrind
       - name: Build with Unit Tests
         uses: lukka/run-cmake@v1
         with:
@@ -146,4 +134,3 @@ jobs:
         run: mvn clean package
       - name: Upload coverage
         uses: codecov/codecov-action@v1
-

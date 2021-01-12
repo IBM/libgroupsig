@@ -30,7 +30,6 @@ class TestGroupOps(unittest.TestCase):
         groupsig.init(constants.GL19_CODE, 0)
         group1 = groupsig.setup(constants.GL19_CODE)
         self.code = constants.GL19_CODE
-        self.config = group1['config']
         grpkey1 = group1['grpkey']
         self.isskey = group1['mgrkey']
         group2 = groupsig.setup(constants.GL19_CODE, grpkey1);
@@ -39,14 +38,15 @@ class TestGroupOps(unittest.TestCase):
         self.memkeys = []
         
     def tearDown(self):
-        groupsig.clear(self.code, self.config)
+        groupsig.clear(self.code)
 
     # Creates a group
     def test_groupCreate(self):
         self.assertNotEqual(self.grpkey, ffi.NULL)
         self.assertNotEqual(self.cnvkey, ffi.NULL)
         self.assertNotEqual(self.isskey, ffi.NULL)
-        self.assertNotEqual(self.config, ffi.NULL)
+        self.assertEqual(groupsig.get_joinseq(constants.GL19_CODE), 3)
+        self.assertEqual(groupsig.get_joinstart(constants.GL19_CODE), 0)
 
     # Adds one member
     def test_addMember(self):
@@ -188,7 +188,6 @@ class TestSignatureOps(unittest.TestCase):
         groupsig.init(constants.GL19_CODE, 0)
         group1 = groupsig.setup(constants.GL19_CODE)
         self.code = constants.GL19_CODE
-        self.config = group1['config']
         grpkey1 = group1['grpkey']
         self.isskey = group1['mgrkey']
         group2 = groupsig.setup(constants.GL19_CODE, grpkey1);
@@ -199,7 +198,7 @@ class TestSignatureOps(unittest.TestCase):
         self.sig = groupsig.sign("Hello, World!", self.memkeys[0], self.grpkey)
         
     def tearDown(self):
-        groupsig.clear(self.code, self.config)
+        groupsig.clear(self.code)
 
     # Exports and reimports a signature, and it verifies correctly
     def test_sigExportImport(self):
@@ -232,7 +231,6 @@ class TestBlindSignatureOps(unittest.TestCase):
         groupsig.init(constants.GL19_CODE, 0)
         group1 = groupsig.setup(constants.GL19_CODE)
         self.code = constants.GL19_CODE
-        self.config = group1['config']
         grpkey1 = group1['grpkey']
         self.isskey = group1['mgrkey']
         group2 = groupsig.setup(constants.GL19_CODE, grpkey1);
@@ -246,7 +244,7 @@ class TestBlindSignatureOps(unittest.TestCase):
         self.bsig = out["bsig"]
         
     def tearDown(self):
-        groupsig.clear(self.code, self.config)
+        groupsig.clear(self.code)
 
     # Exports and reimports a signature, and it verifies correctly
     def test_blindsigExportImport(self):
@@ -271,7 +269,6 @@ class TestGrpkeyOps(unittest.TestCase):
         groupsig.init(constants.GL19_CODE, 0)
         group1 = groupsig.setup(constants.GL19_CODE)
         self.code = constants.GL19_CODE
-        self.config = group1['config']
         grpkey1 = group1['grpkey']
         self.isskey = group1['mgrkey']
         group2 = groupsig.setup(constants.GL19_CODE, grpkey1);
@@ -279,7 +276,7 @@ class TestGrpkeyOps(unittest.TestCase):
         self.grpkey = group2['grpkey']
         
     def tearDown(self):
-        groupsig.clear(self.code, self.config)
+        groupsig.clear(self.code)
 
     # Exports and reimports a group key
     def test_grpkeyExportImport(self):
@@ -298,7 +295,6 @@ class TestIssuerkeyOps(unittest.TestCase):
         groupsig.init(constants.GL19_CODE, 0)
         group1 = groupsig.setup(constants.GL19_CODE)
         self.code = constants.GL19_CODE
-        self.config = group1['config']
         grpkey1 = group1['grpkey']
         self.isskey = group1['mgrkey']
         group2 = groupsig.setup(constants.GL19_CODE, grpkey1);
@@ -306,7 +302,7 @@ class TestIssuerkeyOps(unittest.TestCase):
         self.grpkey = group2['grpkey']
         
     def tearDown(self):
-        groupsig.clear(self.code, self.config)
+        groupsig.clear(self.code)
 
     # Exports and reimports an issuer key
     def test_isskeyExportImport(self):
@@ -325,7 +321,6 @@ class TestConverterkeyOps(unittest.TestCase):
         groupsig.init(constants.GL19_CODE, 0)
         group1 = groupsig.setup(constants.GL19_CODE)
         self.code = constants.GL19_CODE
-        self.config = group1['config']
         grpkey1 = group1['grpkey']
         self.isskey = group1['mgrkey']
         group2 = groupsig.setup(constants.GL19_CODE, grpkey1);
@@ -333,7 +328,7 @@ class TestConverterkeyOps(unittest.TestCase):
         self.grpkey = group2['grpkey']
         
     def tearDown(self):
-        groupsig.clear(self.code, self.config)
+        groupsig.clear(self.code)
 
     # Exports and reimports a converter key
     def test_cnvkeyExportImport(self):
@@ -361,7 +356,6 @@ class TestMemkeyOps(unittest.TestCase):
         groupsig.init(constants.GL19_CODE, 0)
         group1 = groupsig.setup(constants.GL19_CODE)
         self.code = constants.GL19_CODE
-        self.config = group1['config']
         grpkey1 = group1['grpkey']
         self.isskey = group1['mgrkey']
         group2 = groupsig.setup(constants.GL19_CODE, grpkey1);
@@ -370,7 +364,7 @@ class TestMemkeyOps(unittest.TestCase):
         self.addMember()
         
     def tearDown(self):
-        groupsig.clear(self.code, self.config)
+        groupsig.clear(self.code)
 
     # Exports and reimports a member key
     def test_memkeyExportImport(self):
@@ -389,7 +383,6 @@ class TestBldkeyOps(unittest.TestCase):
         groupsig.init(constants.GL19_CODE, 0)
         group1 = groupsig.setup(constants.GL19_CODE)
         self.code = constants.GL19_CODE
-        self.config = group1['config']
         grpkey1 = group1['grpkey']
         self.isskey = group1['mgrkey']
         group2 = groupsig.setup(constants.GL19_CODE, grpkey1);
@@ -398,7 +391,7 @@ class TestBldkeyOps(unittest.TestCase):
         self.bldkey = bldkey.bldkey_random(self.code, self.grpkey)
         
     def tearDown(self):
-        groupsig.clear(self.code, self.config)
+        groupsig.clear(self.code)
 
     # Exports and reimports a blinding key
     def test_bldkeyExportImport(self):

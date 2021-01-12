@@ -487,14 +487,14 @@ int bigz_urandomb(bigz_t rop, unsigned long int n);
 size_t bigz_sizeinbits(bigz_t op);
 
 /** 
- * @fn char* bigz_get_str(bigz_t op)
+ * @fn char* bigz_get_str16(bigz_t op)
  * @brief Returns an hex string representation of <i>op</i>.
  *
  * @param[in] op The big integer.
  * 
  * @return A pointer to the produced string or NULL if error.
  */
-char* bigz_get_str(bigz_t op);
+char* bigz_get_str16(bigz_t op);
 
 /** 
  * @fn int bigz_set_str(bigz_t rop, char *str)
@@ -505,7 +505,28 @@ char* bigz_get_str(bigz_t op);
  * 
  * @return IOK or IERROR.
  */
-int bigz_set_str(bigz_t rop, char *str);
+int bigz_set_str16(bigz_t rop, char *str);
+
+/** 
+ * @fn char* bigz_get_str10(bigz_t op)
+ * @brief Returns a decimal string representation of <i>op</i>.
+ *
+ * @param[in] op The big integer.
+ * 
+ * @return A pointer to the produced string or NULL if error.
+ */
+char* bigz_get_str10(bigz_t op);
+
+/** 
+ * @fn int bigz_set_str10(bigz_t rop, char *str)
+ * @brief Sets <i>rop</i> to the number in the decimal string <i>str</i>.
+ *
+ * @param[in,out] rop Will be set to the number imported from <i>str</i>.
+ * @param[in] str The string representation of the number.
+ * 
+ * @return IOK or IERROR.
+ */
+int bigz_set_str10(bigz_t rop, char *str); 
 
 /** 
  * @fn byte_t* bigz_export(bigz_t op, size_t *length)
