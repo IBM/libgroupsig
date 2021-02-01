@@ -3,7 +3,7 @@
 const jsgroupsig = require('jsgroupsig');
 
 /* Init groupsig */
-let cfg = jsgroupsig.init(jsgroupsig.GL19, 0);
+jsgroupsig.init(jsgroupsig.GL19);
 
 /* Init grp_key */
 let grpkey = jsgroupsig.grp_key_init(jsgroupsig.GL19);
@@ -34,4 +34,4 @@ let ok = jsgroupsig.verify(sig, "Hello, World!", grpkey);
 if (ok) console.log("VALID signature.");
 else console.log("WRONG signature.");
 
-jsgroupsig.clear(jsgroupsig.GL19, cfg);
+jsgroupsig.clear(jsgroupsig.GL19);

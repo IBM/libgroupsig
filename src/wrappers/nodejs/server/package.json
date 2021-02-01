@@ -17,7 +17,7 @@
     "babel-core": "^7.0.0-bridge.0",
     "chai": "^4.2.0",
     "chai-http": "^4.3.0",
-    "jsgroupsig": "^0.1.4",
+    "jsgroupsig": "^1.0.0",
     "mocha": "^8.2.1",
     "nodemon": "^2.0.4",
     "request": "^2.88.2"
