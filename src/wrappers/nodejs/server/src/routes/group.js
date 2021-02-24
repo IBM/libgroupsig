@@ -4,18 +4,27 @@ const jsgroupsig = require('jsgroupsig');
 const router = Router();
 const axios = require('axios');
 
-async function checkPKICert(certificate, signature, message) {
+async function checkPKICert(certificate, signature, message, apikey) {
     try {
+	
+	const options = {
+	    'X-API-KEY': apikey
+	};
+
 	const response = await axios.post(process.env.PKI_ENDPOINT,
 					  {
 					      cert: certificate,
 					      sign: signature,
 					      message: message
-					  })
+					  },
+					  options);
+	
 	if (response.status == 200 && response.data == true) {
 	    return true;
 	}
+	
 	return false;
+	
     } catch(error) {
 	return false;
     }
@@ -405,7 +414,8 @@ router.put('/:groupId/member/:seq', async (req, res, next) => {
 	if (process.env.PKI_CHECK == "true") {
 	    result = await checkPKICert(req.body.certificate,
 					req.body.signature,
-					req.body.challenge);
+					req.body.challenge,
+					process.env.PKI_APIKEY);
 	    if (result == false) {
 		setImmediate( () => {
 		    next({

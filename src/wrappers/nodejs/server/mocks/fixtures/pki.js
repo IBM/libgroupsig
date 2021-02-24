@@ -16,7 +16,7 @@ const verifyCert = {
 	const reqCert = req.body.cert;
 	const reqSig = req.body.sign;
 	const reqMsg = req.body.message;
-	
+	console.log(req.headers['X-API-KEY']);
 	/* Just accept all requests. If further testing is desired, checks for
 	   hard-coded certificates and signatures can be done by properly 
 	   setting the "TEST_CERT_AND_SIGN" array, and something like the
