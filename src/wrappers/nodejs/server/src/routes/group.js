@@ -8,7 +8,9 @@ async function checkPKICert(certificate, signature, message, apikey) {
     try {
 	
 	const options = {
-	    'X-API-KEY': apikey
+	    'headers': {
+		'X-API-KEY': apikey
+	    }
 	};
 
 	const response = await axios.post(process.env.PKI_ENDPOINT,
@@ -18,9 +20,12 @@ async function checkPKICert(certificate, signature, message, apikey) {
 					      message: message
 					  },
 					  options);
-	
-	if (response.status == 200 && response.data == true) {
-	    return true;
+
+	if (response.status == 200) {
+	    if(response.data.status === 'ok' &&
+	       response.data.reason === 'valid_signature') {
+		return true;
+	    }
 	}
 	
 	return false;
