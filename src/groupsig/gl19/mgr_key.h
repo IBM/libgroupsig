@@ -145,7 +145,7 @@ static const mgr_key_handle_t gl19_mgr_key_handle = {
  .gexport = &gl19_mgr_key_export, /**< Exports manager keys. */
  .gimport = &gl19_mgr_key_import, /**< Imports manager keys. */
  .to_string = &gl19_mgr_key_to_string, /**< Converts manager keys to printable strings. */
- .get_size = &gl19_mgr_key_get_size /**< Gets the size of the key in the specified format. */
+ .get_size = &gl19_mgr_key_get_size /**< Gets the size of the key as a byte array. */
 };
 
 #endif

@@ -163,10 +163,10 @@ int klap20_get_joinstart(uint8_t *start);
  * @return IOK or IERROR.
  */
 int klap20_join_mem(message_t **mout,
-		  groupsig_key_t *memkey,
-		  int seq,
-		  message_t *min,
-		  groupsig_key_t *grpkey);
+		    groupsig_key_t *memkey,
+		    int seq,
+		    message_t *min,
+		    groupsig_key_t *grpkey);
 
 /** 
  * @fn int klap20_join_mgr(message_t **mout, 
