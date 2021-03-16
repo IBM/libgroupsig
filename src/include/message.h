@@ -1,20 +1,14 @@
-/* 
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+/*                               -*- Mode: C -*- 
+ * @file: message.h
+ * @brief: 
+ * @author: jesus
+ * Maintainer: 
+ * @date: mié jul 18 15:47:16 2012 (+0200)
+ * @version: 
+ * Last-Updated: lun abr  1 13:30:33 2013 (+0200)
+ *           By: jesus
+ *     Update #: 26
+ * URL: 
  */
 
 #ifndef _MESSAGE_H
@@ -22,23 +16,34 @@
 
 #include <stdint.h>
 #include "types.h"
+//#include "exim.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/* Type definitions */
-typedef enum {
-  MESSAGE_FORMAT_NULL_FILE, /* A file with unformatted contents */
-  MESSAGE_FORMAT_STRING_B64, /* Just a base64 (char *) */
-} message_format_t;
+/* @TODO: I don't like the format management here (and probably neither
+   the exim abstraction... */
 
+typedef enum {
+  MESSAGE_FORMAT_NULL, /* The caller takes care of the format. */
+  MESSAGE_FORMAT_JSON, /* Json object. */
+} message_format_t;
+  
 /* Supported message formats */
 #define SUPPORTED_MESSAGE_FORMATS_N 2
 static const int SUPPORTED_MESSAGE_FORMATS[SUPPORTED_MESSAGE_FORMATS_N] = { 
-  MESSAGE_FORMAT_NULL_FILE,
-  MESSAGE_FORMAT_STRING_B64,
+  MESSAGE_FORMAT_NULL,
+  MESSAGE_FORMAT_JSON,
 };
+
+/* /\* Supported exim formats *\/ */
+/* #define SUPPORTED_EXIM_FORMATS_N 3 */
+/* static const int SUPPORTED_EXIM_FORMATS[SUPPORTED_EXIM_FORMATS_N] = {  */
+/*   EXIM_FORMAT_FILE_NULL, */
+/*   EXIM_FORMAT_STRING_NULL_B64, */
+/*   EXIM_FORMAT_FILE_JSON, */
+/* }; */
 
 /** 
  * @struct message_t
@@ -47,38 +52,44 @@ static const int SUPPORTED_MESSAGE_FORMATS[SUPPORTED_MESSAGE_FORMATS_N] = {
  * meta information like the format.
  */
 typedef struct _message_t {
-  byte_t *bytes; /**< Message bytes. */
-  uint64_t length; /**< Number of bytes */
+  message_format_t format; /**< The format of the message. */
+  byte_t *bytes; /**< Message data (bytes). */
+  uint64_t length; /**< Size of data (in number of bytes). */
 } message_t;
 
 /** 
- * @fn message_t* message_init(void)
+ * @fn message_t* message_init(message_format_t format)
  * Initializes a message structure, setting its variables to default values.
+ * 
+ * @param[in] format The format used to represent the message.
  * 
  * @return A pointer to the allocated memory or NULL if error.
  */
-message_t* message_init(void);
-
-/** 
- * @fn message_t* message_from_string(char *str) 
- * Creates a new message from the received string.
- * 
- * @param[in] string The string to be stored as a message. Will be duplicated.
- * 
- * @return A pointer to the generated message.
- */
-message_t* message_from_string(char *str);
+ message_t* message_init(message_format_t format);
 
 /**
- * @fn message_t* message_from_bytes(byte_t *bytes, uint64_t length)
+ * @fn message_t* message_from_string(message_format_t format, char *str)
  * Creates a new message from the received string.
  *
+ * @param[in] format The format used to represent the message.
+ * @param[in] string The string to be stored as a message. Will be duplicated.
+ *
+ * @return A pointer to the generated message.
+ */
+ message_t* message_from_string(message_format_t format, char *str);
+
+/**
+ * @fn message_t* message_from_bytes(message_format_t format,
+ *  byte_t *bytes, uint64_t length)
+ * Creates a new message from the received string.
+ *
+ * @param[in] format The format used to represent the message.
  * @param[in] bytes The bytes to be stored as a message.
  * @param[in] length The number of bytes in the byte array..
  *
  * @return A pointer to the generated message.
  */
- message_t* message_from_bytes(byte_t *bytes, uint64_t length);
+ message_t* message_from_bytes(message_format_t format, byte_t *bytes, uint64_t length);
 
 /** 
  * @fn int message_free(message_t *msg)
@@ -90,7 +101,7 @@ message_t* message_from_string(char *str);
  */
 int message_free(message_t *msg);
 
-/** 
+/**
  * @fn int message_set_bytes(message_t *msg, byte_t *bytes, uint64_t length)
  * Sets the message bytes to the ones received. The memory is duplicated.
  *
@@ -98,19 +109,19 @@ int message_free(message_t *msg);
  *  Must have been initialized by the caller.
  * @param[in] bytes The bytes to copy.
  * @param[in] length The number of received bytes.
- * 
+ *
  * @return IOK or IERROR with errno updated
  */
 int message_set_bytes(message_t *msg, byte_t *bytes, uint64_t length);
 
-/** 
+/**
  * @fn int message_set_bytes_from_string(message_t *msg, char *string)
- * Sets the message contents from the received string. The memory is duplicated. 
+ * Sets the message contents from the received string. The memory is duplicated.
  *
  * @param[in,out] msg The message whose bytes will be updated. Must have been
  *  initialized by the caller.
  * @param[in] string The string to copy
- * 
+ *
  * @return IOK or IERROR with errno updated
  */
 int message_set_bytes_from_string(message_t *msg, char *string);
@@ -157,7 +168,7 @@ char* message_to_base64(message_t *msg);
  * @return A pointer to the produced message or NULL if error with errno 
  *  updated.
  */  
-message_t* message_from_base64(char *b64);  
+message_t* message_from_base64(char *b64); 
 
 /** 
  * @fn int message_export(void *dst, message_format_t format, message_t *msg)
@@ -170,7 +181,7 @@ message_t* message_from_base64(char *b64);
  * 
  * @return IOK or IERROR with errno updated
  */
-int message_export(void *dst, message_format_t, message_t *msg);
+int message_export(void *dst, message_format_t format, message_t *msg);
 
 /** 
  * @fn int message_import(message_t *msg, message_format_t format, void *src)
@@ -186,6 +197,19 @@ int message_export(void *dst, message_format_t, message_t *msg);
  */
 int message_import(message_t *msg, message_format_t format, void *src);
 
+/** 
+ * @fn int message_get_key(char **value, message_t *msg, char *key)
+ * In a message with JSON format, fetches the value of the given key entry.
+ *
+ * @param[in,out] value Will be set to the retrieved value. if *value is NULL,
+ *  memory is allocated internally.
+ * @param[in] msg The message to parse.
+ * @param[in] key The key to fetch.
+ * 
+ * @return The imported message or NULL with errno updated.
+ */
+int message_get_key(char **value, message_t *msg, char *key);
+
 #ifdef __cplusplus
 }
 #endif
@@ -194,7 +218,6 @@ int message_import(message_t *msg, message_format_t format, void *src);
 /* Write any cplusplus specific code here */
 #endif
   
-
 #endif /* _MESSAGE_H */
 
 /* message.h ends here */

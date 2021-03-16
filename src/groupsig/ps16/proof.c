@@ -96,7 +96,6 @@ int ps16_proof_export(byte_t **bytes, uint32_t *size, groupsig_proof_t *proof) {
   byte_t *_bytes, *__bytes;
   int rc, _size;
   uint64_t proof_len;
-  uint8_t code;
 
   if(!proof || proof->scheme != GROUPSIG_PS16_CODE) {
     LOG_EINVAL(&logger, __FILE__, "ps16_proof_export", __LINE__, LOGERROR);
@@ -115,8 +114,7 @@ int ps16_proof_export(byte_t **bytes, uint32_t *size, groupsig_proof_t *proof) {
   }  
 
   /* Dump GROUPSIG_PS16_CODE */
-  code = GROUPSIG_PS16_CODE;
-  _bytes[0] = code;
+  _bytes[0] = GROUPSIG_PS16_CODE;
 
   /* Export the SPK */
   __bytes = &_bytes[1];
@@ -147,6 +145,7 @@ int ps16_proof_export(byte_t **bytes, uint32_t *size, groupsig_proof_t *proof) {
   
   if (rc == IERROR && _bytes) { mem_free(_bytes); _bytes = NULL; }
   return rc;
+  
 }
 
 groupsig_proof_t* ps16_proof_import(byte_t *source, uint32_t size) {
