@@ -3,7 +3,7 @@
 const jsgroupsig = require('jsgroupsig');
 
 /* Init groupsig */
-let cfg = jsgroupsig.init(jsgroupsig.BBS04, 0);
+jsgroupsig.init(jsgroupsig.BBS04);
 
 /* Init grp_key */
 let grpkey = jsgroupsig.grp_key_init(jsgroupsig.BBS04);
@@ -33,12 +33,12 @@ else console.log("WRONG signature.");
 
 /* Open the signature */
 let id = jsgroupsig.open(sig, grpkey, mgrkey, gml);
-let strid = jsgroupsig.identity_to_string(id);
-console.log("Signer was: "+strid);
+let { index, proof } = jsgroupsig.open(sig, grpkey, mgrkey, gml);
+console.log("Signer was: "+index);
 
 /* Free stuff */
 jsgroupsig.gml_free(gml);
 jsgroupsig.grp_key_free(grpkey);
 jsgroupsig.mgr_key_free(mgrkey);
 jsgroupsig.mem_key_free(memkey);
-jsgroupsig.clear(jsgroupsig.BBS04, cfg);
+jsgroupsig.clear(jsgroupsig.BBS04);

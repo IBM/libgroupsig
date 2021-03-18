@@ -22,7 +22,6 @@
 
 #include <stdint.h>
 #include "include/signature.h"
-#include "bigz.h"
 #include "gl19.h"
 #include "crypto/spk.h"
 

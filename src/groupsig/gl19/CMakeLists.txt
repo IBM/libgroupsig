@@ -16,8 +16,7 @@ add_library (gl19
   blind.c
   convert.c
   unblind.c
-  identity.c identity.h
-  env.c)
+  identity.c identity.h)
 
 target_include_directories (gl19 PRIVATE ${OPENSSL_INCLUDE_DIR})
 target_link_libraries (gl19 PRIVATE ${OPENSSL_LIBRARIES})

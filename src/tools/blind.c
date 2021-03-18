@@ -47,8 +47,8 @@ int main(int argc, char *argv[]) {
   groupsig_blindsig_t **bsigs;
   message_t **msgs;
   groupsig_key_t *grpkey, *bldkey;
-  byte_t *b_grpkey, *b_bldkey, *b_sig, *b_bsig;
-  uint64_t b_len;
+  byte_t *b_grpkey, *b_bldkey, *b_sig, *b_bsig, *b_msg;
+  uint64_t b_len, msg_len;
   int key_format, sig_format, proof_format, i, i_sig, n_sigs;
   uint8_t scheme;
 
@@ -101,6 +101,7 @@ int main(int argc, char *argv[]) {
   i_sig = 0;
   sigs = (groupsig_signature_t **) mem_malloc(sizeof(groupsig_signature_t *)*n_sigs);
   bsigs = (groupsig_blindsig_t **) mem_malloc(sizeof(groupsig_blindsig_t *)*n_sigs);
+  b_msg = NULL;
   msgs = (message_t **) mem_malloc(sizeof(message_t *)*n_sigs);
 
   /* By setting the blinding key to NULL, we let the first execution of blind
@@ -129,16 +130,19 @@ int main(int argc, char *argv[]) {
     }
 
     /* Initialize i-th message */
-    if(!(msgs[i_sig] = message_init())) {
-      fprintf(stderr, "Error: failed to initialize message.\n");
+    b_msg = NULL;
+    if (misc_read_file_to_bytestring(argv[i+1], &b_msg, &msg_len) == IERROR) {
+      fprintf(stderr, "Error: failed to read message file %s\n", argv[i+1]);
       return IERROR;
     }
 
-    /* Import i-th message */
-    if(message_import(msgs[i_sig], MESSAGE_FORMAT_NULL_FILE, argv[i+1]) == IERROR) {
-      fprintf(stderr, "Error: failed to import message %s.\n", argv[i+1]);
-      return IERROR;
+    if (!(msgs[i_sig] = message_from_bytes(b_msg, msg_len))) {
+      fprintf(stderr, "Error: failed to import message from file %s\n",
+	      argv[i+1]);
+      return IERROR;      
     }
+
+    mem_free(b_msg); b_msg = NULL;
 
     /* Blind the signature and message */
     if(groupsig_blind(bsigs[i_sig], &bldkey, grpkey,

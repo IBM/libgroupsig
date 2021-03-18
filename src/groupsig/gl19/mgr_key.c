@@ -154,7 +154,6 @@ int gl19_mgr_key_export(byte_t **bytes, uint32_t *size, groupsig_key_t *key) {
   uint64_t len;
   uint32_t _size;
   int ctr, rc;
-  uint8_t code, type;
   
   if(!bytes ||
      !size ||
@@ -176,12 +175,10 @@ int gl19_mgr_key_export(byte_t **bytes, uint32_t *size, groupsig_key_t *key) {
   }
 
   /* Dump GROUPSIG_GL19_CODE */
-  code = GROUPSIG_GL19_CODE;
-  _bytes[ctr++] = code;
+  _bytes[ctr++] = GROUPSIG_GL19_CODE;
   
   /* Dump key type */
-  type = GROUPSIG_KEY_MGRKEY;
-  _bytes[ctr++] = type;
+  _bytes[ctr++] = GROUPSIG_KEY_MGRKEY;
 
   /* Dump isk, if present (Issuer key) */
   if(gl19_key->isk) {

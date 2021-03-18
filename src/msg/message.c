@@ -1,20 +1,14 @@
-/* 
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+/*                               -*- Mode: C -*- 
+ * @file: message.c
+ * @brief: 
+ * @author: jesus
+ * Maintainer: 
+ * @date: mié jul 18 22:16:54 2012 (+0200)
+ * @version: 
+ * Last-Updated: Fri Jun  7 09:04:11 2013 (-0400)
+ *           By: jesus
+ *     Update #: 69
+ * URL: 
  */
 
 #include <stdlib.h>
@@ -22,105 +16,10 @@
 
 #include "logger.h"
 #include "message.h"
-#include "misc/misc.h"
 #include "shim/base64.h"
+#include "misc/misc.h"
 #include "sys/mem.h"
-
-/* Static functions */
-
-static int _is_supported_format(message_format_t format) {
-
-  int i;
-
-  for(i=0; i<SUPPORTED_MESSAGE_FORMATS_N; i++) {
-    if(SUPPORTED_MESSAGE_FORMATS[i] == format) {
-      return 1;
-    }
-  }
-
-  return 0;
-
-}
-
-static int _message_export_null_file(message_t *msg, char *dst) {
-  
-  FILE *fd;
-  size_t rc;
-
-  if(!msg || !dst) {
-    LOG_EINVAL(&logger, __FILE__, "_message_export_null_file", __LINE__,
-               LOGERROR);
-    return IERROR;
-  }
-
-  /* Dump the contents of the message into the specified file */
-  if(!(fd = fopen(dst, "w"))) {
-    LOG_ERRORCODE(&logger, __FILE__, "_message_export_null_file", __LINE__,
-                  errno, LOGERROR);
-    return IERROR;
-  }
-
-  if((rc = fwrite(msg->bytes, 1, msg->length, fd)) < msg->length) {
-    LOG_ERRORCODE(&logger, __FILE__, "_message_export_null_file", __LINE__,
-                  EBADF, LOGERROR);
-    fclose(fd); fd = NULL;
-    return IERROR;
-  }
-
-  fclose(fd); fd = NULL;
-
-  return IOK;
-
-}
-
-/* static char* _message_export_string_b64(message_t *msg, char *dst) { */
-
-/*   if(!msg) { */
-/*     LOG_EINVAL(&logger, __FILE__, "_message_export_string_b64",  */
-/*                __LINE__, LOGERROR); */
-/*     return NULL; */
-/*   } */
-
-/*   dst = base64_encode(msg->bytes, msg->length); */
-
-/*   return dst; */
-
-/* } */
-
-static int _message_import_null_file(message_t *msg, char *source) {
-
-  if(!msg || !source) {
-    LOG_EINVAL(&logger, __FILE__, "_message_import_null_file",
-               __LINE__, LOGERROR);
-    return IERROR;
-  }
-
-  /* Read the file contents */
-  msg->bytes = NULL;
-  if(misc_read_file_to_bytestring(source, &msg->bytes, &msg->length) == IERROR) {
-    return IERROR;
-  }
-
-  return IOK;
-  
-}
-
-/* static int _message_import_string_b64(message_t *msg, char *source) { */
-
-/*   if(!source) { */
-/*     LOG_EINVAL(&logger, __FILE__, "_message_import_string_b64", __LINE__, LOGERROR); */
-/*     return IERROR; */
-/*   } */
-
-/*   if(!(msg->bytes = base64_decode(source, strlen(source), &msg->length))) { */
-/*     return IERROR; */
-/*   } */
-
-/*   return IOK; */
-
-/* } */
-
-/* Public functions */
+#include "misc/mjson.h"
 
 message_t* message_init() {
   
@@ -146,7 +45,7 @@ message_t* message_from_string(char *str) {
     LOG_EINVAL(&logger, __FILE__, "message_from_str", __LINE__, LOGERROR);
     return NULL;
   }
-  
+
   if(!(msg = message_init()))
     return NULL;
   
@@ -159,7 +58,8 @@ message_t* message_from_string(char *str) {
   
 }
 
-message_t* message_from_bytes(byte_t *bytes, uint64_t length) {
+message_t* message_from_bytes(byte_t *bytes,
+			      uint64_t length) {
   
   message_t *msg;
   
@@ -167,10 +67,10 @@ message_t* message_from_bytes(byte_t *bytes, uint64_t length) {
     LOG_EINVAL(&logger, __FILE__, "message_from_bytes", __LINE__, LOGERROR);
     return NULL;
   }
-
+  
   if(!(msg = message_init()))
     return NULL;
-  
+
   if(!(msg->bytes = (byte_t *) mem_malloc(sizeof(byte_t)*length))) {
     message_free(msg); msg = NULL;
     return NULL;
@@ -221,12 +121,14 @@ int message_set_bytes(message_t *msg, byte_t *bytes, uint64_t length) {
 int message_set_bytes_from_string(message_t *msg, char *string) {
 
   if(!msg || !string) {
-    LOG_EINVAL(&logger, __FILE__, "message_set_bytes_from_string", __LINE__, LOGERROR);
+    LOG_EINVAL(&logger, __FILE__, "message_set_bytes_from_string",
+	       __LINE__, LOGERROR);
     return IERROR;
   }
 
   if(!(msg->bytes = (byte_t *) strdup(string))) {
-    LOG_ERRORCODE(&logger, __FILE__, "message_set_bytes_from_string", __LINE__, errno, LOGERROR);
+    LOG_ERRORCODE(&logger, __FILE__, "message_set_bytes_from_string", __LINE__,
+		  errno, LOGERROR);
     return IERROR;
   }
 
@@ -274,8 +176,8 @@ char* message_to_string(message_t *msg) {
   memset(smsg, 0, (msg->length+1)*sizeof(char));
 
   /* WARNING! Note that this string may not be printable! */
-  memcpy(smsg, msg->bytes, msg->length);
-  
+  sprintf(smsg, "%s", (char *) msg->bytes);
+
   return smsg;
 
 }
@@ -318,64 +220,43 @@ message_t* message_from_base64(char *b64) {
 
 }
 
-int message_export(void *dst, message_format_t format, message_t *msg) {
+int message_json_get_key(char **value, message_t *msg, char *key) {
 
-  if(!msg) {
-    LOG_EINVAL(&logger, __FILE__, "message_export", __LINE__, LOGERROR);
+  char *_val;
+
+  if (!value || !msg || !key) {
+    LOG_EINVAL(&logger, __FILE__, "message_get_key", __LINE__, LOGERROR);
     return IERROR;
   }
 
-  /* See if the given format is supported*/
-  if(!_is_supported_format(format)) {
-    LOG_EINVAL_MSG(&logger, __FILE__, "message_export", __LINE__,
-		   "The specified format is not supported.", LOGERROR);
+  /* The bytes field must be a valid JSON object. Check it. */
+  if(mjson((char *) msg->bytes,
+	   msg->length,
+	   NULL,
+	   NULL) == MJSON_ERROR_INVALID_INPUT) {
     return IERROR;
   }
 
-  switch(format) {
-  case MESSAGE_FORMAT_NULL_FILE: 
-    return _message_export_null_file(msg, dst);
-  /* case MESSAGE_FORMAT_STRING_B64: */
-  /*   if(!_message_export_string_b64(msg, dst)) return IERROR; */
-  /*   break; */
-  default:
-    LOG_EINVAL_MSG(&logger, __FILE__, "message_export", __LINE__,
-		   "The specified format is not supported.", LOGERROR);
+  if(!(_val = (char *) mem_malloc(sizeof(char)*(msg->length+1)))) {
     return IERROR;
   }
 
-  /* This should not happen */
-  return IERROR;
-
-}
-
-int message_import(message_t* msg, message_format_t format, void *src) {
-
-  if(!msg || !src) {
-    LOG_EINVAL(&logger, __FILE__, "message_import", __LINE__, LOGERROR);
+  if (mjson_get_string((char *) msg->bytes,
+		       msg->length, key, _val, msg->length) == -1) {
+    LOG_EINVAL_MSG(&logger, __FILE__, "message_get_key", __LINE__,
+  		   "Error fetching key.", LOGERROR);
+    mem_free(_val); _val = NULL;
     return IERROR;
   }
 
-  /* See if the given format is supported*/
-  if(!_is_supported_format(format)) {
-    LOG_EINVAL_MSG(&logger, __FILE__, "message_export", __LINE__,
-		   "The specified format is not supported.", LOGERROR);
-    return IERROR;
+  if (!*value) *value = _val;
+  else {
+    memcpy(*value, _val, strlen(_val));
+    mem_free(_val); _val = NULL;
   }
 
-  switch(format) {
-  case MESSAGE_FORMAT_NULL_FILE: /* Just return the bytes */
-    return _message_import_null_file(msg, src);
-  /* case MESSAGE_FORMAT_STRING_B64: */
-  /*   return _message_import_string_b64(msg, src); */
-  default:
-    LOG_EINVAL_MSG(&logger, __FILE__, "message_export", __LINE__,
-		   "The specified format is not supported.", LOGERROR);
-    return IERROR;
-  }
-
-  return IERROR;
-  
+  return IOK;
+    
 }
 
 /* message.c ends here */

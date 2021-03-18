@@ -249,7 +249,6 @@ int gl19_grp_key_export(byte_t **bytes,
   byte_t *_bytes, *__bytes;
   uint64_t len;
   int _size, ctr, rc;
-  uint8_t code, type;
   
   if(!bytes ||
      !size ||
@@ -272,11 +271,9 @@ int gl19_grp_key_export(byte_t **bytes,
   }
   
   /* Dump GROUPSIG_GL19_CODE */
-  code = GROUPSIG_GL19_CODE;
-  _bytes[ctr++] = code;
+  _bytes[ctr++] = GROUPSIG_GL19_CODE;
 
   /* Dump key type */
-  type = GROUPSIG_KEY_GRPKEY;
   _bytes[ctr++] = GROUPSIG_KEY_GRPKEY;
 
   /* Dump g1 */
