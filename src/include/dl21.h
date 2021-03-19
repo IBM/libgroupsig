@@ -54,7 +54,8 @@
 extern "C" {
 #endif
 
-/**
+
+  /**
  * @def GROUPSIG_DL21_CODE
  * @brief DL21 scheme code.
  */
@@ -105,7 +106,6 @@ int dl21_init();
  * @return IOK or IERROR.
  */   
 int dl21_clear();  
-
 
 /** 
  * @fn int dl21_setup(groupsig_key_t *grpkey, groupsig_key_t *mgrkey, 

@@ -29,6 +29,7 @@
 #include "ps16.h"
 #include "klap20.h"
 #include "dl21.h"
+#include "dl21seq.h"
 
 #ifdef __cplusplus
 extern "C" {

@@ -23,7 +23,7 @@
  *  licenses/>
  *
  * @file: grp_key.h
- * @brief: DL21 group keys.
+ * @brief: DL21SEQ group keys.
  * @author: jesus
  * Maintainer: jesus
  * @date: mié may  9 17:11:58 2012 (+0200)
@@ -34,22 +34,21 @@
  * URL: bitbucket.org/jdiazvico/libgroupsig
  */
 
-#ifndef _DL21_GRP_KEY_H
-#define _DL21_GRP_KEY_H
+#ifndef _DL21SEQ_GRP_KEY_H
+#define _DL21SEQ_GRP_KEY_H
 
 #include <stdint.h>
 #include "types.h"
 #include "sysenv.h"
-#include "dl21.h"
+#include "dl21seq.h"
 #include "include/grp_key.h"
 #include "shim/pbc_ext.h"
 
-
 /**
- * @struct dl21_grp_key_t
- * @brief Structure for DL21 group keys.
+ * @struct dl21seq_grp_key_t
+ * @brief Structure for DL21SEQ group keys.
  *
- * For convenience, we set a public key of DL21 to contain the instance parameters 
+ * For convenience, we set a public key of DL21SEQ to contain the instance parameters 
  * as well as the public keys of Issuer and Converter. @TODO We may want to 
  * redesign this at some point...
  */
@@ -59,40 +58,40 @@ typedef struct {
   pbcext_element_G1_t *h1; /**< Params. Random generator of G1. */
   pbcext_element_G1_t *h2; /**< Params. Random generator of G1. */
   pbcext_element_G2_t *ipk; /**< Issuer public key. */
-} dl21_grp_key_t;
+} dl21seq_grp_key_t;
 
 /**
- * @def DL21_GRP_KEY_BEGIN_MSG
- * @brief Begin string to prepend to headers of files containing DL21 group keys
+ * @def DL21SEQ_GRP_KEY_BEGIN_MSG
+ * @brief Begin string to prepend to headers of files containing DL21SEQ group keys
  */
-#define DL21_GRP_KEY_BEGIN_MSG "BEGIN DL21 GROUPKEY"
+#define DL21SEQ_GRP_KEY_BEGIN_MSG "BEGIN DL21SEQ GROUPKEY"
 
 /**
- * @def DL21_GRP_KEY_END_MSG
- * @brief End string to prepend to headers of files containing DL21 group keys
+ * @def DL21SEQ_GRP_KEY_END_MSG
+ * @brief End string to prepend to headers of files containing DL21SEQ group keys
  */
-#define DL21_GRP_KEY_END_MSG "END DL21 GROUPKEY"
+#define DL21SEQ_GRP_KEY_END_MSG "END DL21SEQ GROUPKEY"
 
 /** 
- * @fn groupsig_key_t* dl21_grp_key_init()
+ * @fn groupsig_key_t* dl21seq_grp_key_init()
  * @brief Creates a new group key.
  *
  * @return A pointer to the initialized group key or NULL in case of error.
  */
-groupsig_key_t* dl21_grp_key_init();
+groupsig_key_t* dl21seq_grp_key_init();
 
 /** 
- * @fn int dl21_grp_key_free(groupsig_key_t *key)
+ * @fn int dl21seq_grp_key_free(groupsig_key_t *key)
  * @brief Frees the variables of the given group key.
  *
  * @param[in,out] key The group key to initialize.
  * 
  * @return IOK or IERROR
  */
-int dl21_grp_key_free(groupsig_key_t *key);
+int dl21seq_grp_key_free(groupsig_key_t *key);
 
 /** 
- * @fn int dl21_grp_key_copy(groupsig_key_t *dst, groupsig_key_t *src)
+ * @fn int dl21seq_grp_key_copy(groupsig_key_t *dst, groupsig_key_t *src)
  * @brief Copies a group key.
  *
  * Copies the source key into the destination key (which must be initialized by 
@@ -103,23 +102,23 @@ int dl21_grp_key_free(groupsig_key_t *key);
  * 
  * @return IOK or IERROR.
  */
-int dl21_grp_key_copy(groupsig_key_t *dst, groupsig_key_t *src);
+int dl21seq_grp_key_copy(groupsig_key_t *dst, groupsig_key_t *src);
 
 /**
- * @fn int dl21_grp_key_get_size_in_format(groupsig_key_t *key)
+ * @fn int dl21seq_grp_key_get_size_in_format(groupsig_key_t *key)
  * @brief Returns the number of bytes required to export the key.
  *
  * @param[in] key The key.
  *
  * @return The required number of bytes, or -1 if error.
  */
-int dl21_grp_key_get_size(groupsig_key_t *key);
+int dl21seq_grp_key_get_size(groupsig_key_t *key);
 
 /** 
- * @fn int dl21_grp_key_export(byte_t **bytes, uint32_t *size, groupsig_key_t *key)
+ * @fn int dl21seq_grp_key_export(byte_t **bytes, uint32_t *size, groupsig_key_t *key)
  * @brief Exports the given group key to a bytearray with the following format:
  *
- *  | DL21_CODE | KEYTYPE | size_g1 | g1 | size_g2 | g2 |
+ *  | DL20SEQ_CODE | KEYTYPE | size_g1 | g1 | size_g2 | g2 |
  *    size_h1 | h1 | size_h2 | h2 | size_ipk | ipk |
  *
  * @param[in,out] bytes A pointer to the array that will contain the exported
@@ -129,10 +128,10 @@ int dl21_grp_key_get_size(groupsig_key_t *key);
  * 
  * @return IOK or IERROR.
  */
-int dl21_grp_key_export(byte_t **bytes, uint32_t *size, groupsig_key_t *key);
+int dl21seq_grp_key_export(byte_t **bytes, uint32_t *size, groupsig_key_t *key);
 
 /** 
- * @fn groupsig_key_t* dl21_grp_key_import(byte_t *source, uint32_t size)
+ * @fn groupsig_key_t* dl21seq_grp_key_import(byte_t *source, uint32_t size)
  * @brief Imports a group key.
  *
  * Imports a DL21 group key from the specified source, of the specified format.
@@ -142,10 +141,10 @@ int dl21_grp_key_export(byte_t **bytes, uint32_t *size, groupsig_key_t *key);
  * 
  * @return A pointer to the imported key, or NULL if error.
  */
-groupsig_key_t* dl21_grp_key_import(byte_t *source, uint32_t size);
+groupsig_key_t* dl21seq_grp_key_import(byte_t *source, uint32_t size);
 
 /** 
- * @fn char* dl21_grp_key_to_string(groupsig_key_t *key)
+ * @fn char* dl21seq_grp_key_to_string(groupsig_key_t *key)
  * @brief Converts the key to a printable string.
  *
  * Returns a printable string associated to the given key.
@@ -154,21 +153,21 @@ groupsig_key_t* dl21_grp_key_import(byte_t *source, uint32_t size);
  * 
  * @return The printable string associated to the key, or NULL if error.
  */
-char* dl21_grp_key_to_string(groupsig_key_t *key);
+char* dl21seq_grp_key_to_string(groupsig_key_t *key);
 
 /**
- * @var dl21_grp_key_handle
- * @brief The set of functions to manage DL21 group keys.
+ * @var dl21seq_grp_key_handle
+ * @brief The set of functions to manage DL21SEQ group keys.
  */
-static const grp_key_handle_t dl21_grp_key_handle = {
- .code = GROUPSIG_DL21_CODE, /**< Scheme. */
- .init = &dl21_grp_key_init, /**< Initialize group keys. */
- .free = &dl21_grp_key_free, /**< Free group keys. */
- .copy = &dl21_grp_key_copy, /**< Copy group keys. */
- .gexport = &dl21_grp_key_export, /**< Export group keys. */
- .gimport = &dl21_grp_key_import, /**< Import group keys. */
- .to_string = &dl21_grp_key_to_string, /**< Convert to printable strings. */
- .get_size = &dl21_grp_key_get_size, /**< Get size of key as bytes. */
+static const grp_key_handle_t dl21seq_grp_key_handle = {
+  .code = GROUPSIG_DL21SEQ_CODE, /**< Scheme. */
+  .init = &dl21seq_grp_key_init, /**< Initialize group keys. */
+  .free = &dl21seq_grp_key_free, /**< Free group keys. */
+  .copy = &dl21seq_grp_key_copy, /**< Copy group keys. */
+  .gexport = &dl21seq_grp_key_export, /**< Export group keys. */
+  .gimport = &dl21seq_grp_key_import, /**< Import group keys. */
+  .to_string = &dl21seq_grp_key_to_string, /**< Convert to printable strings. */
+  .get_size = &dl21seq_grp_key_get_size, /**< Get size of key, in bytes */
 };
 
 #endif
