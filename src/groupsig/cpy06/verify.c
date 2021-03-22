@@ -123,7 +123,7 @@ int cpy06_verify(uint8_t *ok, groupsig_signature_t *sig, message_t *msg, groupsi
   /* Recompute the hash-challenge c */
 
   /* c = hash(M,T1,T2,T3,T4,T5,B1,B2,B3,B4,B5,B6) \in Zp */
-  if(!(aux_c = hash_init(HASH_SHA1))) GOTOENDRC(IERROR, cpy06_verify);
+  if(!(aux_c = hash_init(HASH_BLAKE2))) GOTOENDRC(IERROR, cpy06_verify);
 
   /* Push the message */
   if(hash_update(aux_c, msg->bytes, msg->length) == IERROR) 

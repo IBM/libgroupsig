@@ -319,16 +319,6 @@ extern "C" {
   int pbcext_element_G2_random(pbcext_element_G2_t *e);
 
   /** 
-   * @fn int pbcext_element_random_GT(pbcext_element_GT_t *e)
-   * @brief Sets e randomly from the set of possible points.
-   *
-   * @param[in,out] e The element to be set.
-   * 
-   * @return IOK or IERROR.
-   */
-  int pbcext_element_GT_random(pbcext_element_GT_t *e);
-
-  /** 
    * @fn int pbcext_element_Fr_add(pbcext_element_Fr_t *dst,
    *                               pbcext_element_Fr_t *e1,
    *                               pbcext_element_Fr_t *e2)
@@ -761,6 +751,27 @@ extern "C" {
   int pbcext_element_GT_cmp(pbcext_element_GT_t *e1, pbcext_element_GT_t *e2);
 
   /** 
+   * @fn int pbcext_element_Fr_is0(pbcext_element_Fr_t *e)
+   * @brief Compares e with 0.
+   *
+   * @param[in] e The element to compare with 0.
+   * 
+   * @return 1 if e==0. 0 Otherwise.
+   */
+  int pbcext_element_Fr_is0(pbcext_element_Fr_t *e);
+
+  /** 
+   * @fn int pbcext_element_Fp_is0(pbcext_element_Fp_t *e)
+   * @brief Compares e with 0.
+   *
+   * @param[in] e The element to compare with 0.
+   * 
+   * @return 1 if e==1. 0 Otherwise.
+   */
+  int pbcext_element_Fp_is0(pbcext_element_Fp_t *e);
+
+  
+  /** 
    * @fn int pbcext_element_Fr_is1(pbcext_element_Fr_t *e)
    * @brief Compares e with 1.
    *
@@ -800,6 +811,16 @@ extern "C" {
    */
   int pbcext_element_G2_is0(pbcext_element_G2_t *e);
 
+  /** 
+   * @fn int pbcext_element_GT_is0(pbcext_element_GT_t *e)
+   * @brief Compares e with 0.
+   *
+   * @param[in] e The element to compare with 0.
+   * 
+   * @return 1 if e==0. 0 Otherwise.
+   */
+  int pbcext_element_GT_is0(pbcext_element_GT_t *e);
+  
   /** 
    * @fn int pbcext_element_GT_is1(pbcext_element_GT_t *e)
    * @brief Compares e with 1.

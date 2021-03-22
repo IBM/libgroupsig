@@ -37,26 +37,26 @@
 #include <errno.h>
 #include <stdlib.h>
 
-#include "dl21.h"
-#include "groupsig/dl21/grp_key.h"
-#include "groupsig/dl21/mgr_key.h"
-#include "groupsig/dl21/mem_key.h"
-#include "groupsig/dl21/identity.h"
+#include "dl21seq.h"
+#include "groupsig/dl21seq/grp_key.h"
+#include "groupsig/dl21seq/mgr_key.h"
+#include "groupsig/dl21seq/mem_key.h"
+#include "groupsig/dl21seq/identity.h"
 #include "sys/mem.h"
 #include "crypto/spk.h"
 #include "shim/pbc_ext.h"
 
-int dl21_get_joinseq(uint8_t *seq) {
-  *seq = DL21_JOIN_SEQ;
+int dl21seq_get_joinseq(uint8_t *seq) {
+  *seq = DL21SEQ_JOIN_SEQ;
   return IOK;
 }
 
-int dl21_get_joinstart(uint8_t *start) {
-  *start = DL21_JOIN_START;
+int dl21seq_get_joinstart(uint8_t *start) {
+  *start = DL21SEQ_JOIN_START;
   return IOK;
 }
 
-int dl21_join_mgr(message_t **mout,
+int dl21seq_join_mgr(message_t **mout,
 		  gml_t *gml,
 		  groupsig_key_t *mgrkey,
 		  int seq,
@@ -65,9 +65,9 @@ int dl21_join_mgr(message_t **mout,
 
   pbcext_element_G1_t *n, *H, *h2s;
   pbcext_element_Fr_t *aux;
-  dl21_mem_key_t *dl21_memkey;
-  dl21_grp_key_t *dl21_grpkey;
-  dl21_mgr_key_t *dl21_mgrkey;
+  dl21seq_mem_key_t *dl21seq_memkey;
+  dl21seq_grp_key_t *dl21seq_grpkey;
+  dl21seq_mgr_key_t *dl21seq_mgrkey;
   groupsig_key_t *memkey;
   message_t *_mout;
   spk_dlog_t *spk;
@@ -79,9 +79,9 @@ int dl21_join_mgr(message_t **mout,
   
   if((seq != 0 && seq != 2) ||
      !mout ||
-     !mgrkey || mgrkey->scheme != GROUPSIG_DL21_CODE ||
-     !grpkey || grpkey->scheme != GROUPSIG_DL21_CODE) {
-    LOG_EINVAL(&logger, __FILE__, "dl21_join_mgr", __LINE__, LOGERROR);
+     !mgrkey || mgrkey->scheme != GROUPSIG_DL21SEQ_CODE ||
+     !grpkey || grpkey->scheme != GROUPSIG_DL21SEQ_CODE) {
+    LOG_EINVAL(&logger, __FILE__, "dl21seq_join_mgr", __LINE__, LOGERROR);
     return IERROR;
   }
 
@@ -90,22 +90,22 @@ int dl21_join_mgr(message_t **mout,
   n = NULL; h2s = NULL;
   aux = NULL; 
   
-  dl21_grpkey = (dl21_grp_key_t *) grpkey->key;
-  dl21_mgrkey = (dl21_mgr_key_t *) mgrkey->key;
+  dl21seq_grpkey = (dl21seq_grp_key_t *) grpkey->key;
+  dl21seq_mgrkey = (dl21seq_mgr_key_t *) mgrkey->key;
 
   /* First step by manager: generate n */
   if (seq == 0) {
     
-    if(!(n = pbcext_element_G1_init())) GOTOENDRC(IERROR, dl21_join_mgr);
-    if(pbcext_element_G1_random(n) == IERROR) GOTOENDRC(IERROR, dl21_join_mgr);
+    if(!(n = pbcext_element_G1_init())) GOTOENDRC(IERROR, dl21seq_join_mgr);
+    if(pbcext_element_G1_random(n) == IERROR) GOTOENDRC(IERROR, dl21seq_join_mgr);
     
     /* Dump the element into a message */
     if(pbcext_dump_element_G1_bytes(&bn, &len, n) == IERROR) 
-      GOTOENDRC(IERROR, dl21_join_mgr);
+      GOTOENDRC(IERROR, dl21seq_join_mgr);
     
     if(!*mout) {   
       if(!(_mout = message_from_bytes(bn, len))) {
-	GOTOENDRC(IERROR, dl21_join_mgr);
+	GOTOENDRC(IERROR, dl21seq_join_mgr);
       }
       
       *mout = _mout;
@@ -114,7 +114,7 @@ int dl21_join_mgr(message_t **mout,
 	
       _mout = *mout;
       if(message_set_bytes(*mout, bn, len) == IERROR)
-	GOTOENDRC(IERROR, dl21_join_mgr);
+	GOTOENDRC(IERROR, dl21seq_join_mgr);
 	
     }      
             
@@ -123,55 +123,55 @@ int dl21_join_mgr(message_t **mout,
     /* Second step by manager: compute credential from H and pi_H */
     /* Verify the proof */
 
-    if(!(n = pbcext_element_G1_init())) GOTOENDRC(IERROR, dl21_join_mgr);
+    if(!(n = pbcext_element_G1_init())) GOTOENDRC(IERROR, dl21seq_join_mgr);
     if(pbcext_get_element_G1_bytes(n, &len, min->bytes) == IERROR)
-      GOTOENDRC(IERROR, dl21_join_mgr);
-    if(!(H = pbcext_element_G1_init())) GOTOENDRC(IERROR, dl21_join_mgr);
+      GOTOENDRC(IERROR, dl21seq_join_mgr);
+    if(!(H = pbcext_element_G1_init())) GOTOENDRC(IERROR, dl21seq_join_mgr);
     if(pbcext_get_element_G1_bytes(H, &_len, min->bytes + len) == IERROR)
-      GOTOENDRC(IERROR, dl21_join_mgr);
+      GOTOENDRC(IERROR, dl21seq_join_mgr);
     if(!(spk = spk_dlog_import(min->bytes + len + _len, &len)))
-      GOTOENDRC(IERROR, dl21_join_mgr);
+      GOTOENDRC(IERROR, dl21seq_join_mgr);
     if(pbcext_element_G1_to_bytes(&bn, &len, n) == IERROR)
-      GOTOENDRC(IERROR, dl21_join_mgr);
-    if(spk_dlog_G1_verify(&ok, H, dl21_grpkey->h1,
+      GOTOENDRC(IERROR, dl21seq_join_mgr);
+    if(spk_dlog_G1_verify(&ok, H, dl21seq_grpkey->h1,
 			  spk, bn, len) == IERROR) {
-      GOTOENDRC(IERROR, dl21_join_mgr);
+      GOTOENDRC(IERROR, dl21seq_join_mgr);
     }
 
-    if(!ok) GOTOENDRC(IERROR, dl21_join_mgr);
+    if(!ok) GOTOENDRC(IERROR, dl21seq_join_mgr);
 
     /* Pick x and s at random from Z*_p */
-    if(!(memkey = dl21_mem_key_init())) GOTOENDRC(IERROR, dl21_join_mgr);
-    dl21_memkey = memkey->key;
+    if(!(memkey = dl21seq_mem_key_init())) GOTOENDRC(IERROR, dl21seq_join_mgr);
+    dl21seq_memkey = memkey->key;
 
-    if(!(dl21_memkey->x = pbcext_element_Fr_init()))
-      GOTOENDRC(IERROR, dl21_join_mgr);
-    if(pbcext_element_Fr_random(dl21_memkey->x) == IERROR)
-      GOTOENDRC(IERROR, dl21_join_mgr);
-    if(!(dl21_memkey->s = pbcext_element_Fr_init()))
-      GOTOENDRC(IERROR, dl21_join_mgr);
-    if(pbcext_element_Fr_random(dl21_memkey->s) == IERROR)
-      GOTOENDRC(IERROR, dl21_join_mgr);
+    if(!(dl21seq_memkey->x = pbcext_element_Fr_init()))
+      GOTOENDRC(IERROR, dl21seq_join_mgr);
+    if(pbcext_element_Fr_random(dl21seq_memkey->x) == IERROR)
+      GOTOENDRC(IERROR, dl21seq_join_mgr);
+    if(!(dl21seq_memkey->s = pbcext_element_Fr_init()))
+      GOTOENDRC(IERROR, dl21seq_join_mgr);
+    if(pbcext_element_Fr_random(dl21seq_memkey->s) == IERROR)
+      GOTOENDRC(IERROR, dl21seq_join_mgr);
 
     /* Set A = (H*h_2^s*g_1)^(1/isk+x) */
-    if(!(dl21_memkey->A = pbcext_element_G1_init()))
-      GOTOENDRC(IERROR, dl21_join_mgr);
+    if(!(dl21seq_memkey->A = pbcext_element_G1_init()))
+      GOTOENDRC(IERROR, dl21seq_join_mgr);
     if(!(h2s = pbcext_element_G1_init()))
-      GOTOENDRC(IERROR, dl21_join_mgr);
-    if(pbcext_element_G1_mul(h2s, dl21_grpkey->h2, dl21_memkey->s) == IERROR)
-      GOTOENDRC(IERROR, dl21_join_mgr);
-    if(pbcext_element_G1_add(dl21_memkey->A, h2s, dl21_grpkey->g1) == IERROR)
-      GOTOENDRC(IERROR, dl21_join_mgr);
-    if(pbcext_element_G1_add(dl21_memkey->A, dl21_memkey->A, H) == IERROR)
-      GOTOENDRC(IERROR, dl21_join_mgr);
+      GOTOENDRC(IERROR, dl21seq_join_mgr);
+    if(pbcext_element_G1_mul(h2s, dl21seq_grpkey->h2, dl21seq_memkey->s) == IERROR)
+      GOTOENDRC(IERROR, dl21seq_join_mgr);
+    if(pbcext_element_G1_add(dl21seq_memkey->A, h2s, dl21seq_grpkey->g1) == IERROR)
+      GOTOENDRC(IERROR, dl21seq_join_mgr);
+    if(pbcext_element_G1_add(dl21seq_memkey->A, dl21seq_memkey->A, H) == IERROR)
+      GOTOENDRC(IERROR, dl21seq_join_mgr);
     if(!(aux = pbcext_element_Fr_init()))
-      GOTOENDRC(IERROR, dl21_join_mgr);
-    if(pbcext_element_Fr_add(aux, dl21_mgrkey->isk, dl21_memkey->x) == IERROR)
-      GOTOENDRC(IERROR, dl21_join_mgr);
+      GOTOENDRC(IERROR, dl21seq_join_mgr);
+    if(pbcext_element_Fr_add(aux, dl21seq_mgrkey->isk, dl21seq_memkey->x) == IERROR)
+      GOTOENDRC(IERROR, dl21seq_join_mgr);
     if(pbcext_element_Fr_inv(aux, aux) == IERROR)
-      GOTOENDRC(IERROR, dl21_join_mgr);
-    if(pbcext_element_G1_mul(dl21_memkey->A, dl21_memkey->A, aux) == IERROR)
-      GOTOENDRC(IERROR, dl21_join_mgr);
+      GOTOENDRC(IERROR, dl21seq_join_mgr);
+    if(pbcext_element_G1_mul(dl21seq_memkey->A, dl21seq_memkey->A, aux) == IERROR)
+      GOTOENDRC(IERROR, dl21seq_join_mgr);
 
     /* 
        Mout = (A,x,s) 
@@ -180,31 +180,31 @@ int dl21_join_mgr(message_t **mout,
     */
 
     bkey = NULL; 
-    if (dl21_mem_key_export(&bkey, &size, memkey) == IERROR)
-      GOTOENDRC(IERROR, dl21_join_mgr);
+    if (dl21seq_mem_key_export(&bkey, &size, memkey) == IERROR)
+      GOTOENDRC(IERROR, dl21seq_join_mgr);
 
     if(!*mout) {
       if(!(_mout = message_from_bytes(bkey, size)))
-	GOTOENDRC(IERROR, dl21_join_mgr);
+	GOTOENDRC(IERROR, dl21seq_join_mgr);
       *mout = _mout;
 
     } else {
 
       _mout = *mout;
       if(message_set_bytes(_mout, bkey, size) == IERROR)
-	GOTOENDRC(IERROR, dl21_join_mgr);
+	GOTOENDRC(IERROR, dl21seq_join_mgr);
     }    
     
   }
   
- dl21_join_mgr_end:
+ dl21seq_join_mgr_end:
 
   if(rc == IERROR) {
     if (n) { pbcext_element_G1_free(n); n = NULL; }
     if (bn) { mem_free(bn); bn = NULL; }    
     if (aux) { pbcext_element_Fr_free(aux); aux = NULL; }
     if (h2s) { pbcext_element_G1_free(h2s); h2s = NULL; }
-    if (memkey) { dl21_mem_key_free(memkey); memkey = NULL; }
+    if (memkey) { dl21seq_mem_key_free(memkey); memkey = NULL; }
     if (bkey) { mem_free(bkey); bkey = NULL; }
   }
   

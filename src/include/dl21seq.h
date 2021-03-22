@@ -106,8 +106,9 @@ extern "C" {
   int dl21seq_clear();  
   
   /** 
-   * @fn int dl21seq_setup(groupsig_key_t *grpkey, groupsig_key_t *mgrkey, 
-   *                     gml_t *gml, groupsig_config_t *config)
+   * @fn int dl21seq_setup(groupsig_key_t *grpkey, 
+   *                       groupsig_key_t *mgrkey, 
+   *                       gml_t *gml)
    * @brief The setup function for the DL21SEQ scheme.
    *
    * @param[in,out] grpkey An initialized group key, will be updated with the newly
@@ -119,7 +120,7 @@ extern "C" {
    * 
    * @return IOK or IERROR.
    */
-  int dl21seq_setup(groupsig_key_t *grpkey, groupsig_key_t *mgrkey, gml_t *gml, groupsig_config_t *config);
+  int dl21seq_setup(groupsig_key_t *grpkey, groupsig_key_t *mgrkey, gml_t *gml);
 
   /**
    * @fn int dl21seq_get_joinseq(uint8_t *seq)

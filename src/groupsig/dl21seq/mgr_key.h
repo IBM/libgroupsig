@@ -155,7 +155,7 @@ static const mgr_key_handle_t dl21seq_mgr_key_handle = {
   .gexport = &dl21seq_mgr_key_export, /**< Exports manager keys. */
   .gimport = &dl21seq_mgr_key_import, /**< Imports manager keys. */
   .to_string = &dl21seq_mgr_key_to_string, /**< Converts manager keys to printable strings. */
-  .get_size &dl21seq_mgr_key_get_size /**< Gets the size of the key, in bytes. */
+  .get_size = &dl21seq_mgr_key_get_size /**< Gets the size of the key, in bytes. */
 };
 
 #endif

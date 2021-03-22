@@ -41,15 +41,15 @@
 #include "sysenv.h"
 #include "bigz.h"
 #include "sys/mem.h"
-#include "dl21.h"
-#include "groupsig/dl21/grp_key.h"
-#include "groupsig/dl21/mem_key.h"
-#include "groupsig/dl21/signature.h"
-#include "groupsig/dl21/identity.h"
+#include "dl21seq.h"
+#include "groupsig/dl21seq/grp_key.h"
+#include "groupsig/dl21seq/mem_key.h"
+#include "groupsig/dl21seq/signature.h"
+#include "groupsig/dl21seq/identity.h"
 #include "shim/hash.h"
 #include "shim/pbc_ext.h"
 
-int dl21_identify(uint8_t *ok,
+int dl21seq_identify(uint8_t *ok,
 		  groupsig_proof_t **proof,
 		  groupsig_key_t *grpkey,
 		  groupsig_key_t *memkey,
@@ -57,19 +57,19 @@ int dl21_identify(uint8_t *ok,
 		  message_t *msg) {
   
   pbcext_element_G1_t *hscp;
-  dl21_signature_t *dl21_sig;
-  dl21_mem_key_t *dl21_memkey;
+  dl21seq_signature_t *dl21seq_sig;
+  dl21seq_mem_key_t *dl21seq_memkey;
   hash_t *hc;
   char *msg_scp;
   int rc;
   uint8_t _ok;
   
   if(!ok ||
-     !grpkey || grpkey->scheme != GROUPSIG_DL21_CODE ||
-     !memkey || memkey->scheme != GROUPSIG_DL21_CODE ||
-     !sig || sig->scheme != GROUPSIG_DL21_CODE ||
+     !grpkey || grpkey->scheme != GROUPSIG_DL21SEQ_CODE ||
+     !memkey || memkey->scheme != GROUPSIG_DL21SEQ_CODE ||
+     !sig || sig->scheme != GROUPSIG_DL21SEQ_CODE ||
      !msg) {
-    LOG_EINVAL(&logger, __FILE__, "dl21_identify", __LINE__, LOGERROR);
+    LOG_EINVAL(&logger, __FILE__, "dl21seq_identify", __LINE__, LOGERROR);
     return IERROR;
   }
 
@@ -78,34 +78,34 @@ int dl21_identify(uint8_t *ok,
   hc = NULL;
   msg_scp = NULL;
   
-  dl21_sig = sig->sig;
-  dl21_memkey = memkey->key;
+  dl21seq_sig = sig->sig;
+  dl21seq_memkey = memkey->key;
 
   /* Recompute nym */
   
   /* Parse scope value from msg */
   if(message_json_get_key(&msg_scp, msg, "$.scope") == IERROR)
-    GOTOENDRC(IERROR, dl21_identify);
+    GOTOENDRC(IERROR, dl21seq_identify);
 
-  if(!(hscp = pbcext_element_G1_init())) GOTOENDRC(IERROR, dl21_identify);
-  if(!(hc = hash_init(HASH_BLAKE2))) GOTOENDRC(IERROR, dl21_identify);
+  if(!(hscp = pbcext_element_G1_init())) GOTOENDRC(IERROR, dl21seq_identify);
+  if(!(hc = hash_init(HASH_BLAKE2))) GOTOENDRC(IERROR, dl21seq_identify);
   if(hash_update(hc, (byte_t *) msg_scp, strlen(msg_scp)) == IERROR)
-    GOTOENDRC(IERROR, dl21_identify);
-  if(hash_finalize(hc) == IERROR) GOTOENDRC(IERROR, dl21_identify);
+    GOTOENDRC(IERROR, dl21seq_identify);
+  if(hash_finalize(hc) == IERROR) GOTOENDRC(IERROR, dl21seq_identify);
   pbcext_element_G1_from_hash(hscp, hc->hash, hc->length);
 
-  if(pbcext_element_G1_mul(hscp, hscp, dl21_memkey->y) == IERROR)
-    GOTOENDRC(IERROR, dl21_identify);
+  if(pbcext_element_G1_mul(hscp, hscp, dl21seq_memkey->y) == IERROR)
+    GOTOENDRC(IERROR, dl21seq_identify);
   
   /* Check if nym = h(scp)^y */
-  if(pbcext_element_G1_cmp(hscp, dl21_sig->nym)) {
+  if(pbcext_element_G1_cmp(hscp, dl21seq_sig->nym)) {
     *ok = 0;
-    GOTOENDRC(IOK, dl21_identify);
+    GOTOENDRC(IOK, dl21seq_identify);
   } else {
     *ok = 1;
   }
     
- dl21_identify_end:
+ dl21seq_identify_end:
 
   if(hscp) { pbcext_element_G1_free(hscp); hscp = NULL; }
   if(hc) { hash_free(hc); hc = NULL; }

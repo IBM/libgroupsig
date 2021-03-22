@@ -156,8 +156,10 @@ int ps16_join_mgr(message_t **mout,
     if (!ok) GOTOENDRC(IERROR, ps16_join_mgr);
 
     if (!(e1 = pbcext_element_GT_init())) GOTOENDRC(IERROR, ps16_join_mgr);
+
     if (pbcext_pairing(e1, tau, ps16_grpkey->Y) == IERROR)
       GOTOENDRC(IERROR, ps16_join_mgr);
+
     if (!(e2 = pbcext_element_GT_init())) GOTOENDRC(IERROR, ps16_join_mgr);
     if (pbcext_pairing(e2, ps16_grpkey->g, ttau) == IERROR)
       GOTOENDRC(IERROR, ps16_join_mgr);

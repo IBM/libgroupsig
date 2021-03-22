@@ -118,7 +118,7 @@ int klap20_join_mem(message_t **mout, groupsig_key_t *memkey,
     /* u = Hash(f) */
     if(pbcext_dump_element_G1_bytes(&bf, &len, f) == IERROR) 
       GOTOENDRC(IERROR, klap20_join_mem);    
-    if(!(h = hash_init(HASH_SHA1)))
+    if(!(h = hash_init(HASH_BLAKE2)))
       GOTOENDRC(IERROR, klap20_join_mem);
     if(hash_update(h, bf, len) == IERROR)
       GOTOENDRC(IERROR, klap20_join_mem);

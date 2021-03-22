@@ -159,6 +159,10 @@ int dl21_signature_copy(groupsig_signature_t *dst, groupsig_signature_t *src) {
       pbcext_element_G1_free(dl21_dst->d);
       dl21_dst->d = NULL;
     }
+    if(dl21_dst->pi) {
+      spk_rep_free(dl21_dst->pi);
+      dl21_dst->pi = NULL;
+    }
     if(dl21_dst->nym) {
       pbcext_element_G1_free(dl21_dst->nym);
       dl21_dst->nym = NULL;

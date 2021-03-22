@@ -433,27 +433,6 @@ int pbcext_element_G2_random(pbcext_element_G2_t *e) {
 
 }
 
-int pbcext_element_GT_random(pbcext_element_GT_t *e) {
-
-  if (!e) {
-    LOG_EINVAL(&logger, __FILE__, "pbcext_element_random_GT", __LINE__, LOGERROR);
-    return IERROR; 
-  }
-
-  LOG_ERRORCODE_MSG(&logger, __FILE__, "pbcext_element_GT_random",
-		      __LINE__, ENOLINK, "Not implemented.", LOGERROR);
-  return IERROR;
-  
-  /* if(mclBnGT_setByCSPRNG(e)) { */
-  /*   LOG_ERRORCODE(&logger, __FILE__, "pbcext_element_random_GT", */
-  /* 		  __LINE__, errno, LOGERROR); */
-  /*   return IERROR; */
-  /* } */
-
-  /* return IOK; */
-
-}
-
 int pbcext_element_Fr_add(pbcext_element_Fr_t *dst,
 			  pbcext_element_Fr_t *e1,
 			  pbcext_element_Fr_t *e2) {
@@ -873,6 +852,29 @@ int pbcext_element_GT_cmp(pbcext_element_GT_t *e1, pbcext_element_GT_t *e2) {
   
 }
 
+int pbcext_element_Fr_is0(pbcext_element_Fr_t *e) {
+
+  if (!e) {
+    LOG_EINVAL(&logger, __FILE__, "pbcext_element_Fr_is0", __LINE__, LOGERROR);
+    return IERROR; 
+  }
+
+  return mclBnFr_isZero(e);
+  
+}
+
+int pbcext_element_Fp_is0(pbcext_element_Fp_t *e) {
+
+  if (!e) {
+    LOG_EINVAL(&logger, __FILE__, "pbcext_element_Fp_is0", __LINE__, LOGERROR);
+    return IERROR; 
+  }
+
+  return mclBnFp_isZero(e);
+  
+}
+
+
 int pbcext_element_Fr_is1(pbcext_element_Fr_t *e) {
 
   if (!e) {
@@ -914,6 +916,17 @@ int pbcext_element_G2_is0(pbcext_element_G2_t *e) {
   }
   
   return mclBnG2_isZero(e);
+  
+}
+
+int pbcext_element_GT_is0(pbcext_element_GT_t *e) {
+
+  if (!e) {
+    LOG_EINVAL(&logger, __FILE__, "pbcext_element_GT_is0", __LINE__, LOGERROR);
+    return IERROR; 
+  }
+
+  return mclBnGT_isZero(e);
   
 }
 

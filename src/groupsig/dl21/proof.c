@@ -123,8 +123,7 @@ int dl21_proof_export(byte_t **bytes, uint32_t *size, groupsig_proof_t *proof) {
   _bytes[0] = GROUPSIG_DL21_CODE;
 
   /* Export the SPK */
-  __bytes = &_bytes[1];
-  
+  __bytes = &_bytes[1];  
   if (spk_dlog_export(&__bytes,
 		      &proof_len,
 		      dl21_proof) == IERROR)

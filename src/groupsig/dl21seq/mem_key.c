@@ -123,36 +123,58 @@ int dl21seq_mem_key_copy(groupsig_key_t *dst, groupsig_key_t *src) {
   rc = IOK;
   
   /* Copy the elements */
-  if(!(dl21seq_dst->A = pbcext_element_G1_init()))
-    GOTOENDRC(IERROR, dl21seq_mem_key_copy);
-  if(pbcext_element_G1_set(dl21seq_dst->A, dl21seq_src->A) == IERROR)
-    GOTOENDRC(IERROR, dl21seq_mem_key_copy);
+  if(dl21seq_src->A) {
+    if(!(dl21seq_dst->A = pbcext_element_G1_init()))
+      GOTOENDRC(IERROR, dl21seq_mem_key_copy);
+    if(pbcext_element_G1_set(dl21seq_dst->A, dl21seq_src->A) == IERROR)
+      GOTOENDRC(IERROR, dl21seq_mem_key_copy);
+  }
   
-  if(!(dl21seq_dst->x = pbcext_element_Fr_init()))
-    GOTOENDRC(IERROR, dl21seq_mem_key_copy);
-  if(pbcext_element_Fr_set(dl21seq_dst->x, dl21seq_src->x) == IERROR)
-    GOTOENDRC(IERROR, dl21seq_mem_key_copy);
+  if(dl21seq_src->x) {  
+    if(!(dl21seq_dst->x = pbcext_element_Fr_init()))
+      GOTOENDRC(IERROR, dl21seq_mem_key_copy);
+    if(pbcext_element_Fr_set(dl21seq_dst->x, dl21seq_src->x) == IERROR)
+      GOTOENDRC(IERROR, dl21seq_mem_key_copy);
+  }
+
+  if(dl21seq_src->y) {  
+    if(!(dl21seq_dst->y = pbcext_element_Fr_init()))
+      GOTOENDRC(IERROR, dl21seq_mem_key_copy);
+    if(pbcext_element_Fr_set(dl21seq_dst->y, dl21seq_src->y) == IERROR)
+      GOTOENDRC(IERROR, dl21seq_mem_key_copy);
+  }
+
+  if(dl21seq_src->s) {  
+    if(!(dl21seq_dst->s = pbcext_element_Fr_init()))
+      GOTOENDRC(IERROR, dl21seq_mem_key_copy);
+    if(pbcext_element_Fr_set(dl21seq_dst->s, dl21seq_src->s) == IERROR)
+      GOTOENDRC(IERROR, dl21seq_mem_key_copy);
+  }
+
+  if(dl21seq_src->H) {  
+    if(!(dl21seq_dst->H = pbcext_element_G1_init()))
+      GOTOENDRC(IERROR, dl21seq_mem_key_copy);
+    if(pbcext_element_G1_set(dl21seq_dst->H, dl21seq_src->H) == IERROR)
+      GOTOENDRC(IERROR, dl21seq_mem_key_copy);
+  }
+
+  if(dl21seq_src->h2s) {  
+    if(!(dl21seq_dst->h2s = pbcext_element_G1_init()))
+      GOTOENDRC(IERROR, dl21seq_mem_key_copy);
+    if(pbcext_element_G1_set(dl21seq_dst->h2s, dl21seq_src->h2s) == IERROR)
+      GOTOENDRC(IERROR, dl21seq_mem_key_copy);
+  }
+
+  if(dl21seq_src->k) {
+    if (!(dl21seq_dst->k = prf_key_init())) GOTOENDRC(IERROR, dl21seq_mem_key_copy);
+    memcpy(dl21seq_dst->k->bytes, dl21seq_src->k->bytes, dl21seq_src->k->len);
+  }
+
+  if(dl21seq_src->kk) {
+    if (!(dl21seq_dst->kk = prf_key_init())) GOTOENDRC(IERROR, dl21seq_mem_key_copy);
+    memcpy(dl21seq_dst->kk->bytes, dl21seq_src->kk->bytes, dl21seq_src->kk->len);
+  }  
   
-  if(!(dl21seq_dst->y = pbcext_element_Fr_init()))
-    GOTOENDRC(IERROR, dl21seq_mem_key_copy);
-  if(pbcext_element_Fr_set(dl21seq_dst->y, dl21seq_src->y) == IERROR)
-    GOTOENDRC(IERROR, dl21seq_mem_key_copy);
-      
-  if(!(dl21seq_dst->s = pbcext_element_Fr_init()))
-    GOTOENDRC(IERROR, dl21seq_mem_key_copy);
-  if(pbcext_element_Fr_set(dl21seq_dst->s, dl21seq_src->s) == IERROR)
-    GOTOENDRC(IERROR, dl21seq_mem_key_copy);
-  
-  if(!(dl21seq_dst->H = pbcext_element_G1_init()))
-    GOTOENDRC(IERROR, dl21seq_mem_key_copy);
-  if(pbcext_element_G1_set(dl21seq_dst->H, dl21seq_src->H) == IERROR)
-    GOTOENDRC(IERROR, dl21seq_mem_key_copy);
-  
-  if(!(dl21seq_dst->h2s = pbcext_element_G1_init()))
-    GOTOENDRC(IERROR, dl21seq_mem_key_copy);
-  if(pbcext_element_G1_set(dl21seq_dst->h2s, dl21seq_src->h2s) == IERROR)
-    GOTOENDRC(IERROR, dl21seq_mem_key_copy);
-      
  dl21seq_mem_key_copy_end:
   
   if (rc == IERROR) {
@@ -165,39 +187,41 @@ int dl21seq_mem_key_copy(groupsig_key_t *dst, groupsig_key_t *src) {
       pbcext_element_G1_free(dl21seq_dst->h2s);
       dl21seq_dst->h2s = NULL;
     }
+    if(dl21seq_dst->k) { prf_key_free(dl21seq_dst->k); dl21seq_dst->k = NULL; }
+    if(dl21seq_dst->kk) { prf_key_free(dl21seq_dst->kk); dl21seq_dst->kk = NULL; }
   }
   
   return rc;
 
 }
 
-int dl21seq_mem_key_get_size_in_format(groupsig_key_t *key) {
+int dl21seq_mem_key_get_size(groupsig_key_t *key) {
 
-  dl21_mem_key_t *dl21_key;
+  dl21seq_mem_key_t *dl21seq_key;
   int size;
   uint64_t sA, sx, sy, ss, sd, sH, sh2s, sk, skk;
   
-  if(!key || key->scheme != GROUPSIG_DL21_CODE) {
-    LOG_EINVAL(&logger, __FILE__, "dl21_mem_key_get_size", __LINE__, LOGERROR);
+  if(!key || key->scheme != GROUPSIG_DL21SEQ_CODE) {
+    LOG_EINVAL(&logger, __FILE__, "dl21seq_mem_key_get_size", __LINE__, LOGERROR);
     return -1;
   }
 
-  dl21_key = key->key;
+  dl21seq_key = key->key;
 
-  sA = sx = sy = ss = sd = sH = sh2s = 0;
+  sA = sx = sy = ss = sd = sH = sh2s = sk = skk = 0;
 
-  if(dl21_key->A) { if(pbcext_element_G1_byte_size(&sA) == -1) return -1; }
-  if(dl21_key->x) { if(pbcext_element_Fr_byte_size(&sx) == -1) return -1; }
-  if(dl21_key->y) { if(pbcext_element_Fr_byte_size(&sy) == -1) return -1; }
-  if(dl21_key->s) { if(pbcext_element_Fr_byte_size(&ss) == -1) return -1; }
-  if(dl21_key->H) { if(pbcext_element_G1_byte_size(&sH) == -1) return -1; }
-  if(dl21_key->h2s) { if(pbcext_element_G1_byte_size(&sh2s) == -1) return -1; }
-  sk = dl21_key->k->len;
-  skk = dl21_key->kk->len;  
+  if(dl21seq_key->A) { if(pbcext_element_G1_byte_size(&sA) == -1) return -1; }
+  if(dl21seq_key->x) { if(pbcext_element_Fr_byte_size(&sx) == -1) return -1; }
+  if(dl21seq_key->y) { if(pbcext_element_Fr_byte_size(&sy) == -1) return -1; }
+  if(dl21seq_key->s) { if(pbcext_element_Fr_byte_size(&ss) == -1) return -1; }
+  if(dl21seq_key->H) { if(pbcext_element_G1_byte_size(&sH) == -1) return -1; }
+  if(dl21seq_key->h2s) { if(pbcext_element_G1_byte_size(&sh2s) == -1) return -1; }
+  if(dl21seq_key->k) sk = dl21seq_key->k->len;
+  if(dl21seq_key->kk) skk = dl21seq_key->kk->len;  
 
   if ((int) sA + sx + sy + ss + sH + sh2s + sk + skk +
-      sizeof(int)*6+2 > INT_MAX) return -1;
-  size = (int) sA + sx + sy + ss + sH + sh2s + sk+ skk + sizeof(int)*6+2;
+      sizeof(int)*6+4 > INT_MAX) return -1;
+  size = (int) sA + sx + sy + ss + sH + sh2s + sk+ skk + sizeof(int)*6+4;
 
   return size;
   
@@ -283,13 +307,25 @@ int dl21seq_mem_key_export(byte_t **bytes, uint32_t *size, groupsig_key_t *key) 
   } else { ctr += sizeof(int); }
 
   /* Dump k */
-  memcpy(&_bytes[ctr], dl21seq_key->k->bytes, dl21seq_key->k->len);
-  ctr += dl21seq_key->k->len;
+  if (dl21seq_key->k && dl21seq_key->k->bytes && dl21seq_key->k->len) {
+    _bytes[ctr] = dl21seq_key->k->len;
+    ctr++;
+    memcpy(&_bytes[ctr], dl21seq_key->k->bytes, dl21seq_key->k->len);
+    ctr += dl21seq_key->k->len;
+  } else {
+    ctr += sizeof(uint8_t);
+  }
   
   /* Dump kk */
-  memcpy(&_bytes[ctr], dl21seq_key->kk->bytes, dl21seq_key->kk->len);
-  ctr += dl21seq_key->kk->len;  
-
+  if (dl21seq_key->kk && dl21seq_key->kk->bytes && dl21seq_key->kk->len) {
+    _bytes[ctr] = dl21seq_key->k->len;
+    ctr++;    
+    memcpy(&_bytes[ctr], dl21seq_key->kk->bytes, dl21seq_key->kk->len);
+    ctr += dl21seq_key->kk->len;  
+  } else {
+    ctr += sizeof(uint8_t);
+  }
+    
   /* Sanity check */
   if (ctr != _size) {
     LOG_ERRORCODE_MSG(&logger, __FILE__, "dl21seq_mem_key_export", __LINE__, 
@@ -425,14 +461,30 @@ groupsig_key_t* dl21seq_mem_key_import(byte_t *source, uint32_t size) {
   }
 
   /* k */
-  if(!(dl21seq_key->k = prf_key_init())) GOTOENDRC(IERROR, _import_fd);
-  memcpy(dl21seq_key->k->bytes, &source[ctr], dl21seq_key->k->len);
-  ctr += dl21seq_key->k->len;
+  if(!(dl21seq_key->k = prf_key_init()))
+    GOTOENDRC(IERROR, dl21seq_mem_key_import);
+  // Currently, we only support BLAKE2 lengths in PRF. This may change.
+  if (source[ctr] && source[ctr] != dl21seq_key->k->len)
+    GOTOENDRC(IERROR, dl21seq_mem_key_import);
+  ctr++;
+
+  if (source[ctr-1]) {
+    memcpy(dl21seq_key->k->bytes, &source[ctr], dl21seq_key->k->len);
+    ctr += dl21seq_key->k->len;
+  }
 
   /* kk */
-  if(!(dl21seq_key->kk = prf_key_init())) GOTOENDRC(IERROR, _import_fd);
-  memcpy(dl21seq_key->kk->bytes, &source[ctr], dl21seq_key->kk->len);
-  ctr += dl21seq_key->kk->len;
+  if(!(dl21seq_key->kk = prf_key_init()))
+    GOTOENDRC(IERROR, dl21seq_mem_key_import);
+  // Currently, we only support BLAKE2 lengths in PRF. This may change.
+  if (source[ctr] && source[ctr] != dl21seq_key->kk->len)
+    GOTOENDRC(IERROR, dl21seq_mem_key_import);
+  ctr++;
+
+  if (source[ctr-1]) {
+    memcpy(dl21seq_key->kk->bytes, &source[ctr], dl21seq_key->kk->len);
+    ctr += dl21seq_key->kk->len;
+  }
   
  dl21seq_mem_key_import_end:
 
@@ -445,7 +497,8 @@ groupsig_key_t* dl21seq_mem_key_import(byte_t *source, uint32_t size) {
 char* dl21seq_mem_key_to_string(groupsig_key_t *key) {
 
   if(!key || key->scheme != GROUPSIG_DL21SEQ_CODE) {
-    LOG_EINVAL(&logger, __FILE__, "dl21seq_mem_key_to_string", __LINE__, LOGERROR);
+    LOG_EINVAL(&logger, __FILE__, "dl21seq_mem_key_to_string",
+	       __LINE__, LOGERROR);
     return NULL;
   }
 

@@ -35,15 +35,12 @@
  */
 #include <stdlib.h>
 #include <limits.h>
-#include <openssl/sha.h> /** @todo This should not be! */
 
 #include "dl21.h"
 #include "groupsig/dl21/grp_key.h"
 #include "groupsig/dl21/mem_key.h"
 #include "groupsig/dl21/signature.h"
 #include "shim/hash.h"
-
-/* Private functions */
 
 int dl21_sign(groupsig_signature_t *sig, message_t *msg, groupsig_key_t *memkey, 
 	      groupsig_key_t *grpkey, unsigned int seed) {
@@ -99,7 +96,7 @@ int dl21_sign(groupsig_signature_t *sig, message_t *msg, groupsig_key_t *memkey,
   /* nym = Hash(scp)^y */
   dl21_sig->nym = pbcext_element_G1_init();
   hscp = pbcext_element_G1_init();
-  if(!(hc = hash_init(HASH_SHA1))) GOTOENDRC(IERROR, dl21_sign);
+  if(!(hc = hash_init(HASH_BLAKE2))) GOTOENDRC(IERROR, dl21_sign);
   if(hash_update(hc, (byte_t *) msg_scp, strlen(msg_scp)) == IERROR)
     GOTOENDRC(IERROR, dl21_sign);
   if(hash_finalize(hc) == IERROR) GOTOENDRC(IERROR, dl21_sign);

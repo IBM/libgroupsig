@@ -42,7 +42,7 @@
 #include "sysenv.h"
 #include "dl21seq.h"
 #include "include/mem_key.h"
-#include "include/spk.h"
+#include "crypto/spk.h"
 #include "crypto/prf.h"
 
 /**
@@ -121,7 +121,7 @@ int dl21seq_mem_key_get_size(groupsig_key_t *key);
  *
  *  | DL21SEQ_CODE | KEYTYPE | size_A | A | size_x | x | 
  *    size_y | y | size_s | s | size_H | H | size_h2s | h2s |
- *    k | kk |
+ *    size_k | k | size_kk | kk |
  *
  * @param[in,out] bytes A pointer to the array that will contain the exported
  *  member key. If <i>*bytes</i> is NULL, memory will be internally allocated.

@@ -23,57 +23,51 @@
 #include "gtest/gtest.h"
 
 #include "groupsig.h"
-#include "gml.h"
-#include "ps16.h"
+#include "dl21seq.h"
 #include "message.h"
 
 using namespace std;
   
 namespace groupsig {
 
-  // The fixture for testing PS16 scheme.
-  class PS16Test : public ::testing::Test {
+  // The fixture for testing DL21SEQ scheme.
+  class DL21SEQTest : public ::testing::Test {
   protected:
     // You can remove any or all of the following functions if their bodies
     // would be empty.
-    groupsig_key_t *mgrkey;
+    groupsig_key_t *isskey;
     groupsig_key_t *grpkey;
-    gml_t *gml;
     groupsig_key_t **memkey;
     uint32_t n;
 
-    PS16Test() {
+    DL21SEQTest() {
 
       int rc;
 
-      rc = groupsig_init(GROUPSIG_PS16_CODE, time(NULL));
+      rc = groupsig_init(GROUPSIG_DL21SEQ_CODE, time(NULL));
       EXPECT_EQ(rc, IOK);
   
-      mgrkey = groupsig_mgr_key_init(GROUPSIG_PS16_CODE);
-      EXPECT_NE(mgrkey, nullptr);
+      isskey = groupsig_mgr_key_init(GROUPSIG_DL21SEQ_CODE);
+      EXPECT_NE(isskey, nullptr);
 
-      grpkey = groupsig_grp_key_init(GROUPSIG_PS16_CODE);
+      grpkey = groupsig_grp_key_init(GROUPSIG_DL21SEQ_CODE);
       EXPECT_NE(grpkey, nullptr);
-
-      gml = gml_init(GROUPSIG_PS16_CODE);
-      EXPECT_NE(gml, nullptr);
 
       memkey = nullptr;
       n = 0;
 
     }
     
-    ~PS16Test() override {
-      groupsig_mgr_key_free(mgrkey); mgrkey = NULL;
+    ~DL21SEQTest() override {
+      groupsig_mgr_key_free(isskey); isskey = NULL;
       groupsig_grp_key_free(grpkey); grpkey = NULL;
-      gml_free(gml); gml = NULL;
       if (memkey) {
 	for (int i=0; i<n; i++) {
 	  groupsig_mem_key_free(memkey[i]); memkey[i] = NULL;
 	}
 	free(memkey); memkey = NULL;
       }
-      groupsig_clear(GROUPSIG_PS16_CODE);      
+      groupsig_clear(GROUPSIG_DL21SEQ_CODE);      
     }
 
     void addMembers(uint32_t n) {
@@ -94,7 +88,7 @@ namespace groupsig {
 	m1 = message_init();
 	ASSERT_NE(m1, nullptr);
 
-	rc = groupsig_join_mgr(&m1, gml, mgrkey, 0, m0, grpkey);
+	rc = groupsig_join_mgr(&m1, NULL, isskey, 0, m0, grpkey);
 	ASSERT_EQ(rc, IOK);
 
 	m2 = message_init();
@@ -106,23 +100,22 @@ namespace groupsig {
 	m3 = message_init();
 	ASSERT_NE(m3, nullptr);
 
-	rc = groupsig_join_mgr(&m3, gml, mgrkey, 2, m2, grpkey);
+	rc = groupsig_join_mgr(&m3, NULL, isskey, 2, m2, grpkey);
 	ASSERT_EQ(rc, IOK);
 
 	rc = groupsig_join_mem(&m4, memkey[i], 3, m3, grpkey);
 	ASSERT_EQ(rc, IOK);
 
-	
-	if(m0) { message_free(m0); m0 = NULL; }
-	if(m1) { message_free(m1); m1 = NULL; }
-	if(m2) { message_free(m2); m2 = NULL; }
-	if(m3) { message_free(m3); m3 = NULL; }
-	if(m4) { message_free(m4); m4 = NULL; }
-	
       }
       
       this->n = n;
-      
+
+      if(m0) { message_free(m0); m0 = NULL; }
+      if(m1) { message_free(m1); m1 = NULL; }
+      if(m2) { message_free(m2); m2 = NULL; }
+      if(m3) { message_free(m3); m3 = NULL; }
+      if(m4) { message_free(m4); m4 = NULL; }
+
     }
     
     // If the constructor and destructor are not enough for setting up
@@ -139,38 +132,38 @@ namespace groupsig {
     }
 
     // Class members declared here can be used by all tests in the test suite
-    // for PS16.
+    // for DL21SEQ.
   };
 
 
-  TEST_F(PS16Test, GetCodeFromStr) {
+  TEST_F(DL21SEQTest, GetCodeFromStr) {
 
     int rc;
     uint8_t scheme;
 
-    rc = groupsig_get_code_from_str(&scheme, (char *) GROUPSIG_PS16_NAME);
+    rc = groupsig_get_code_from_str(&scheme, (char *) GROUPSIG_DL21SEQ_NAME);
     EXPECT_EQ(rc, IOK);
 
-    EXPECT_EQ(scheme, GROUPSIG_PS16_CODE);
+    EXPECT_EQ(scheme, GROUPSIG_DL21SEQ_CODE);
 
   }
 
-  // Tests that the PS16 constructor creates the required keys.
-  TEST_F(PS16Test, CreatesGrpAndMgrKeys) {
+  // Tests that the DL21SEQ constructor creates the required keys.
+  TEST_F(DL21SEQTest, CreatesGrpAndMgrKeys) {
 
-    /* Scheme is set to PS16 */
-    EXPECT_EQ(grpkey->scheme, GROUPSIG_PS16_CODE);
-    EXPECT_EQ(mgrkey->scheme, GROUPSIG_PS16_CODE);
+    /* Scheme is set to DL21SEQ */
+    EXPECT_EQ(grpkey->scheme, GROUPSIG_DL21SEQ_CODE);
+    EXPECT_EQ(isskey->scheme, GROUPSIG_DL21SEQ_CODE);
     
   }
 
   /* groupsig_get_joinstart must return 0 */
-  TEST_F(PS16Test, CheckJoinStart) {
+  TEST_F(DL21SEQTest, CheckJoinStart) {
 
     int rc;
     uint8_t start;
     
-    rc = groupsig_get_joinstart(GROUPSIG_PS16_CODE, &start);
+    rc = groupsig_get_joinstart(GROUPSIG_DL21SEQ_CODE, &start);
     EXPECT_EQ(rc, IOK);
     
     EXPECT_EQ(start, 0);
@@ -178,12 +171,12 @@ namespace groupsig {
   }
 
   /* groupsig_get_joinseq must return 3 */
-  TEST_F(PS16Test, CheckJoinSeq) {
+  TEST_F(DL21SEQTest, CheckJoinSeq) {
 
     int rc;
     uint8_t seq;
     
-    rc = groupsig_get_joinseq(GROUPSIG_PS16_CODE, &seq);
+    rc = groupsig_get_joinseq(GROUPSIG_DL21SEQ_CODE, &seq);
     EXPECT_EQ(rc, IOK);
     
     EXPECT_EQ(seq, 3);    
@@ -191,48 +184,48 @@ namespace groupsig {
   }  
 
   /* Successfully adds a group member */
-  TEST_F(PS16Test, AddsNewMember) {
+  TEST_F(DL21SEQTest, AddsNewMember) {
 
     int rc;
 
-    rc = groupsig_setup(GROUPSIG_PS16_CODE, grpkey, mgrkey, gml);
+    rc = groupsig_setup(GROUPSIG_DL21SEQ_CODE, grpkey, isskey, NULL);
     EXPECT_EQ(rc, IOK);
-    
+
     addMembers(1);
 
-    EXPECT_EQ(memkey[0]->scheme, GROUPSIG_PS16_CODE);    
-    
+    EXPECT_EQ(memkey[0]->scheme, GROUPSIG_DL21SEQ_CODE);    
+
   }
 
   /* Successfully initializes a signature */
-  TEST_F(PS16Test, InitializeSignature) {
+  TEST_F(DL21SEQTest, InitializeSignature) {
 
     groupsig_signature_t *sig;
     int rc;
 
-    rc = groupsig_setup(GROUPSIG_PS16_CODE, grpkey, mgrkey, gml);
+    rc = groupsig_setup(GROUPSIG_DL21SEQ_CODE, grpkey, isskey, NULL);
     EXPECT_EQ(rc, IOK);
 
     /* Initialize the group signature object */
     sig = groupsig_signature_init(grpkey->scheme);
     EXPECT_NE(sig, nullptr);
     
-    EXPECT_EQ(sig->scheme, GROUPSIG_PS16_CODE);
+    EXPECT_EQ(sig->scheme, GROUPSIG_DL21SEQ_CODE);
 
     groupsig_signature_free(sig);
     sig = nullptr;
-    
+
   }
 
   /* Successfully creates a valid signature */
-  TEST_F(PS16Test, SignVerifyValid) {
+  TEST_F(DL21SEQTest, SignVerifyValid) {
 
     groupsig_signature_t *sig;
     message_t *msg;
     int rc;
     uint8_t b;
 
-    rc = groupsig_setup(GROUPSIG_PS16_CODE, grpkey, mgrkey, gml);
+    rc = groupsig_setup(GROUPSIG_DL21SEQ_CODE, grpkey, isskey, NULL);
     EXPECT_EQ(rc, IOK);
 
     /* Initialize the group signature object */
@@ -242,14 +235,17 @@ namespace groupsig {
     /* Add one member */
     addMembers(1);
 
-    /* Initialize a message with a test string */
-    msg = message_from_string((char *) "Hello, World!");
+    /* 
+       Initialize a message with a test string 
+       (DL21SEQ messages are JSON objects with scope and message) 
+    */
+    msg = message_from_string((char *) "{ \"scope\": \"scp\", \"message\": \"Hello, World!\" }");
     EXPECT_NE(msg, nullptr);
 
     /* Sign */
     rc = groupsig_sign(sig, msg, memkey[0], grpkey, UINT_MAX);
     EXPECT_EQ(rc, IOK);
-    
+
     /* Verify the signature */
     rc = groupsig_verify(&b, sig, msg, grpkey);
     EXPECT_EQ(rc, IOK);
@@ -260,21 +256,21 @@ namespace groupsig {
     /* Free stuff */
     rc = groupsig_signature_free(sig);
     EXPECT_EQ(rc, IOK);
-    
+
     rc = message_free(msg);
     EXPECT_EQ(rc, IOK);
-    
+
   }
 
   /* Creates a valid signature, but verifies with wrong message */
-  TEST_F(PS16Test, SignVerifyWrongMessage) {
+  TEST_F(DL21SEQTest, SignVerifyWrongMessage) {
 
     groupsig_signature_t *sig;
     message_t *msg, *msg2;
     int rc;
     uint8_t b;
 
-    rc = groupsig_setup(GROUPSIG_PS16_CODE, grpkey, mgrkey, gml);
+    rc = groupsig_setup(GROUPSIG_DL21SEQ_CODE, grpkey, isskey, NULL);
     EXPECT_EQ(rc, IOK);
 
     /* Initialize the group signature object */
@@ -285,7 +281,8 @@ namespace groupsig {
     addMembers(1);
 
     /* Import the message from the external file into the initialized message object */
-    msg = message_from_string((char *) "Hello, World!");
+    msg = message_from_string((char *)
+			      "{ \"scope\": \"scp\", \"message\": \"Hello, World!\" }");
     EXPECT_NE(msg, nullptr);
 
     /* Sign */
@@ -293,7 +290,7 @@ namespace groupsig {
     EXPECT_EQ(rc, IOK);
 
     /* Use a wrong message for verification */
-    msg2 = message_from_string((char *) "Hello, Worlds!");
+    msg2 = message_from_string((char *) "{ \"scope\": \"scp\", \"message\": \"Hello, Worlds!\" }");
     EXPECT_NE(msg2, nullptr);
 
     /* Verify the signature */
@@ -311,139 +308,333 @@ namespace groupsig {
 
     rc = message_free(msg2);
     EXPECT_EQ(rc, IOK);    
-    
+
   }
 
-  /* Opens a signature and produces a valid open proof */
-  TEST_F(PS16Test, OpenSignatureValidProof) {
+  /* Successfully links 2 signatures by the same user */
+  TEST_F(DL21SEQTest, SuccessfullyLinkSigsSameUser) {
 
-    groupsig_signature_t *sig;
+    groupsig_signature_t *sig1, *sig2, **sigs;
     groupsig_proof_t *proof;
-    message_t *msg;
-    uint64_t index;
+    message_t *msg, **msgs;
     int rc;
     uint8_t b;
 
-    rc = groupsig_setup(GROUPSIG_PS16_CODE, grpkey, mgrkey, gml);
+    rc = groupsig_setup(GROUPSIG_DL21SEQ_CODE, grpkey, isskey, NULL);
     EXPECT_EQ(rc, IOK);
 
-    /* Initialize the group signature object */
-    sig = groupsig_signature_init(grpkey->scheme);
-    EXPECT_NE(sig, nullptr);
+    /* Initialize the group signature objects */
+    sig1 = groupsig_signature_init(grpkey->scheme);
+    EXPECT_NE(sig1, nullptr);
+
+    sig2 = groupsig_signature_init(grpkey->scheme);
+    EXPECT_NE(sig2, nullptr);
 
     /* Add one member */
-    addMembers(2);
+    addMembers(1);
 
-    /* Import the message from the external file into the initialized message object */
-    msg = message_from_string((char *) "Hello, World!");
+    /* 
+       Initialize a message with a test string 
+       (DL21SEQ messages are JSON objects with scope and message) 
+    */
+    msg = message_from_string((char *) "{ \"scope\": \"scp\", \"message\": \"Hello, World!\" }");
     EXPECT_NE(msg, nullptr);
 
     /* Sign */
-    rc = groupsig_sign(sig, msg, memkey[1], grpkey, UINT_MAX);
+    rc = groupsig_sign(sig1, msg, memkey[0], grpkey, 1);
     EXPECT_EQ(rc, IOK);
-
-    /* Open */
-    proof = groupsig_proof_init(GROUPSIG_PS16_CODE);
-    EXPECT_NE(proof, nullptr);
     
-    rc = groupsig_open(&index, proof, nullptr, sig, grpkey, mgrkey, gml);
+    rc = groupsig_sign(sig2, msg, memkey[0], grpkey, 2);
+    EXPECT_EQ(rc, IOK);    
+
+    /* Link the signatures */
+    proof = groupsig_proof_init(grpkey->scheme);
+    EXPECT_NE(proof, nullptr);
+
+    msgs = (message_t **) malloc(sizeof(message_t *)*2);
+    EXPECT_NE(msgs, nullptr);
+
+    msgs[0] = msg;
+    msgs[1] = msg;
+
+    sigs = (groupsig_signature_t **) malloc(sizeof(groupsig_signature_t *)*2);
+    EXPECT_NE(sigs, nullptr);    
+    
+    sigs[0] = sig1;
+    sigs[1] = sig2;
+
+    proof = nullptr;
+    rc = groupsig_seqlink(&proof, grpkey, memkey[0], msg, sigs, msgs, 2);
     EXPECT_EQ(rc, IOK);
 
-    /* index must be 1 */
-    EXPECT_EQ(index, 1);
-
-    /* Verify the open proof. */
-    rc = groupsig_open_verify(&b, proof, sig, grpkey);
+    rc = groupsig_verify_seqlink(&b, grpkey, proof, msg, sigs, msgs, 2);
     EXPECT_EQ(rc, IOK);
     EXPECT_EQ(b, 1);
 
     /* Free stuff */
-    rc = message_free(msg);
+    rc = groupsig_signature_free(sig1);
     EXPECT_EQ(rc, IOK);
-    
-    rc = groupsig_signature_free(sig);
+
+    rc = groupsig_signature_free(sig2);
     EXPECT_EQ(rc, IOK);
 
     rc = groupsig_proof_free(proof);
+    EXPECT_EQ(rc, IOK);    
+
+    rc = message_free(msg);
     EXPECT_EQ(rc, IOK);
-    
+
+    free(msgs);
+    free(sigs);
+
   }
 
-  /* Opens a signature but produces a wrong open proof */
-  TEST_F(PS16Test, OpenSignatureWrongProof) {
+    /* Fails to link 2 signatures by different users */
+  TEST_F(DL21SEQTest, FailsLinkSigsDifferentUsers) {
 
-    groupsig_signature_t *sig0, *sig1;
+    groupsig_signature_t *sig1, *sig2, **sigs;
     groupsig_proof_t *proof;
-    message_t *msg;
-    uint64_t index;
+    message_t *msg, **msgs;
     int rc;
     uint8_t b;
 
-    rc = groupsig_setup(GROUPSIG_PS16_CODE, grpkey, mgrkey, gml);
+    rc = groupsig_setup(GROUPSIG_DL21SEQ_CODE, grpkey, isskey, NULL);
     EXPECT_EQ(rc, IOK);
 
-    /* Initialize the group signature object */
-    sig0 = groupsig_signature_init(grpkey->scheme);
-    EXPECT_NE(sig0, nullptr);
-
+    /* Initialize the group signature objects */
     sig1 = groupsig_signature_init(grpkey->scheme);
-    EXPECT_NE(sig1, nullptr);    
+    EXPECT_NE(sig1, nullptr);
+
+    sig2 = groupsig_signature_init(grpkey->scheme);
+    EXPECT_NE(sig2, nullptr);
 
     /* Add one member */
     addMembers(2);
 
-    /* Import the message from the external file into the initialized message object */
-    msg = message_from_string((char *) "Hello, World!");
+    /* 
+       Initialize a message with a test string 
+       (DL21SEQ messages are JSON objects with scope and message) 
+    */
+    msg = message_from_string((char *) "{ \"scope\": \"scp\", \"message\": \"Hello, World!\" }");
     EXPECT_NE(msg, nullptr);
 
     /* Sign */
-    rc = groupsig_sign(sig0, msg, memkey[0], grpkey, UINT_MAX);
-    EXPECT_EQ(rc, IOK);
-    
-    rc = groupsig_sign(sig1, msg, memkey[1], grpkey, UINT_MAX);
+    rc = groupsig_sign(sig1, msg, memkey[0], grpkey, 1);
     EXPECT_EQ(rc, IOK);
 
-    /* Open */
-    proof = groupsig_proof_init(GROUPSIG_PS16_CODE);
+    rc = groupsig_sign(sig2, msg, memkey[1], grpkey, 2);
+    EXPECT_EQ(rc, IOK);    
+
+    /* Link the signatures */
+    proof = groupsig_proof_init(grpkey->scheme);
     EXPECT_NE(proof, nullptr);
+
+    msgs = (message_t **) malloc(sizeof(message_t *)*2);
+    EXPECT_NE(msgs, nullptr);
+
+    msgs[0] = msg;
+    msgs[1] = msg;
+
+    sigs = (groupsig_signature_t **) malloc(sizeof(groupsig_signature_t *)*2);
+    EXPECT_NE(sigs, nullptr);    
     
-    rc = groupsig_open(&index, proof, nullptr, sig0, grpkey, mgrkey, gml);
+    sigs[0] = sig1;
+    sigs[1] = sig2;
+    
+    rc = groupsig_link(&proof, grpkey, memkey[0], msg, sigs, msgs, 2);
+    EXPECT_EQ(rc, IFAIL);
+    
+    /* Free stuff */
+    rc = groupsig_signature_free(sig1);
     EXPECT_EQ(rc, IOK);
 
-    /* index must be 0 */
-    EXPECT_EQ(index, 0);
+    rc = groupsig_signature_free(sig2);
+    EXPECT_EQ(rc, IOK);
 
-    /* Verify the open proof. */
-    rc = groupsig_open_verify(&b, proof, sig1, grpkey);
+    rc = groupsig_proof_free(proof);
+    EXPECT_EQ(rc, IOK);    
+
+    rc = message_free(msg);
+    EXPECT_EQ(rc, IOK);
+
+    free(msgs);
+    free(sigs);
+
+  }
+
+  /* Rejects link proof by same user but with wrong order (swap) */
+  TEST_F(DL21SEQTest, RejectsSeqLinkProofWrongOrderSwap) {
+
+    groupsig_signature_t *sig1, *sig2, **sigs;
+    groupsig_proof_t *proof;
+    message_t *msg, **msgs;
+    int rc;
+    uint8_t b;
+
+    rc = groupsig_setup(GROUPSIG_DL21SEQ_CODE, grpkey, isskey, NULL);
+    EXPECT_EQ(rc, IOK);
+
+    /* Initialize the group signature objects */
+    sig1 = groupsig_signature_init(grpkey->scheme);
+    EXPECT_NE(sig1, nullptr);
+
+    sig2 = groupsig_signature_init(grpkey->scheme);
+    EXPECT_NE(sig2, nullptr);
+
+    /* Add one member */
+    addMembers(1);
+
+    /* 
+       Initialize a message with a test string 
+       (DL21SEQ messages are JSON objects with scope and message) 
+    */
+    msg = message_from_string((char *) "{ \"scope\": \"scp\", \"message\": \"Hello, World!\" }");
+    EXPECT_NE(msg, nullptr);
+
+    /* Sign */
+    rc = groupsig_sign(sig1, msg, memkey[0], grpkey, 1);
+    EXPECT_EQ(rc, IOK);
+    
+    rc = groupsig_sign(sig2, msg, memkey[0], grpkey, 2);
+    EXPECT_EQ(rc, IOK);    
+
+    /* Link the signatures */
+    proof = groupsig_proof_init(grpkey->scheme);
+    EXPECT_NE(proof, nullptr);
+
+    msgs = (message_t **) malloc(sizeof(message_t *)*2);
+    EXPECT_NE(msgs, nullptr);
+
+    msgs[0] = msg;
+    msgs[1] = msg;
+
+    sigs = (groupsig_signature_t **) malloc(sizeof(groupsig_signature_t *)*2);
+    EXPECT_NE(sigs, nullptr);    
+    
+    sigs[0] = sig2;
+    sigs[1] = sig1;
+
+    proof = nullptr;
+    rc = groupsig_seqlink(&proof, grpkey, memkey[0], msg, sigs, msgs, 2);
+    EXPECT_EQ(rc, IOK);
+
+    rc = groupsig_verify_seqlink(&b, grpkey, proof, msg, sigs, msgs, 2);
     EXPECT_EQ(rc, IOK);
     EXPECT_EQ(b, 0);
 
     /* Free stuff */
-    rc = message_free(msg);
-    EXPECT_EQ(rc, IOK);
-    
-    rc = groupsig_signature_free(sig0);
+    rc = groupsig_signature_free(sig1);
     EXPECT_EQ(rc, IOK);
 
-    rc = groupsig_signature_free(sig1);
-    EXPECT_EQ(rc, IOK);    
+    rc = groupsig_signature_free(sig2);
+    EXPECT_EQ(rc, IOK);
 
     rc = groupsig_proof_free(proof);
+    EXPECT_EQ(rc, IOK);    
+
+    rc = message_free(msg);
     EXPECT_EQ(rc, IOK);
+
+    free(msgs);
+    free(sigs);
+
+  }
+
+  /* Rejects link proof by same user but with wrong order (skip) */
+  TEST_F(DL21SEQTest, RejectsSeqLinkProofWrongOrderSkip) {
+
+    groupsig_signature_t *sig1, *sig2, *sig3, **sigs;
+    groupsig_proof_t *proof;
+    message_t *msg, **msgs;
+    int rc;
+    uint8_t b;
+
+    rc = groupsig_setup(GROUPSIG_DL21SEQ_CODE, grpkey, isskey, NULL);
+    EXPECT_EQ(rc, IOK);
+
+    /* Initialize the group signature objects */
+    sig1 = groupsig_signature_init(grpkey->scheme);
+    EXPECT_NE(sig1, nullptr);
+
+    sig2 = groupsig_signature_init(grpkey->scheme);
+    EXPECT_NE(sig2, nullptr);
+
+    sig3 = groupsig_signature_init(grpkey->scheme);
+    EXPECT_NE(sig3, nullptr);    
+
+    /* Add one member */
+    addMembers(1);
+
+    /* 
+       Initialize a message with a test string 
+       (DL21SEQ messages are JSON objects with scope and message) 
+    */
+    msg = message_from_string((char *) "{ \"scope\": \"scp\", \"message\": \"Hello, World!\" }");
+    EXPECT_NE(msg, nullptr);
+
+    /* Sign */
+    rc = groupsig_sign(sig1, msg, memkey[0], grpkey, 1);
+    EXPECT_EQ(rc, IOK);
+    
+    rc = groupsig_sign(sig2, msg, memkey[0], grpkey, 2);
+    EXPECT_EQ(rc, IOK);
+
+    rc = groupsig_sign(sig3, msg, memkey[0], grpkey, 3);
+    EXPECT_EQ(rc, IOK);    
+
+    /* Link the signatures */
+    proof = groupsig_proof_init(grpkey->scheme);
+    EXPECT_NE(proof, nullptr);
+
+    msgs = (message_t **) malloc(sizeof(message_t *)*2);
+    EXPECT_NE(msgs, nullptr);
+
+    msgs[0] = msg;
+    msgs[1] = msg;
+
+    sigs = (groupsig_signature_t **) malloc(sizeof(groupsig_signature_t *)*2);
+    EXPECT_NE(sigs, nullptr);    
+    
+    sigs[0] = sig1;
+    sigs[1] = sig3;
+
+    proof = nullptr;
+    rc = groupsig_seqlink(&proof, grpkey, memkey[0], msg, sigs, msgs, 2);
+    EXPECT_EQ(rc, IOK);
+
+    rc = groupsig_verify_seqlink(&b, grpkey, proof, msg, sigs, msgs, 2);
+    EXPECT_EQ(rc, IOK);
+    EXPECT_EQ(b, 0);
+
+    /* Free stuff */
+    rc = groupsig_signature_free(sig1);
+    EXPECT_EQ(rc, IOK);
+
+    rc = groupsig_signature_free(sig2);
+    EXPECT_EQ(rc, IOK);
+
+    rc = groupsig_proof_free(proof);
+    EXPECT_EQ(rc, IOK);    
+
+    rc = message_free(msg);
+    EXPECT_EQ(rc, IOK);
+
+    free(msgs);
+    free(sigs);
 
   }  
 
   /** Group key tests **/
 
   /* Successfully exports and imports a group key to a string */
-  TEST_F(PS16Test, GrpKeyExportImport) {
+  TEST_F(DL21SEQTest, GrpKeyExportImport) {
 
     groupsig_key_t *dst;
     byte_t *bytes;
     uint32_t size;
     int rc, len;
 
-    rc = groupsig_setup(GROUPSIG_PS16_CODE, grpkey, mgrkey, gml);
+    rc = groupsig_setup(GROUPSIG_DL21SEQ_CODE, grpkey, isskey, NULL);
     EXPECT_EQ(rc, IOK);
 
     /* Get the size of the string to store the exported key */
@@ -458,7 +649,7 @@ namespace groupsig {
     EXPECT_NE(bytes, nullptr);
 
     /* Import the group key */
-    dst = groupsig_grp_key_import(GROUPSIG_PS16_CODE, bytes, size);
+    dst = groupsig_grp_key_import(GROUPSIG_DL21SEQ_CODE, bytes, size);
     EXPECT_NE(dst, nullptr);
 
     rc = groupsig_grp_key_free(dst);
@@ -469,15 +660,15 @@ namespace groupsig {
   }
 
   /* Successfully copies a group key */
-  TEST_F(PS16Test, GrpKeyCopy) {
+  TEST_F(DL21SEQTest, GrpKeyCopy) {
 
     groupsig_key_t *dst;
     int rc;
 
-    rc = groupsig_setup(GROUPSIG_PS16_CODE, grpkey, mgrkey, gml);
+    rc = groupsig_setup(GROUPSIG_DL21SEQ_CODE, grpkey, isskey, NULL);
     EXPECT_EQ(rc, IOK);
 
-    dst = groupsig_grp_key_init(GROUPSIG_PS16_CODE);
+    dst = groupsig_grp_key_init(GROUPSIG_DL21SEQ_CODE);
     EXPECT_NE(dst, nullptr);
 
     rc = groupsig_grp_key_copy(dst, grpkey);
@@ -491,29 +682,29 @@ namespace groupsig {
   /** Manager key tests **/
 
   /* Successfully exports and imports an issuer key to a string */
-  TEST_F(PS16Test, MgrKeyExportImport) {
+  TEST_F(DL21SEQTest, IssKeyExportImport) {
 
     groupsig_key_t *dst;
     byte_t *bytes;
     uint32_t size;
     int rc, len;
 
-    rc = groupsig_setup(GROUPSIG_PS16_CODE, grpkey, mgrkey, gml);
+    rc = groupsig_setup(GROUPSIG_DL21SEQ_CODE, grpkey, isskey, NULL);
     EXPECT_EQ(rc, IOK);
     
     /* Get the size of the string to store the exported key */
-    len = groupsig_mgr_key_get_size(mgrkey);
+    len = groupsig_mgr_key_get_size(isskey);
     EXPECT_NE(len, -1);
     
     /* Export the group key to a string in b64 */
     bytes = nullptr;
-    rc = groupsig_mgr_key_export(&bytes, &size, mgrkey);
+    rc = groupsig_mgr_key_export(&bytes, &size, isskey);
     EXPECT_EQ(rc, IOK);
     EXPECT_EQ(len, size);
     EXPECT_NE(bytes, nullptr);    
 
     /* Import the group key */
-    dst = groupsig_mgr_key_import(GROUPSIG_PS16_CODE, bytes, size);
+    dst = groupsig_mgr_key_import(GROUPSIG_DL21SEQ_CODE, bytes, size);
     EXPECT_NE(dst, nullptr);
 
     rc = groupsig_mgr_key_free(dst);
@@ -524,18 +715,18 @@ namespace groupsig {
   }
 
   /* Successfully copies an issuer key */
-  TEST_F(PS16Test, MgrKeyCopy) {
+  TEST_F(DL21SEQTest, IssKeyCopy) {
 
     groupsig_key_t *dst;
     int rc;
 
-    rc = groupsig_setup(GROUPSIG_PS16_CODE, grpkey, mgrkey, gml);
+    rc = groupsig_setup(GROUPSIG_DL21SEQ_CODE, grpkey, isskey, NULL);
     EXPECT_EQ(rc, IOK);
 
-    dst = groupsig_mgr_key_init(GROUPSIG_PS16_CODE);
+    dst = groupsig_mgr_key_init(GROUPSIG_DL21SEQ_CODE);
     EXPECT_NE(dst, nullptr);
 
-    rc = groupsig_mgr_key_copy(dst, mgrkey);
+    rc = groupsig_mgr_key_copy(dst, isskey);
     EXPECT_EQ(rc, IOK);
 
     rc = groupsig_mgr_key_free(dst);
@@ -546,14 +737,14 @@ namespace groupsig {
   /** Member key tests **/
 
   /* Successfully exports and imports a member key to a string */
-  TEST_F(PS16Test, MemKeyExportImport) {
+  TEST_F(DL21SEQTest, MemKeyExportImport) {
 
     groupsig_key_t *dst;
     byte_t *bytes;
     uint32_t size;
     int rc, len;
 
-    rc = groupsig_setup(GROUPSIG_PS16_CODE, grpkey, mgrkey, gml);
+    rc = groupsig_setup(GROUPSIG_DL21SEQ_CODE, grpkey, isskey, NULL);
     EXPECT_EQ(rc, IOK);
 
     /* Add one member */
@@ -571,7 +762,7 @@ namespace groupsig {
     EXPECT_NE(bytes, nullptr);
 
     /* Import the group key */
-    dst = groupsig_mem_key_import(GROUPSIG_PS16_CODE, bytes, size);
+    dst = groupsig_mem_key_import(GROUPSIG_DL21SEQ_CODE, bytes, size);
     EXPECT_NE(dst, nullptr);
 
     rc = groupsig_mem_key_free(dst);
@@ -582,18 +773,18 @@ namespace groupsig {
   }
 
   /* Successfully copies a member key */
-  TEST_F(PS16Test, MemKeyCopy) {
+  TEST_F(DL21SEQTest, MemKeyCopy) {
 
     groupsig_key_t *dst;
     int rc;
 
-    rc = groupsig_setup(GROUPSIG_PS16_CODE, grpkey, mgrkey, gml);
+    rc = groupsig_setup(GROUPSIG_DL21SEQ_CODE, grpkey, isskey, NULL);
     EXPECT_EQ(rc, IOK);
 
    /* Add one member */
     addMembers(1);    
 
-    dst = groupsig_mem_key_init(GROUPSIG_PS16_CODE);
+    dst = groupsig_mem_key_init(GROUPSIG_DL21SEQ_CODE);
     EXPECT_NE(dst, nullptr);
 
     rc = groupsig_mem_key_copy(dst, memkey[0]);
@@ -607,7 +798,7 @@ namespace groupsig {
   /** Signature object tests **/
 
   /* Successfully converts a signature as a string */
-  TEST_F(PS16Test, SignatureToString) {
+  TEST_F(DL21SEQTest, SignatureToString) {
 
     groupsig_signature_t *sig;
     message_t *msg;
@@ -615,7 +806,7 @@ namespace groupsig {
     int rc;
     uint8_t b;
 
-    rc = groupsig_setup(GROUPSIG_PS16_CODE, grpkey, mgrkey, gml);
+    rc = groupsig_setup(GROUPSIG_DL21SEQ_CODE, grpkey, isskey, NULL);
     EXPECT_EQ(rc, IOK);
 
     /* Initialize the group signature object */
@@ -626,7 +817,7 @@ namespace groupsig {
     addMembers(1);
 
     /* Initialize a message with a test string */
-    msg = message_from_string((char *) "Hello, World!");
+    msg = message_from_string((char *) "{ \"scope\": \"scp\", \"message\": \"Hello, World!\" }");
     EXPECT_NE(msg, nullptr);
 
     /* Sign */
@@ -654,15 +845,15 @@ namespace groupsig {
   }
 
   /* Successfully copies a signature */
-  TEST_F(PS16Test, SignatureCopy) {
+  TEST_F(DL21SEQTest, SignatureCopy) {
 
     groupsig_signature_t *src, *dst;
     message_t *msg;
     int rc;
     uint8_t b;
 
-    rc = groupsig_setup(GROUPSIG_PS16_CODE, grpkey, mgrkey, gml);
-    EXPECT_EQ(rc, IOK);   
+    rc = groupsig_setup(GROUPSIG_DL21SEQ_CODE, grpkey, isskey, NULL);
+    EXPECT_EQ(rc, IOK);
 
     /* Initialize the src group signature object */
     src = groupsig_signature_init(grpkey->scheme);
@@ -676,7 +867,7 @@ namespace groupsig {
     addMembers(1);
 
     /* Initialize a message with a test string */
-    msg = message_from_string((char *) "Hello, World!");
+    msg = message_from_string((char *) "{ \"scope\": \"scp\", \"message\": \"Hello, World!\" }");
     EXPECT_NE(msg, nullptr);
 
     /* Sign */
@@ -711,8 +902,8 @@ namespace groupsig {
     
   }
 
-  /* Successfully exports and imports a signature */
-  TEST_F(PS16Test, SignatureExportImport) {
+    /* Successfully creates a valid signature */
+  TEST_F(DL21SEQTest, SignatureExportImport) {
 
     groupsig_signature_t *sig, *imported;
     message_t *msg;
@@ -721,8 +912,8 @@ namespace groupsig {
     int rc;
     uint8_t b;
 
-    rc = groupsig_setup(GROUPSIG_PS16_CODE, grpkey, mgrkey, gml);
-    EXPECT_EQ(rc, IOK); 
+    rc = groupsig_setup(GROUPSIG_DL21SEQ_CODE, grpkey, isskey, NULL);
+    EXPECT_EQ(rc, IOK);
 
     /* Initialize the group signature object */
     sig = groupsig_signature_init(grpkey->scheme);
@@ -732,7 +923,8 @@ namespace groupsig {
     addMembers(1);
 
     /* Initialize a message with a test string */
-    msg = message_from_string((char *) "Hello, World!");
+    msg = message_from_string((char *)
+			      "{ \"scope\": \"scp\", \"message\": \"Hello, World!\" }");
     EXPECT_NE(msg, nullptr);
 
     /* Sign */
@@ -768,39 +960,6 @@ namespace groupsig {
     free(bytes); bytes = nullptr;
     
   }
-
-  /** GML tests **/
-  
-  /* Successfully exports and imports a GML */
-  TEST_F(PS16Test, GmlExportImport) {
-
-    byte_t *bytes;
-    gml_t *imported;
-    int rc;
-    uint32_t size;
-
-    rc = groupsig_setup(GROUPSIG_PS16_CODE, grpkey, mgrkey, gml);
-    EXPECT_EQ(rc, IOK); 
-
-    /* Add one member */
-    addMembers(1);
-
-    /* Export */
-    bytes = NULL;
-    rc = gml_export(&bytes, &size, gml);
-    EXPECT_EQ(rc, IOK);
-
-    /* Import */
-    imported = gml_import(GROUPSIG_PS16_CODE, bytes, size);
-    EXPECT_NE(imported, nullptr);
-
-    gml_free(imported);
-    imported = nullptr;
-
-    free(bytes); bytes = NULL;
-    
-  }  
-  
 
 }  // namespace groupsig
 

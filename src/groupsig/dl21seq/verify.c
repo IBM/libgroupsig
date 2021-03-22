@@ -35,17 +35,18 @@
  */
 #include <stdlib.h>
 
-#include "dl21.h"
-#include "groupsig/dl21/grp_key.h"
-#include "groupsig/dl21/signature.h"
+#include "dl21seq.h"
+#include "groupsig/dl21seq/grp_key.h"
+#include "groupsig/dl21seq/signature.h"
 #include "shim/hash.h"
-#include "shim/pbc_ext.h"
 #include "sys/mem.h"
 
 /* Private functions */
-static int _dl21_verify_spk(uint8_t *ok, dl21_signature_t *dl21_sig,
-			    pbcext_element_G1_t *hscp,
-			    char *msg, dl21_grp_key_t *dl21_grpkey) {
+static int _dl21seq_verify_spk(uint8_t *ok,
+			       dl21seq_signature_t *dl21seq_sig,
+			       pbcext_element_G1_t *hscp,
+			       char *msg,
+			       dl21seq_grp_key_t *dl21seq_grpkey) {
 
   pbcext_element_G1_t *A_d, *y[3], *g[5];  
   uint16_t i[6][2], prods[3];
@@ -54,19 +55,19 @@ static int _dl21_verify_spk(uint8_t *ok, dl21_signature_t *dl21_sig,
   
   /* Auxiliar variables for the spk */
   if(!(A_d = pbcext_element_G1_init())) return IERROR;
-  if(pbcext_element_G1_sub(A_d, dl21_sig->A_, dl21_sig->d) == IERROR)
+  if(pbcext_element_G1_sub(A_d, dl21seq_sig->A_, dl21seq_sig->d) == IERROR)
     return IERROR;
 
   /* Isn't there a more concise way to do the following? */
-  y[0] = dl21_sig->nym;
+  y[0] = dl21seq_sig->nym;
   y[1] = A_d;
-  y[2] = dl21_grpkey->g1;
+  y[2] = dl21seq_grpkey->g1;
 
   g[0] = hscp;
-  g[1] = dl21_sig->AA;
-  g[2] = dl21_grpkey->h2;
-  g[3] = dl21_sig->d;
-  g[4] = dl21_grpkey->h1;
+  g[1] = dl21seq_sig->AA;
+  g[2] = dl21seq_grpkey->h2;
+  g[3] = dl21seq_sig->d;
+  g[4] = dl21seq_grpkey->h1;
 
   i[0][0] = 1; i[0][1] = 0; // hscp^y = (g[0],x[1])
   i[1][0] = 0; i[1][1] = 1; // AA^-x = (g[1],x[0])
@@ -85,7 +86,7 @@ static int _dl21_verify_spk(uint8_t *ok, dl21_signature_t *dl21_sig,
 		    g, 5,
 		    i, 6,
 		    prods,
-		    dl21_sig->pi,
+		    dl21seq_sig->pi,
 		    (byte_t *) msg, strlen(msg)) == IERROR) {
     pbcext_element_G1_free(A_d); A_d = NULL;
     return IERROR;
@@ -98,23 +99,22 @@ static int _dl21_verify_spk(uint8_t *ok, dl21_signature_t *dl21_sig,
 }
 
 /* Public functions */
-int dl21_verify(uint8_t *ok,
-		groupsig_signature_t *sig,
-		message_t *msg,
-		groupsig_key_t *grpkey) {
-
+int dl21seq_verify(uint8_t *ok,
+		   groupsig_signature_t *sig,
+		   message_t *msg,
+		   groupsig_key_t *grpkey) {
+  
   pbcext_element_GT_t *e1, *e2;
   pbcext_element_G1_t *hscp;
-  dl21_signature_t *dl21_sig;
-  dl21_grp_key_t *dl21_grpkey;
-  /* dl21_sysenv_t *dl21_sysenv; */
+  dl21seq_signature_t *dl21seq_sig;
+  dl21seq_grp_key_t *dl21seq_grpkey;
   hash_t *hc;
   char *msg_msg, *msg_scp;
   int rc;
   
   if(!ok || !sig || !msg || 
-     !grpkey || grpkey->scheme != GROUPSIG_DL21_CODE) {
-    LOG_EINVAL(&logger, __FILE__, "dl21_verify", __LINE__, LOGERROR);
+     !grpkey || grpkey->scheme != GROUPSIG_DL21SEQ_CODE) {
+    LOG_EINVAL(&logger, __FILE__, "dl21seq_verify", __LINE__, LOGERROR);
     return IERROR;
   }
 
@@ -123,50 +123,49 @@ int dl21_verify(uint8_t *ok,
   msg_msg = NULL; msg_scp = NULL;
   hc = NULL;
   
-  dl21_sig = sig->sig;
-  dl21_grpkey = grpkey->key;
-  /* dl21_sysenv = sysenv->data; */
+  dl21seq_sig = sig->sig;
+  dl21seq_grpkey = grpkey->key;
 
   /* Parse message and scope values from msg */
   if(message_json_get_key(&msg_msg, msg, "$.message") == IERROR)
-    GOTOENDRC(IERROR, dl21_verify);
+    GOTOENDRC(IERROR, dl21seq_verify);
   if(message_json_get_key(&msg_scp, msg, "$.scope") == IERROR)
-    GOTOENDRC(IERROR, dl21_verify);
+    GOTOENDRC(IERROR, dl21seq_verify);
 
   /* AA must not be 1 (since we use additive notation for G1, 
      it must not be 0) */
-  if(pbcext_element_G1_is0(dl21_sig->AA)) {
+  if(pbcext_element_G1_is0(dl21seq_sig->AA)) {
     *ok = 0;
-    GOTOENDRC(IOK, dl21_verify);
+    GOTOENDRC(IOK, dl21seq_verify);
   }
 
   /* e(AA,ipk) must equal e(A_,g2) */
-  if(!(e1 = pbcext_element_GT_init())) GOTOENDRC(IERROR, dl21_verify);
-  if(pbcext_pairing(e1, dl21_sig->AA, dl21_grpkey->ipk) == IERROR)
-    GOTOENDRC(IERROR, dl21_verify);
-  if(!(e2 = pbcext_element_GT_init())) GOTOENDRC(IERROR, dl21_verify);
-  if(pbcext_pairing(e2, dl21_sig->A_, dl21_grpkey->g2) == IERROR)
-    GOTOENDRC(IERROR, dl21_verify);
+  if(!(e1 = pbcext_element_GT_init())) GOTOENDRC(IERROR, dl21seq_verify);
+  if(pbcext_pairing(e1, dl21seq_sig->AA, dl21seq_grpkey->ipk) == IERROR)
+    GOTOENDRC(IERROR, dl21seq_verify);
+  if(!(e2 = pbcext_element_GT_init())) GOTOENDRC(IERROR, dl21seq_verify);
+  if(pbcext_pairing(e2, dl21seq_sig->A_, dl21seq_grpkey->g2) == IERROR)
+    GOTOENDRC(IERROR, dl21seq_verify);
 
   if(pbcext_element_GT_cmp(e1, e2)) {
     *ok = 0;
-    GOTOENDRC(IOK, dl21_verify);
+    GOTOENDRC(IOK, dl21seq_verify);
   }
 
   /* Verify the SPK */
 
   /* Recompute hscp */
   hscp = pbcext_element_G1_init();
-  if(!(hc = hash_init(HASH_BLAKE2))) GOTOENDRC(IERROR, dl21_verify);
+  if(!(hc = hash_init(HASH_BLAKE2))) GOTOENDRC(IERROR, dl21seq_verify);
   if(hash_update(hc, (byte_t *) msg_scp, strlen(msg_scp)) == IERROR)
-    GOTOENDRC(IERROR, dl21_verify);
-  if(hash_finalize(hc) == IERROR) GOTOENDRC(IERROR, dl21_verify);
+    GOTOENDRC(IERROR, dl21seq_verify);
+  if(hash_finalize(hc) == IERROR) GOTOENDRC(IERROR, dl21seq_verify);
   pbcext_element_G1_from_hash(hscp, hc->hash, hc->length);
 
-  if(_dl21_verify_spk(ok, dl21_sig, hscp, msg_msg, dl21_grpkey) == IERROR)
-    GOTOENDRC(IERROR, dl21_verify);
+  if(_dl21seq_verify_spk(ok, dl21seq_sig, hscp, msg_msg, dl21seq_grpkey) == IERROR)
+    GOTOENDRC(IERROR, dl21seq_verify);
   
- dl21_verify_end:
+ dl21seq_verify_end:
 
   if(e1) { pbcext_element_GT_free(e1); e1 = NULL; }
   if(e2) { pbcext_element_GT_free(e2); e2 = NULL; }
