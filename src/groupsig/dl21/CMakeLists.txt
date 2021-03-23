@@ -1,6 +1,5 @@
-include_directories (${PROJECT_SOURCE_DIR}
-                     "${PROJECT_SOURCE_DIR}/include"
-                     "${PROJECT_SOURCE_DIR}/global")
+include_directories ("${PROJECT_SOURCE_DIR}/src/include"
+                     "${PROJECT_SOURCE_DIR}/src")
 
 add_library (dl21
 		grp_key.c grp_key.h 
@@ -18,9 +17,5 @@ add_library (dl21
 		proof.c proof.h
 		identity.c identity.h)
 
-target_include_directories (dl21 
-				PRIVATE ${GMP_INCLUDE_DIR}
-				PRIVATE ${OPENSSL_INCLUDE_DIR})
-target_link_libraries (dl21
-			PRIVATE ${GMP_LIBRARY}
-			PRIVATE ${OPENSSL_LIBRARIES})
+target_include_directories (dl21 PRIVATE ${OPENSSL_INCLUDE_DIR})
+target_link_libraries (dl21 PRIVATE ${OPENSSL_LIBRARIES})

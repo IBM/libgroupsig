@@ -90,7 +90,6 @@ int dl21_join_mgr(message_t **mout,
   n = NULL; h2s = NULL;
   aux = NULL; 
   
-  /* dl21_sysenv = (dl21_sysenv_t *) sysenv->data; */
   dl21_grpkey = (dl21_grp_key_t *) grpkey->key;
   dl21_mgrkey = (dl21_mgr_key_t *) mgrkey->key;
 

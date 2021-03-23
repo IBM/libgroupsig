@@ -105,7 +105,6 @@ int dl21_grp_key_free(groupsig_key_t *key);
  */
 int dl21_grp_key_copy(groupsig_key_t *dst, groupsig_key_t *src);
 
-
 /**
  * @fn int dl21_grp_key_get_size_in_format(groupsig_key_t *key)
  * @brief Returns the number of bytes required to export the key.

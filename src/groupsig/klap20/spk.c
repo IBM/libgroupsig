@@ -131,7 +131,7 @@ int klap20_spk0_sign(spk_rep_t *pi,
   */
 
   /* Push the message */
-  if(!(hc = hash_init(HASH_SHA1))) GOTOENDRC(IERROR, klap20_spk0_sign);
+  if(!(hc = hash_init(HASH_BLAKE2))) GOTOENDRC(IERROR, klap20_spk0_sign);
   if(hash_update(hc, msg, size) == IERROR) GOTOENDRC(IERROR, klap20_spk0_sign);
   
   /* Push the y values. Again, manually -- no loops */
@@ -397,7 +397,7 @@ int klap20_spk0_verify(uint8_t *ok,
   */
 
   /* Push the message */
-  if(!(hc = hash_init(HASH_SHA1))) GOTOENDRC(IERROR, klap20_spk0_verify);
+  if(!(hc = hash_init(HASH_BLAKE2))) GOTOENDRC(IERROR, klap20_spk0_verify);
   if(hash_update(hc, msg, size) == IERROR) GOTOENDRC(IERROR, klap20_spk0_verify);
 
   /* Push the y values -- manually */
@@ -735,7 +735,7 @@ int klap20_spk1_sign(klap20_spk1_t *pi,
     GOTOENDRC(IERROR, klap20_spk1_sign);
 
   /* c = Hash(g1,g2,e1,e2,RR1,RR2,msg) */
-  if (!(h = hash_init(HASH_SHA1)))
+  if (!(h = hash_init(HASH_BLAKE2)))
     GOTOENDRC(IERROR, klap20_spk1_sign);
 
   bytes = NULL;
@@ -860,7 +860,7 @@ int klap20_spk1_verify(uint8_t *ok,
     GOTOENDRC(IERROR, klap20_spk1_verify);
 
   /* c = Hash(g1,g2,e1,e2,R1,R2,msg) */
-  if (!(h = hash_init(HASH_SHA1)))
+  if (!(h = hash_init(HASH_BLAKE2)))
     GOTOENDRC(IERROR, klap20_spk1_verify);
 
   bytes = NULL;

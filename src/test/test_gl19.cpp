@@ -110,7 +110,7 @@ namespace groupsig {
 
 	rc = groupsig_join_mem(&m4, memkey[i], 3, m3, grpkey);
 	ASSERT_EQ(rc, IOK);
-		
+
       }
       
       this->n = n;

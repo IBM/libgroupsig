@@ -1,21 +1,40 @@
-/* 
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+/*                               -*- Mode: C -*- 
  *
- *  http://www.apache.org/licenses/LICENSE-2.0
+ *	libgroupsig Group Signatures library
+ *	Copyright (C) 2012-2013 Jesus Diaz Vico
  *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ *		
+ *
+ *	This file is part of the libgroupsig Group Signatures library.
+ *
+ *
+ *  The libgroupsig library is free software: you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public License as 
+ *  defined by the Free Software Foundation, either version 3 of the License, 
+ *  or any later version.
+ *
+ *  The libroupsig library is distributed WITHOUT ANY WARRANTY; without even 
+ *  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+ *  See the GNU Lesser General Public License for more details.
+ *
+ *
+ *  You should have received a copy of the GNU Lesser General Public License 
+ *  along with Group Signature Crypto Library.  If not, see <http://www.gnu.org/
+ *  licenses/>
+ *
+ * @file: hash.c
+ * @brief: 
+ * @author: jesus
+ * Maintainer: 
+ * @date: jue jul  5 14:42:56 2012 (+0200)
+ * @version: 
+ * Last-Updated: mar oct  8 22:01:57 2013 (+0200)
+ *           By: jesus
+ *     Update #: 41
+ * URL: https://bitbucket.org/jdiazvico/libgroupsig
  */
+
+#include <openssl/evp.h>
 
 #include "logger.h"
 #include "hash.h"
@@ -36,33 +55,73 @@ static uint8_t _is_supported_hash(uint8_t type) {
 
 }
 
+static char* _get_name_by_code(uint8_t type) {
+
+  int i;
+
+  for(i=0; i<HASH_SUPPORTED_HASHES_N; i++) {
+    if(type == HASH_SUPPORTED_HASHES[i])
+      return (char *) HASH_NAMES[i];
+  }
+
+  return NULL;
+  
+}
+
 static hash_t* _hash_sha1(byte_t *bytes, uint32_t size) {
 
   hash_t *hash;
-  byte_t *sha;
+  int _size;
 
   if(!bytes || !size) {
     LOG_EINVAL(&logger, __FILE__, "_hash_sha1", __LINE__, LOGERROR);
     return NULL;
-  }  
-
-  if(!(sha = (byte_t *) mem_malloc(sizeof(byte_t)*SHA_DIGEST_LENGTH))) {
-    LOG_ERRORCODE(&logger, __FILE__, "_hash_sha1", __LINE__, errno, LOGERROR);
-    return NULL;
   }
-
-  memset(sha, 0, SHA_DIGEST_LENGTH);
-  SHA1(bytes, size, sha);
 
   if(!(hash = hash_init(HASH_SHA1))) {
-    mem_free(sha); sha = NULL;
     LOG_ERRORCODE(&logger, __FILE__, "_hash_sha1", __LINE__, errno, LOGERROR);
     return NULL;
   }
+  
+  EVP_DigestUpdate(hash->mdctx, bytes, size);
 
-  hash->length = SHA_DIGEST_LENGTH;
-  hash->hash = sha;
+  _size = EVP_MD_size(hash->md);
+  if(!(hash->hash = (byte_t *) mem_malloc(sizeof(byte_t)*_size))) {
+    LOG_ERRORCODE(&logger, __FILE__, "_hash_sha1", __LINE__, errno, LOGERROR);
+    return NULL;
+  }  
+  
+  EVP_DigestFinal_ex(hash->mdctx, hash->hash, &hash->length);
+  
+  return hash;
 
+}
+
+static hash_t* _hash_blake2(byte_t *bytes, uint32_t size) {
+
+  hash_t *hash;
+  int _size;
+
+  if(!bytes || !size) {
+    LOG_EINVAL(&logger, __FILE__, "_hash_blake2", __LINE__, LOGERROR);
+    return NULL;
+  }
+
+  if(!(hash = hash_init(HASH_BLAKE2))) {
+    LOG_ERRORCODE(&logger, __FILE__, "_hash_blake2", __LINE__, errno, LOGERROR);
+    return NULL;
+  }
+  
+  EVP_DigestUpdate(hash->mdctx, bytes, size);
+
+  _size = EVP_MD_size(hash->md);
+  if(!(hash->hash = (byte_t *) mem_malloc(sizeof(byte_t)*_size))) {
+    LOG_ERRORCODE(&logger, __FILE__, "_hash_blake2", __LINE__, errno, LOGERROR);
+    return NULL;
+  }  
+  
+  EVP_DigestFinal_ex(hash->mdctx, hash->hash, &hash->length);
+  
   return hash;
 
 }
@@ -70,6 +129,7 @@ static hash_t* _hash_sha1(byte_t *bytes, uint32_t size) {
 hash_t* hash_init(uint8_t type) {
 
   hash_t *hash;
+  char *name;
   
   if(!(hash = (hash_t *) mem_malloc(sizeof(hash_t)))) {
     LOG_ERRORCODE(&logger, __FILE__, "hash_init", __LINE__, errno, LOGERROR);
@@ -80,19 +140,22 @@ hash_t* hash_init(uint8_t type) {
   hash->hash = NULL;
   hash->length = 0;
 
-  /* Set the object to a pointer to a openssl - SHA_CTX structure */
-  if(!(hash->object = (SHA_CTX *) mem_malloc(sizeof(SHA_CTX)))) {
-    LOG_ERRORCODE(&logger, __FILE__, "hash_init", __LINE__, errno, LOGERROR);
-    hash_free(hash); hash = NULL;
-    return NULL;
-  }
-  
-  if(!SHA1_Init((SHA_CTX *) hash->object)) {
+  if(!(name = _get_name_by_code(type))) {
     LOG_ERRORCODE_MSG(&logger, __FILE__, "hash_init", __LINE__, EDQUOT,
-		      "SHA1_Init", LOGERROR);
-    hash_free(hash); hash = NULL;
+		      "Unknown hash algorithm", LOGERROR);
     return NULL;
   }
+
+  /* Set OpenSSL's MD object */
+  if(!(hash->md = (EVP_MD *) EVP_get_digestbyname(name))) {
+    LOG_ERRORCODE_MSG(&logger, __FILE__, "hash_init", __LINE__, EDQUOT,
+		      "OpenSSL: Unknown hash algorithm", LOGERROR);
+    return NULL;
+  }
+
+  /* Initialize the CTX object */
+  hash->mdctx = EVP_MD_CTX_new();
+  EVP_DigestInit_ex(hash->mdctx, hash->md, NULL);
 
   return hash;
   
@@ -107,7 +170,7 @@ int hash_free(hash_t *hash) {
   }
 
   mem_free(hash->hash); hash->hash = NULL;
-  mem_free(hash->object); hash->object = NULL;
+  EVP_MD_CTX_free(hash->mdctx); hash->mdctx = NULL;
   mem_free(hash);
 
   return IOK;
@@ -134,6 +197,8 @@ hash_t* hash_get(uint8_t type, byte_t *bytes, uint32_t size) {
   switch(type) {
   case HASH_SHA1:
     return _hash_sha1(bytes, size);
+  case HASH_BLAKE2:
+    return _hash_blake2(bytes, size);
   default:
     LOG_EINVAL_MSG(&logger, __FILE__, "hash_get", __LINE__,
 		   "Unexpected execution flow.", LOGERROR);
@@ -153,34 +218,17 @@ int hash_update(hash_t *hash, byte_t *bytes, uint32_t size) {
     return IERROR;
   }
 
-  switch(hash->type) {
+  EVP_DigestUpdate(hash->mdctx, bytes, size);
 
-  case HASH_SHA1:
-
-    /* Update the created/received object */
-    if(!SHA1_Update(hash->object, bytes, size)) {
-      LOG_ERRORCODE_MSG(&logger, __FILE__, "hash_update", __LINE__, EDQUOT,
-			"SHA1_Update", LOGERROR);
-      return IERROR;
-    }
-
-    return IOK;
-
-  default:
-    LOG_EINVAL_MSG(&logger, __FILE__, "hash_update", __LINE__,
-		   "Unexpected execution flow.", LOGERROR);
-    return IERROR;
-  }
+  return IOK;
   
-  LOG_EINVAL_MSG(&logger, __FILE__, "hash_update", __LINE__,
-		 "Unexpected execution flow.", LOGERROR);
-  return IERROR; 
-
 }
 
 int hash_finalize(hash_t *hash) {
 
-  if(!hash || !hash->object) {
+  int size;
+  
+  if(!hash) {
     LOG_EINVAL(&logger, __FILE__, "hash_finalize", __LINE__, LOGERROR);
     return IERROR;
   }
@@ -191,35 +239,13 @@ int hash_finalize(hash_t *hash) {
     return IERROR;
   }
 
-  /* For now, we just use SHA1, this switch approach may be easy to handle while
-     the number of supported schemes is not very large, otherwise, another approach
-     should be taken... */
-
-  switch(hash->type) {
-
-  case HASH_SHA1:
-    
-    hash->length = SHA_DIGEST_LENGTH;    
-    if(!(hash->hash = (byte_t *) mem_malloc(sizeof(byte_t)*hash->length))) {
-      LOG_ERRORCODE(&logger, __FILE__, "hash_finalize", __LINE__, errno, LOGERROR);
-      return IERROR;
-    }
-
-    if(!SHA1_Final(hash->hash, (SHA_CTX *) hash->object)) {
-      LOG_ERRORCODE_MSG(&logger, __FILE__, "hash_finalize", __LINE__, EDQUOT,
-			"SHA1_Update", LOGERROR);
-      mem_free(hash->hash); hash->hash = NULL;
-      return IERROR;      
-    }
-
-    break;
-
-  default:
-
-    LOG_EINVAL_MSG(&logger, __FILE__, "hash_finalize", __LINE__,
-		   "Unexpected execution flow.", LOGERROR);
-    return IERROR;    
+  size = EVP_MD_size(hash->md);
+  if(!(hash->hash = (byte_t *) mem_malloc(sizeof(byte_t)*size))) {
+    LOG_ERRORCODE(&logger, __FILE__, "hash_finalize", __LINE__, errno, LOGERROR);
+    return IERROR;
   }
+
+  EVP_DigestFinal_ex(hash->mdctx, hash->hash, &hash->length);
 
   return IOK;
   

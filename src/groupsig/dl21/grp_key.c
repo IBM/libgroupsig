@@ -174,7 +174,7 @@ int dl21_grp_key_get_size(groupsig_key_t *key) {
   uint64_t sg1, sg2, sh1, sh2, sipk;
   
   if(!key || key->scheme != GROUPSIG_DL21_CODE) {
-    LOG_EINVAL(&logger, __FILE__, "dl21_grp_key_get_size_in_format", __LINE__, LOGERROR);
+    LOG_EINVAL(&logger, __FILE__, "dl21_grp_key_get_size", __LINE__, LOGERROR);
     return -1;
   }
 

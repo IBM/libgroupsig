@@ -112,7 +112,7 @@ int dl21_link(groupsig_proof_t **proof,
     if(message_json_get_key(&msg_scp, msgs[i], "$.scope") == IERROR)
       GOTOENDRC(IERROR, dl21_link);
 
-    if(!(hc = hash_init(HASH_SHA1))) GOTOENDRC(IERROR, dl21_link);
+    if(!(hc = hash_init(HASH_BLAKE2))) GOTOENDRC(IERROR, dl21_link);
     if(hash_update(hc, (byte_t *) msg_scp, strlen(msg_scp)) == IERROR)
       GOTOENDRC(IERROR, dl21_link);
     if(hash_finalize(hc) == IERROR) GOTOENDRC(IERROR, dl21_link);

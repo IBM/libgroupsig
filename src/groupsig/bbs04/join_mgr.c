@@ -68,7 +68,7 @@ int bbs04_join_mgr(message_t **mout, gml_t *gml,
   bkey = NULL;
   gammax = NULL;
   memkey = NULL;
-  
+
   if(!(memkey = bbs04_mem_key_init())) GOTOENDRC(IERROR, bbs04_join_mgr);
   bbs04_memkey = (bbs04_mem_key_t *) memkey->key;
 
@@ -96,9 +96,10 @@ int bbs04_join_mgr(message_t **mout, gml_t *gml,
   /* Optimization */
   if(!(bbs04_memkey->Ag2 = pbcext_element_GT_init()))
     GOTOENDRC(IERROR, bbs04_join_mgr);
+
   if(pbcext_pairing(bbs04_memkey->Ag2, bbs04_memkey->A, bbs04_grpkey->g2) == IERROR)
     GOTOENDRC(IERROR, bbs04_join_mgr);
-  
+
   /* Update the GML */
     
   /* Initialize the GML entry */

@@ -64,7 +64,7 @@ int cpy06_prove_equality(groupsig_proof_t *proof, groupsig_key_t *memkey,
   cpy06_sysenv = sysenv->data;
    
   /* Initialize the hashing environment */
-  if(!(hash = hash_init(HASH_SHA1))) GOTOENDRC(IERROR, cpy06_prove_equality);
+  if(!(hash = hash_init(HASH_BLAKE2))) GOTOENDRC(IERROR, cpy06_prove_equality);
    
   /* Get random r */
   element_init_Zr(r, cpy06_sysenv->pairing);

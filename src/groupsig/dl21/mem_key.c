@@ -217,7 +217,6 @@ int dl21_mem_key_export(byte_t **bytes, uint32_t *size, groupsig_key_t *key) {
   uint64_t len;
   uint32_t _size;
   int ctr, rc;
-  uint8_t code, type;
   
   if(!key || key->scheme != GROUPSIG_DL21_CODE) {
     LOG_EINVAL(&logger, __FILE__, "dl21_mem_key_export", __LINE__, LOGERROR);

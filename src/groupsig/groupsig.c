@@ -28,7 +28,7 @@
 #include "sys/mem.h"
 #include "registered_groupsigs.h"
 
-#define GROUPSIG_REGISTERED_GROUPSIGS_N 5
+#define GROUPSIG_REGISTERED_GROUPSIGS_N 6
 static const groupsig_t *GROUPSIG_REGISTERED_GROUPSIGS[GROUPSIG_REGISTERED_GROUPSIGS_N] = {
   /* &kty04_groupsig_bundle, */
   &bbs04_groupsig_bundle,
@@ -37,6 +37,7 @@ static const groupsig_t *GROUPSIG_REGISTERED_GROUPSIGS[GROUPSIG_REGISTERED_GROUP
   &ps16_groupsig_bundle,
   &klap20_groupsig_bundle,
   &dl21_groupsig_bundle,
+  &dl21seq_groupsig_bundle,  
 };
 
 int groupsig_hello_world(void) {

@@ -65,8 +65,6 @@ typedef struct {
   pbcext_element_Fr_t *x; /**< Randomly picked by the Issuer. */
   pbcext_element_Fr_t *y; /**< Randomly picked by the Member. */
   pbcext_element_Fr_t *s; /**< Randomly picked by the Issuer. */
-  /* pbcext_element_Fr_t *k; /\**< Randomly picked by the Member. *\/ */
-  /* pbcext_element_Fr_t *kk; /\**< Randomly picked by the Member. *\/ */
   /* Precomputations */
   pbcext_element_G1_t *H; /**< Member's "public key". H = h1^y. */
   pbcext_element_G1_t *h2s; /**< Used in signatures. h2s = h2^s. */

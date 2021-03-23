@@ -131,7 +131,7 @@ int gl19_blind(groupsig_blindsig_t *bsig, groupsig_key_t **bldkey,
     GOTOENDRC(IERROR, gl19_blind);
 
   /* Encrypt the (hash of the) message */
-  if(!(hm = hash_init(HASH_SHA1)))
+  if(!(hm = hash_init(HASH_BLAKE2)))
     GOTOENDRC(IERROR, gl19_blind);
   if(hash_update(hm, msg->bytes, msg->length) == IERROR)
     GOTOENDRC(IERROR, gl19_blind);

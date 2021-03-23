@@ -175,7 +175,7 @@ int klap20_join_mgr(message_t **mout,
     /* u = Hash(f) */
     if(pbcext_dump_element_G1_bytes(&bf, &len, f) == IERROR) 
       GOTOENDRC(IERROR, klap20_join_mgr);    
-    if(!(h = hash_init(HASH_SHA1)))
+    if(!(h = hash_init(HASH_BLAKE2)))
       GOTOENDRC(IERROR, klap20_join_mgr);
     if(hash_update(h, bf, len) == IERROR)
       GOTOENDRC(IERROR, klap20_join_mgr);

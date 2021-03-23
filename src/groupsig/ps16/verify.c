@@ -85,7 +85,7 @@ int ps16_verify(uint8_t *ok,
   if (pbcext_element_GT_mul(e1, e1, e3) == IERROR) GOTOENDRC(IERROR, ps16_verify);
 
   /* c = Hash(sigma1,sigma2,R,m) */
-  if (!(aux_c = hash_init(HASH_SHA1))) GOTOENDRC(IERROR, ps16_verify);
+  if (!(aux_c = hash_init(HASH_BLAKE2))) GOTOENDRC(IERROR, ps16_verify);
 
   if (pbcext_element_G1_to_bytes(&aux_bytes, &len, ps16_sig->sigma1) == IERROR)
     GOTOENDRC(IERROR, ps16_verify);

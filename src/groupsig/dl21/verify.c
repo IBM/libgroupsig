@@ -157,7 +157,7 @@ int dl21_verify(uint8_t *ok,
 
   /* Recompute hscp */
   hscp = pbcext_element_G1_init();
-  if(!(hc = hash_init(HASH_SHA1))) GOTOENDRC(IERROR, dl21_verify);
+  if(!(hc = hash_init(HASH_BLAKE2))) GOTOENDRC(IERROR, dl21_verify);
   if(hash_update(hc, (byte_t *) msg_scp, strlen(msg_scp)) == IERROR)
     GOTOENDRC(IERROR, dl21_verify);
   if(hash_finalize(hc) == IERROR) GOTOENDRC(IERROR, dl21_verify);

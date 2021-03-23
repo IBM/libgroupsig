@@ -1,27 +1,47 @@
-/* 
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+/*                               -*- Mode: C -*- 
  *
- *  http://www.apache.org/licenses/LICENSE-2.0
+ *	libgroupsig Group Signatures library
+ *	Copyright (C) 2012-2013 Jesus Diaz Vico
  *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ *		
+ *
+ *	This file is part of the libgroupsig Group Signatures library.
+ *
+ *
+ *  The libgroupsig library is free software: you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public License as 
+ *  defined by the Free Software Foundation, either version 3 of the License, 
+ *  or any later version.
+ *
+ *  The libroupsig library is distributed WITHOUT ANY WARRANTY; without even 
+ *  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+ *  See the GNU Lesser General Public License for more details.
+ *
+ *
+ *  You should have received a copy of the GNU Lesser General Public License 
+ *  along with Group Signature Crypto Library.  If not, see <http://www.gnu.org/
+ *  licenses/>
+ *
+ * @file: hash.h
+ * @brief: Wrapper for hash functions
+ *
+ * Currently, the internal library for hashes is libssl (openssl)
+ *
+ * @author: jesus
+ * Maintainer: jesus
+ * @date: mié may  9 17:11:58 2012 (+0200)
+ * @version: 0.1
+ * Last-Updated: mar oct  8 22:02:14 2013 (+0200)
+ *           By: jesus
+ *     Update #: 12
+ * URL: bitbucket.org/jdiazvico/libgroupsig
  */
 
 #ifndef _GS_PRF_H
 #define _GS_PRF_H
 
 #include "types.h"
-#include "sysenv.h"
+#include "logger.h"
 #include "shim/pbc_ext.h"
 
 #ifdef __cplusplus
@@ -30,28 +50,27 @@ extern "C" {
 
 
 /* 
- * For now, this only implements the DY05 PRF [1]. If we need to add other PRFs,
+ * For now, this only implements the HMAC PRF [1]. If we need to add other PRFs,
  * consider creating an actual module. Right now, export/import of the keys
  * required by this PRF needs to be done by the schemes themselves. If this
  * becomes a module, it would be necessary to exim-ize this.
  *
- * [1] See the VUF construction from Dodis and Yampolsky paper from 2005. This 
- * is secure for superlogarithmic inputs. (Extension for larger inputs in Boneh,
- *  Montgomery and Raghunathan paper from 2010.)
+ * [1] Mihir Bellare, Ran Canetti, Hugo Krawczyk:
+ * Keying Hash Functions for Message Authentication. CRYPTO 1996: 1-15
  */
 
 /**
  * @struct prf_key_t
- * @brief Data structure for DY05 PRF keys.
+ * @brief Data structure for HMAC PRF keys
  */
 typedef struct {
-  pbcext_element_G1_t *g;
-  pbcext_element_Fr_t *k;
+  byte_t *bytes; /**< Raw key bytes. */
+  uint8_t len; /**< Key length. */
 } prf_key_t;
 
 /**
  * @fn prf_key_t* prf_key_init();
- * @brief Initializes a DY05 PRF key.
+ * @brief Initializes an HMAC PRF key.
  *
  * @return A pointer to the initialized PRF key or NULL if error.. 
  */
@@ -59,7 +78,7 @@ prf_key_t* prf_key_init();
 
 /**
  * @fn prf_key_t* prf_key_init_random();
- * @brief Initializes a DY05 PRF key and randomly sets its internal variables.
+ * @brief Initializes a HMAC PRF key and randomly sets its internal variables.
  *
  * @return A pointer to the initialized PRF key or NULL if error.. 
  */
@@ -78,7 +97,7 @@ int prf_key_free(prf_key_t *key);
 /**
  * @fn int prf_compute(byte_t **out, uint64_t *outlen,
  *                     prf_key_t *key, byte_t *data, uint64_t len);
- * @brief Applies the DY05 PRF to data.
+ * @brief Applies the HMAC PRF to data.
  *
  * @param[in,out] out The output produced by the PRF. If *out is
  *  NULL, memory will be internally allocated.

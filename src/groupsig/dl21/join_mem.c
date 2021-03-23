@@ -197,6 +197,7 @@ int dl21_join_mem(message_t **mout,
   }
 
  dl21_join_mem_end:
+
   if(bn) { mem_free(bn); bn = NULL; }
   if(H) { pbcext_element_G1_free(H); H = NULL; }
   if(aux) { pbcext_element_G1_free(aux); aux = NULL; }

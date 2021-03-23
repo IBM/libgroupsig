@@ -201,7 +201,7 @@ int bbs04_sign(groupsig_signature_t *sig, message_t *msg, groupsig_key_t *memkey
     GOTOENDRC(IERROR, bbs04_sign);
 
   /* c = hash(M,T1,T2,T3,R1,R2,R3,R4,R5) \in Zp */
-  if(!(aux_c = hash_init(HASH_SHA1))) GOTOENDRC(IERROR, bbs04_sign);
+  if(!(aux_c = hash_init(HASH_BLAKE2))) GOTOENDRC(IERROR, bbs04_sign);
 
   /* Push the message */
   if(hash_update(aux_c, msg->bytes, msg->length) == IERROR) 
