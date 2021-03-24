@@ -22,7 +22,6 @@
 
 #include "gl19.h"
 #include "logger.h"
-#include "bigz.h"
 #include "sys/mem.h"
 #include "groupsig/gl19/grp_key.h"
 #include "groupsig/gl19/mem_key.h"

@@ -25,7 +25,7 @@
 #include "sysenv.h"
 #include "gl19.h"
 #include "include/mem_key.h"
-#include "crypto/spk.h"
+#include "shim/pbc_ext.h"
 
 /**
  * @def GL19_MEM_KEY_BEGIN_MSG

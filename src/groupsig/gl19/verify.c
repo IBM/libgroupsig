@@ -54,7 +54,7 @@ static int _gl19_verify_spk(uint8_t *ok,
 
   /* The last sizeof(uint64_t) bytes of the message contain the expiration
      date. Parse them, and recompute the h3d value, needed to verify the SPK. */
-    if (!(hexpiration = hash_get(HASH_SHA1,
+    if (!(hexpiration = hash_get(HASH_BLAKE2,
 				 &msg->bytes[msg->length-sizeof(uint64_t)],
 				 sizeof(uint64_t))))
       GOTOENDRC(IERROR, _gl19_verify_spk);

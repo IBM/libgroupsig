@@ -161,7 +161,7 @@ int bbs04_verify(uint8_t *ok,
   /* Recompute the hash-challenge c */
 
   /* c = hash(M,T1,T2,T3,R1,R2,R3,R4,R5) \in Zp */
-  if(!(aux_c = hash_init(HASH_SHA1))) GOTOENDRC(IERROR, bbs04_verify);
+  if(!(aux_c = hash_init(HASH_BLAKE2))) GOTOENDRC(IERROR, bbs04_verify);
 
   /* Push the message */
   if(hash_update(aux_c, msg->bytes, msg->length) == IERROR) 

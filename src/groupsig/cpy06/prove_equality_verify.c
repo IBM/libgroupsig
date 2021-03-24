@@ -60,7 +60,7 @@ int cpy06_prove_equality_verify(uint8_t *ok, groupsig_proof_t *proof,
   cpy06_sysenv = sysenv->data;
 
   /* Initialize the hashing environment */
-  if(!(hash = hash_init(HASH_SHA1))) GOTOENDRC(IERROR, cpy06_prove_equality_verify);
+  if(!(hash = hash_init(HASH_BLAKE2))) GOTOENDRC(IERROR, cpy06_prove_equality_verify);
 
   /* We have to recover the e(g1,T4)^r objects. To do so, we divide e(g1,T4)^s/T5^c */  
   element_init_GT(e, cpy06_sysenv->pairing);

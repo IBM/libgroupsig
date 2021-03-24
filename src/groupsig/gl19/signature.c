@@ -263,7 +263,6 @@ int gl19_signature_export(byte_t **bytes,
   uint64_t len;
   int rc, ctr, _size;
   uint16_t i;
-  uint8_t code;
   
   if(!sig || sig->scheme != GROUPSIG_GL19_CODE) {
     LOG_EINVAL(&logger, __FILE__, "gl19_signature_export", __LINE__, LOGERROR);
@@ -283,8 +282,7 @@ int gl19_signature_export(byte_t **bytes,
   }  
   
    /* Dump GROUPSIG_GL19_CODE */
-  code = GROUPSIG_GL19_CODE;
-  _bytes[ctr++] = code;
+  _bytes[ctr++] = GROUPSIG_GL19_CODE;
 
   /* Dump AA */
   __bytes = &_bytes[ctr];

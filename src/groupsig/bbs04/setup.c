@@ -82,7 +82,7 @@ int bbs04_setup(groupsig_key_t *grpkey,
     if(pbcext_element_G1_random(gkey->h) == IERROR)
       GOTOENDRC(IERROR, bbs04_setup);
   } while(pbcext_element_G1_is0(gkey->h));
-  
+
   /* xi1 and xi2 random in Z^*_p */
   if(!(mkey->xi1 = pbcext_element_Fr_init())) GOTOENDRC(IERROR, bbs04_setup);
   if(pbcext_element_Fr_random(mkey->xi1) == IERROR)
@@ -115,11 +115,12 @@ int bbs04_setup(groupsig_key_t *grpkey,
   if(!(gkey->w = pbcext_element_G2_init())) GOTOENDRC(IERROR, bbs04_setup);
   if(pbcext_element_G2_mul(gkey->w, gkey->g2, mkey->gamma) == IERROR)
     GOTOENDRC(IERROR, bbs04_setup);
-  
+
   /* Optimizations */
 
   /* hw = e(h,w) */
   if(!(gkey->hw = pbcext_element_GT_init())) GOTOENDRC(IERROR, bbs04_setup);
+
   if(pbcext_pairing(gkey->hw, gkey->h, gkey->w) == IERROR)
     GOTOENDRC(IERROR, bbs04_setup);
 

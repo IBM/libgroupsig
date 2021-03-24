@@ -52,6 +52,31 @@ target_link_libraries(KLAP20Test
   pthread)
 add_test(NAME KLAP20Test COMMAND KLAP20Test)
 
+# Tests for DL21
+add_executable(DL21Test test_dl21.cpp)
+target_link_libraries(DL21Test
+  PUBLIC
+  groupsig
+  big
+  sys
+  logger
+  gtest_main
+  gtest
+  pthread)
+add_test(NAME DL21Test COMMAND DL21Test)
+
+# Tests for DL21SEQ
+add_executable(DL21SEQTest test_dl21seq.cpp)
+target_link_libraries(DL21SEQTest
+  PUBLIC
+  groupsig
+  big
+  sys
+  logger
+  gtest_main
+  gtest
+  pthread)
+add_test(NAME DL21SEQTest COMMAND DL21SEQTest)
 
 # Tests for Bigz
 add_executable(BigzTest test_bigz.cpp)
@@ -64,3 +89,16 @@ target_link_libraries(BigzTest
   gtest
   pthread)
 add_test(NAME BigzTest COMMAND BigzTest)
+
+# Tests for PBC
+add_executable(PBCTest test_pbc.cpp)
+target_link_libraries(PBCTest
+  PUBLIC
+  pbcext
+  base64
+  sys
+  logger
+  gtest_main
+  gtest
+  pthread)
+add_test(NAME PBCTest COMMAND PBCTest)

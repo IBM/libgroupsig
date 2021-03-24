@@ -89,6 +89,26 @@ int groupsig_proof_get_size(groupsig_proof_t *proof) {
 
 }
 
+int groupsig_proof_copy(groupsig_proof_t *dst, groupsig_proof_t *src) {
+
+  const groupsig_proof_handle_t *gsh;
+
+  if(!dst || !src ||
+     dst->scheme != src->scheme) {
+    LOG_EINVAL(&logger, __FILE__, "groupsig_proof_copy", __LINE__, LOGERROR);
+    return IERROR;
+  }
+
+  if(!(gsh = groupsig_proof_handle_from_code(dst->scheme))) {
+    LOG_EINVAL(&logger, __FILE__, "groupsig_proof_copy", __LINE__,
+	       LOGERROR);
+    return IERROR;
+  }
+
+  return gsh->copy(dst, src);
+
+}
+
 int groupsig_proof_export(byte_t **bytes,
 			  uint32_t *size,
 			  groupsig_proof_t *proof) {

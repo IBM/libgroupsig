@@ -46,7 +46,7 @@ extern "C" {
 #define BLS12_381 MCL_BLS12_381
 #define BLS12_381_P "1 3685416753713387016781088315183077757961620795782546409894578378688607592378376318836054947676345821548104185464507 1339506544944476473020471379941921221584933875938349620426543736416511423956333506472724655353366534992391756441569"
 
-#define BLS12_381_Q "1 352701069587466618187139116011060144890029952792775240219908644239793785735715026873347600343865175952761926303160 3059144344244213709971259814753781636986470325476647558659373206291635324768958432433509563104347017837885763365758 1985150602287291935568054521177171638300868978215655730859378665066344726373823718423869104263333984641494340347905 927553665492332455747201965776037880757740193453592970025027978793976877002675564980949289727957565575433344219582"
+#define BLS12_381_Q "1 352701069587466618187139116011060144890029952792775240219908644239793785735715026873347600343865175952761926303160 3059144344244213709971259814753781636986470325476647558659373206291635324768958432433509563104347017837885763365758 1985150602287291935568054521177171638300868978215655730859378665066344726373823718423869104263333984641494340347905 927553665492332455747201965776037880757740193453592970025027978793976877002675564980949289727957565575433344219582"  
 
   //typedef int pbcext_curve_t;
 
@@ -317,16 +317,6 @@ extern "C" {
    * @return IOK or IERROR.
    */
   int pbcext_element_G2_random(pbcext_element_G2_t *e);
-
-  /** 
-   * @fn int pbcext_element_random_GT(pbcext_element_GT_t *e)
-   * @brief Sets e randomly from the set of possible points.
-   *
-   * @param[in,out] e The element to be set.
-   * 
-   * @return IOK or IERROR.
-   */
-  int pbcext_element_GT_random(pbcext_element_GT_t *e);
 
   /** 
    * @fn int pbcext_element_Fr_add(pbcext_element_Fr_t *dst,
@@ -761,6 +751,27 @@ extern "C" {
   int pbcext_element_GT_cmp(pbcext_element_GT_t *e1, pbcext_element_GT_t *e2);
 
   /** 
+   * @fn int pbcext_element_Fr_is0(pbcext_element_Fr_t *e)
+   * @brief Compares e with 0.
+   *
+   * @param[in] e The element to compare with 0.
+   * 
+   * @return 1 if e==0. 0 Otherwise.
+   */
+  int pbcext_element_Fr_is0(pbcext_element_Fr_t *e);
+
+  /** 
+   * @fn int pbcext_element_Fp_is0(pbcext_element_Fp_t *e)
+   * @brief Compares e with 0.
+   *
+   * @param[in] e The element to compare with 0.
+   * 
+   * @return 1 if e==1. 0 Otherwise.
+   */
+  int pbcext_element_Fp_is0(pbcext_element_Fp_t *e);
+
+  
+  /** 
    * @fn int pbcext_element_Fr_is1(pbcext_element_Fr_t *e)
    * @brief Compares e with 1.
    *
@@ -800,6 +811,16 @@ extern "C" {
    */
   int pbcext_element_G2_is0(pbcext_element_G2_t *e);
 
+  /** 
+   * @fn int pbcext_element_GT_is0(pbcext_element_GT_t *e)
+   * @brief Compares e with 0.
+   *
+   * @param[in] e The element to compare with 0.
+   * 
+   * @return 1 if e==0. 0 Otherwise.
+   */
+  int pbcext_element_GT_is0(pbcext_element_GT_t *e);
+  
   /** 
    * @fn int pbcext_element_GT_is1(pbcext_element_GT_t *e)
    * @brief Compares e with 1.

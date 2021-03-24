@@ -86,7 +86,7 @@ int ps16_sign(groupsig_signature_t *sig, message_t *msg, groupsig_key_t *memkey,
   if (pbcext_element_GT_pow(e, e, k) == IERROR) GOTOENDRC(IERROR, ps16_sign);
   
   /* c = hash(ps16_sig->sigma1,ps16_sig->sigma2,e,m) */
-  if (!(aux_c = hash_init(HASH_SHA1))) GOTOENDRC(IERROR, ps16_sign);
+  if (!(aux_c = hash_init(HASH_BLAKE2))) GOTOENDRC(IERROR, ps16_sign);
 
   if (pbcext_element_G1_to_bytes(&aux_bytes, &len, ps16_sig->sigma1) == IERROR)
     GOTOENDRC(IERROR, ps16_sign);

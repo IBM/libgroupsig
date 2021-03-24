@@ -158,7 +158,7 @@ static const grp_key_handle_t gl19_grp_key_handle = {
   .gexport = &gl19_grp_key_export, /**< Export group keys. */
   .gimport = &gl19_grp_key_import, /**< Import group keys. */
   .to_string = &gl19_grp_key_to_string, /**< Convert to printable strings. */
-  .get_size = &gl19_grp_key_get_size, /**< Get size of key in format */
+  .get_size = &gl19_grp_key_get_size, /**< Get size of key as bytes. */
 };
 
 #endif

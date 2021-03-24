@@ -258,7 +258,7 @@ int spk_dlog_GT_sign(spk_dlog_t *pi,
   pbcext_element_GT_pow(gr, g, r);
   
   /* Make hc = Hash(msg||G||g||g^r) */
-  if(!(hc = hash_init(HASH_SHA1))) GOTOENDRC(IERROR, spk_dlog_GT_sign);
+  if(!(hc = hash_init(HASH_BLAKE2))) GOTOENDRC(IERROR, spk_dlog_GT_sign);
   if(hash_update(hc, msg, size) == IERROR) GOTOENDRC(IERROR, spk_dlog_GT_sign);
   if(pbcext_element_GT_to_bytes(&bG, &len, G) == IERROR) GOTOENDRC(IERROR, spk_dlog_GT_sign);
   if(hash_update(hc, bG, len) == IERROR) GOTOENDRC(IERROR, spk_dlog_GT_sign);
@@ -333,7 +333,7 @@ int spk_dlog_GT_verify(uint8_t *ok,
   pbcext_element_GT_mul(gsGc, gs, Gc);
   
   /* Compute the hash */
-  if(!(hc = hash_init(HASH_SHA1))) GOTOENDRC(IERROR, spk_dlog_GT_verify);
+  if(!(hc = hash_init(HASH_BLAKE2))) GOTOENDRC(IERROR, spk_dlog_GT_verify);
   if(hash_update(hc, msg, size) == IERROR) GOTOENDRC(IERROR, spk_dlog_GT_verify);
   if(pbcext_element_GT_to_bytes(&bG, &len, G) == IERROR)
     GOTOENDRC(IERROR, spk_dlog_GT_verify);
@@ -838,7 +838,7 @@ int spk_rep_sign(spk_rep_t *pi,
   */
 
   /* Push the message */
-  if(!(hc = hash_init(HASH_SHA1))) GOTOENDRC(IERROR, spk_rep_sign);
+  if(!(hc = hash_init(HASH_BLAKE2))) GOTOENDRC(IERROR, spk_rep_sign);
   if(hash_update(hc, msg, size) == IERROR) GOTOENDRC(IERROR, spk_rep_sign);
   
   /* Push the y values */
@@ -994,7 +994,7 @@ int spk_rep_verify(uint8_t *ok,
   */
 
   /* Push the message */
-  if(!(hc = hash_init(HASH_SHA1))) GOTOENDRC(IERROR, spk_rep_verify);
+  if(!(hc = hash_init(HASH_BLAKE2))) GOTOENDRC(IERROR, spk_rep_verify);
   if(hash_update(hc, msg, size) == IERROR) GOTOENDRC(IERROR, spk_rep_verify);
 
   /* Push the y values */
@@ -1137,7 +1137,7 @@ int spk_pairing_homomorphism_G2_sign(spk_pairing_homomorphism_G2_t *pi,
     GOTOENDRC(IERROR, spk_pairing_homomorphism_G2_sign);    
   
   /* Make hc = Hash(msg||g||G||R) */
-  if(!(hc = hash_init(HASH_SHA1)))
+  if(!(hc = hash_init(HASH_BLAKE2)))
     GOTOENDRC(IERROR, spk_pairing_homomorphism_G2_sign);
   if(hash_update(hc, msg, size) == IERROR)
     GOTOENDRC(IERROR, spk_pairing_homomorphism_G2_sign);
@@ -1233,7 +1233,7 @@ int spk_pairing_homomorphism_G2_verify(uint8_t *ok,
     GOTOENDRC(IERROR, spk_pairing_homomorphism_G2_verify);    
 
   /* Compute the hash */
-  if(!(hc = hash_init(HASH_SHA1)))
+  if(!(hc = hash_init(HASH_BLAKE2)))
     GOTOENDRC(IERROR, spk_pairing_homomorphism_G2_verify);
   if(hash_update(hc, msg, size) == IERROR)
     GOTOENDRC(IERROR, spk_pairing_homomorphism_G2_verify);

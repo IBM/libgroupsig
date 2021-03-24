@@ -102,7 +102,7 @@ namespace groupsig {
 
         rc = groupsig_join_mem(&m2, memkey[i], 1, m1, grpkey);
 	ASSERT_EQ(rc, IOK);	
-		
+
       }
       
       this->n = n;
@@ -184,7 +184,7 @@ namespace groupsig {
 
     rc = groupsig_setup(GROUPSIG_BBS04_CODE, grpkey, mgrkey, gml);
     EXPECT_EQ(rc, IOK);
-    
+
     addMembers(1);
 
     EXPECT_EQ(memkey[0]->scheme, GROUPSIG_BBS04_CODE);    

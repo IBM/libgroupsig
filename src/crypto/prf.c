@@ -1,28 +1,50 @@
-/* 
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+/*                               -*- Mode: C -*- 
  *
- *  http://www.apache.org/licenses/LICENSE-2.0
+ *	libgroupsig Group Signatures library
+ *	Copyright (C) 2012-2013 Jesus Diaz Vico
  *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ *		
+ *
+ *	This file is part of the libgroupsig Group Signatures library.
+ *
+ *
+ *  The libgroupsig library is free software: you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public License as 
+ *  defined by the Free Software Foundation, either version 3 of the License, 
+ *  or any later version.
+ *
+ *  The libroupsig library is distributed WITHOUT ANY WARRANTY; without even 
+ *  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+ *  See the GNU Lesser General Public License for more details.
+ *
+ *
+ *  You should have received a copy of the GNU Lesser General Public License 
+ *  along with Group Signature Crypto Library.  If not, see <http://www.gnu.org/
+ *  licenses/>
+ *
+ * @file: join.c
+ * @brief: 
+ * @author: jesus
+ * Maintainer: 
+ * @date: jue may 10 11:12:56 2012 (+0200)
+ * @version: 
+ * Last-Updated: lun ago  5 13:04:28 2013 (+0200)
+ *           By: jesus
+ *     Update #: 3
+ * URL: 
  */
-
 #include <stdio.h>
 #include <errno.h>
 #include <stdlib.h>
+#include <openssl/rand.h>
+#include <openssl/evp.h>
+#include <openssl/hmac.h>
 
 #include "prf.h"
 #include "sys/mem.h"
+#include "shim/hash.h"
+
+#include "misc/misc.h"
 
 prf_key_t* prf_key_init() {
 
@@ -32,15 +54,11 @@ prf_key_t* prf_key_init() {
     return NULL;
   }
 
-  if(!(key->g = pbcext_element_G1_init())) {
-    mem_free(key); key = NULL;
+  if(!(key->bytes = (byte_t *) mem_malloc(sizeof(byte_t)*HASH_BLAKE2_LENGTH))) {
     return NULL;
   }
 
-  if(!(key->k = pbcext_element_Fr_init())) {
-    mem_free(key); key = NULL;
-    return NULL;
-  }
+  key->len = (uint8_t) HASH_BLAKE2_LENGTH;
 
   return key;
   
@@ -54,29 +72,18 @@ prf_key_t* prf_key_init_random() {
     return NULL;
   }
 
-  if (!(key->g = pbcext_element_G1_init())) {
-    mem_free(key); key = NULL;
+  if(!(key->bytes = (byte_t *) mem_malloc(sizeof(byte_t)*HASH_BLAKE2_LENGTH))) {
     return NULL;
   }
+  
+  key->len = (uint8_t) HASH_BLAKE2_LENGTH;
 
-  if (pbcext_element_G1_random(key->g) == IERROR) {
-    pbcext_element_G1_free(key->g); key->g = NULL;
+  /* Set bytes to random */
+  if(RAND_bytes(key->bytes, key->len) != 1) {
+    mem_free(key->bytes); key->bytes = NULL;
     mem_free(key); key = NULL;
-    return NULL;
   }
-
-  if (!(key->k = pbcext_element_Fr_init())) {
-    mem_free(key); key = NULL;
-    return NULL;
-  }
-
-  if (pbcext_element_Fr_random(key->k) == IERROR) {
-    pbcext_element_G1_free(key->g); key->g = NULL;
-    pbcext_element_Fr_free(key->k); key->k = NULL;
-    mem_free(key); key = NULL;
-    return NULL;
-  }
-
+  
   return key;
   
 }
@@ -85,8 +92,7 @@ int prf_key_free(prf_key_t *key) {
 
   if (!key) return IOK;
 
-  if (key->g) { pbcext_element_G1_free(key->g); key->g = NULL; }
-  if (key->k) { pbcext_element_Fr_free(key->k); key->k = NULL; }
+  if (key->bytes) { mem_free(key->bytes); key->bytes = NULL; }
   mem_free(key); key = NULL;
 
   return IOK;
@@ -96,70 +102,65 @@ int prf_key_free(prf_key_t *key) {
 int prf_compute(byte_t **out, uint64_t *outlen, prf_key_t *key,
 		byte_t *data, uint64_t len) {
 
-  pbcext_element_Fr_t *x;
-  pbcext_element_G1_t *g;
-  byte_t *_out;
-  uint64_t _len;
+  const EVP_MD *md;
+  HMAC_CTX *hmac_ctx;
+  byte_t _out[EVP_MAX_MD_SIZE];
+  unsigned int _len;
 
   if (!out || !outlen || !key || !data || !len) {
-    LOG_EINVAL(&logger, __FILE__, "prf_compute", __LINE__, LOGERROR);
+    LOG_EINVAL(&logger, __FILE__, "_dl20_compute_seq", __LINE__, LOGERROR);
     return IERROR;
   }
 
-  /* Convert data to an Fr element (@TODO how to check for polylogarithmic 
-     sizes?) */
-
-  if (!(x = pbcext_element_Fr_init())) {
+  /* Initialize md */
+  if(!(md = EVP_get_digestbyname(HASH_BLAKE2_NAME))) {
+    LOG_ERRORCODE_MSG(&logger, __FILE__, "prf_compute", __LINE__, EDQUOT,
+		      "OpenSSL: Unknown hash algorithm", LOGERROR);
     return IERROR;
   }
 
-  if (pbcext_element_Fr_from_unformat_bytes(x, data, len) == IERROR) {
-    pbcext_element_Fr_free(x); x = NULL;
+  /* Compute the HMAC */  
+  if(!(hmac_ctx = HMAC_CTX_new())) {
+    LOG_ERRORCODE_MSG(&logger, __FILE__, "prf_compute", __LINE__, EDQUOT,
+		      "OpenSSL: HMAC_CTX_new", LOGERROR);
     return IERROR;
   }
+
+  if(!(HMAC_Init_ex(hmac_ctx, key->bytes, key->len, md, NULL))) {
+    LOG_ERRORCODE_MSG(&logger, __FILE__, "prf_compute", __LINE__, EDQUOT,
+		      "OpenSSL: HMAC_Init_ex", LOGERROR);
+    HMAC_CTX_free(hmac_ctx);	
+    return IERROR;
+  }
+
+  if(!(HMAC_Update(hmac_ctx, data, (int) len))) {
+    LOG_ERRORCODE_MSG(&logger, __FILE__, "prf_compute", __LINE__, EDQUOT,
+		      "OpenSSL: HMAC_Update", LOGERROR);
+    HMAC_CTX_free(hmac_ctx);
+    return IERROR;
+  }
+
+  memset(_out, 0, EVP_MAX_MD_SIZE);
+  if(!(HMAC_Final(hmac_ctx, _out, &_len))) {
+    LOG_ERRORCODE_MSG(&logger, __FILE__, "prf_compute", __LINE__, EDQUOT,
+		      "OpenSSL: HMAC_Final", LOGERROR);
+    HMAC_CTX_free(hmac_ctx);
+    return IERROR;
+  }
+
+  if (!*out) {
+    if(!(*out = (byte_t *) mem_malloc(sizeof(byte_t)*_len))) {
+      LOG_ERRORCODE(&logger, __FILE__, "prf_compute", __LINE__, errno, LOGERROR);
+      return IERROR;
+    }
+    memcpy(*out, _out, _len);
+  } else {
+    memcpy(*out, _out, _len);
+  }
+
+  *outlen = (uint64_t) _len;
+  HMAC_CTX_free(hmac_ctx);
   
-  /* Compute key->g^{1/key->k+x} */
-  if (pbcext_element_Fr_add(x, x, key->k) == IERROR) {
-    pbcext_element_Fr_free(x); x = NULL;
-    return IERROR;
-  }
-
-  if (pbcext_element_Fr_inv(x, x) == IERROR) {
-    pbcext_element_Fr_free(x); x = NULL;
-    return IERROR;
-  }
-
-  if (!(g = pbcext_element_G1_init())) {
-    pbcext_element_Fr_free(x); x = NULL;
-    return IERROR;
-  }
-  
-  if (pbcext_element_G1_mul(g, key->g, x) == IERROR) {
-    pbcext_element_Fr_free(x); x = NULL;
-    pbcext_element_G1_free(g); g = NULL;
-    return IERROR;
-  }
-
-  pbcext_element_Fr_free(x); x = NULL;
-  
-  /* Convert the result to bytes. If *out is not NULL, the caller
-     must ensure enough size. */
-  if (pbcext_element_G1_byte_size(&_len) == IERROR) {
-    pbcext_element_G1_free(g); g = NULL;
-    return IERROR;
-  }
-
-  _out = NULL;
-  if (pbcext_element_G1_to_bytes(&_out, &_len, g) == IERROR) {
-    pbcext_element_G1_free(g); g = NULL;
-    return IERROR;
-  }
-
-  pbcext_element_G1_free(g); g = NULL;
-  if (!*out) { *out = _out; }
-  else { memcpy(*out, _out, _len); }
-  *outlen = _len;
-
   return IOK;
   
 }

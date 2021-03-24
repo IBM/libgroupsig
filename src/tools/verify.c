@@ -45,7 +45,8 @@ int main(int argc, char *argv[]) {
   groupsig_key_t *grpkey;
   groupsig_signature_t *sig;
   message_t *msg;
-  byte_t *b_grpkey, *b_sig;
+  byte_t *b_grpkey, *b_sig, *b_msg;
+  uint64_t msg_len;
 #ifdef PROFILE
   profile_t *prof;
   uint64_t n, i, uint64;
@@ -96,12 +97,6 @@ int main(int argc, char *argv[]) {
   }
   n = uint64;
 #endif
-
-  /* Initialize the message object */
-  if(!(msg = message_init())) {
-    fprintf(stderr, "Error: failed to initialize message.\n");
-    return IERROR;
-  }
 
   /* Import the group key */
   b_grpkey = NULL;
@@ -157,13 +152,21 @@ int main(int argc, char *argv[]) {
     }
     mem_free(b_sig); b_sig = NULL;
 #endif
-    /* Import the message from the external file into the initialized message object */
-    if(message_import(msg, MESSAGE_FORMAT_NULL_FILE, s_msg) == IERROR) {
-      fprintf(stderr, "Error: failed to import message.\n");
-      message_free(msg); msg = NULL;
+
+    /* Initialize message */
+    b_msg = NULL;
+    if (misc_read_file_to_bytestring(s_msg, &b_msg, &msg_len) == IERROR) {
+      fprintf(stderr, "Error: failed to read message file %s\n", s_msg);
       return IERROR;
     }
-
+    
+    if (!(msg = message_from_bytes(b_msg, msg_len))) {
+      fprintf(stderr, "Error: failed to import message from file %s\n",
+	      s_msg);
+      return IERROR;      
+    }
+    
+    mem_free(b_msg); b_msg = NULL;
     mem_free(b_sig); b_sig = NULL;
 
 #ifdef PROFILE

@@ -155,7 +155,7 @@ int gl19_join_mem(message_t **mout, groupsig_key_t *memkey,
     if (!(bexpiration = mem_malloc(sizeof(byte_t)*sizeof(uint64_t))))     
       GOTOENDRC(IERROR, gl19_join_mem);
     memcpy(bexpiration, &gl19_memkey->l, sizeof(uint64_t));
-    if (!(hexpiration = hash_get(HASH_SHA1, bexpiration, sizeof(uint64_t))))
+    if (!(hexpiration = hash_get(HASH_BLAKE2, bexpiration, sizeof(uint64_t))))
       GOTOENDRC(IERROR, gl19_join_mem);
 
     if (!(gl19_memkey->d = pbcext_element_Fr_init()))
