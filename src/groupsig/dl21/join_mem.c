@@ -77,6 +77,8 @@ int dl21_join_mem(message_t **mout,
   n = NULL; H = NULL; aux = NULL;
   y = NULL;
   e1 = NULL; e2 = NULL; e3 = NULL;
+  _dl21_memkey = NULL;
+  pi = NULL;
   
   dl21_memkey = (dl21_mem_key_t *) memkey->key;
   dl21_grpkey = (dl21_grp_key_t *) grpkey->key;
@@ -199,12 +201,24 @@ int dl21_join_mem(message_t **mout,
  dl21_join_mem_end:
 
   if(bn) { mem_free(bn); bn = NULL; }
+  if(bmsg) { mem_free(bmsg); bmsg = NULL; }
+  if(bpi) { mem_free(bpi); bpi = NULL; }
+  if(bH) { mem_free(bH); bH = NULL; }
+  if(n) { pbcext_element_G1_free(n); n = NULL; }  
   if(H) { pbcext_element_G1_free(H); H = NULL; }
   if(aux) { pbcext_element_G1_free(aux); aux = NULL; }
   if(y) { pbcext_element_Fr_free(y); y = NULL; }
   if(e1) { pbcext_element_GT_free(e1); e1 = NULL; }
   if(e2) { pbcext_element_GT_free(e2); e2 = NULL; }
   if(e3) { pbcext_element_GT_free(e3); e3 = NULL; }
+  if(_dl21_memkey) {
+    groupsig_mem_key_free(_dl21_memkey);
+    _dl21_memkey = NULL;
+  }
+  if(pi) {
+    spk_dlog_free(pi);
+    pi = NULL;
+  }
   
   return rc;
 

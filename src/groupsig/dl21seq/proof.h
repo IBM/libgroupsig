@@ -93,6 +93,19 @@ char* dl21seq_proof_to_string(groupsig_proof_t *proof);
 int dl21seq_proof_get_size(groupsig_proof_t *proof);
 
 /** 
+ * @fn int dl21seq_proof_copy(groupsig_proof_t *dst, 
+ *                            groupsig_proof_t *src)
+ * @brief Copies the given source proof into the destination proof.
+ *
+ * @param[in,out] dst The destination proof. Initialized by the caller.
+ * @param[in] src The proof to copy. 
+ * 
+ * @return IOK or IERROR.
+ */
+int dl21seq_proof_copy(groupsig_proof_t *dst, groupsig_proof_t *src);
+
+
+/** 
  * @fn int dl21seq_proof_export(byte_t **bytes, uint32_t *size, groupsig_proof_t *proof);
  * @brief Writes a bytearray representation of the given signature, with format
  *  | DL21SEQCODE | size_spk | spk | n (uint64_t) | size_x1 | x1 | ... | 
@@ -129,6 +142,7 @@ static const groupsig_proof_handle_t dl21seq_proof_handle = {
   .init = &dl21seq_proof_init, /**< Initalizes proofs. */
   .free = &dl21seq_proof_free, /**< Frees proofs. */
   .get_size = &dl21seq_proof_get_size, /**< Gets the size of a proof in bytes. */
+  .copy = &dl21seq_proof_copy, /**< Copies proofs. */
   .gexport = &dl21seq_proof_export, /**< Exports proofs. */
   .gimport = &dl21seq_proof_import, /**< Imports proofs. */
   .to_string = &dl21seq_proof_to_string /**< Gets printable representations of proofs. */

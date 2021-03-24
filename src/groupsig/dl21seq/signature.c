@@ -69,13 +69,6 @@ groupsig_signature_t* dl21seq_signature_init() {
     return NULL;
   }
 
-  if(!(dl21seq_sig->seq =(dl21seq_seqinfo_t *) mem_malloc(sizeof(dl21seq_seqinfo_t)))) {
-    LOG_ERRORCODE(&logger, __FILE__, "dl21seq_signature_init", __LINE__, errno, 
-		  LOGERROR);
-    mem_free(dl21seq_sig); dl21seq_sig = NULL;
-    return NULL;
-  }
-
   sig->scheme = GROUPSIG_DL21SEQ_CODE;
   sig->sig = dl21seq_sig;
 
@@ -452,6 +445,9 @@ groupsig_signature_t* dl21seq_signature_import(byte_t *source, uint32_t size) {
     ctr += len;
   }
 
+  dl21seq_sig->seq = (dl21seq_seqinfo_t *) mem_malloc(sizeof(dl21seq_seqinfo_t));
+  if (!dl21seq_sig->seq) GOTOENDRC(IERROR, dl21seq_signature_import);
+  
   /* Get len1 */
   memcpy(&dl21seq_sig->seq->len1, &source[ctr], sizeof(uint64_t));
   ctr += sizeof(uint64_t);

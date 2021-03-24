@@ -141,7 +141,16 @@ int dl21_link(groupsig_proof_t **proof,
 
   if(spk_dlog_G1_sign(spk, nym_, hscp_, dl21_memkey->y, (byte_t *) msg_msg,
 		      strlen(msg_msg)) == IERROR) GOTOENDRC(IERROR, dl21_link);
-  *proof = _proof;
+
+  if (!*proof) {
+    *proof = _proof;
+  } else {
+    if (dl21_proof_copy(*proof, _proof) == IERROR) {
+      dl21_proof_free(_proof); _proof = NULL; 
+      GOTOENDRC(IERROR, dl21_link);
+    }
+    dl21_proof_free(_proof); _proof = NULL;
+  }
 
  dl21_link_end:
 
@@ -150,7 +159,7 @@ int dl21_link(groupsig_proof_t **proof,
   if(hscp_) { pbcext_element_G1_free(hscp_); hscp_ = NULL; }  
   if(nym_) { pbcext_element_G1_free(nym_); nym_ = NULL; }
   if(hc) { hash_free(hc); hc = NULL; }
-
+  
   return rc;
 
 }

@@ -61,7 +61,7 @@ groupsig_proof_t* dl21_proof_init() {
   }
 
   proof->scheme = GROUPSIG_DL21_CODE;
-  if(!(proof->proof = spk_dlog_init())) {
+  if (!(proof->proof = spk_dlog_init())) {
     mem_free(proof); proof = NULL;
     return NULL;
   }
@@ -94,6 +94,27 @@ char* dl21_proof_to_string(groupsig_proof_t *proof) {
   
   return NULL;
 
+}
+
+int dl21_proof_copy(groupsig_proof_t *dst, groupsig_proof_t *src) {
+
+  dl21_proof_t *dl21_dst, *dl21_src;
+  
+  if (!dst || !src) {
+    LOG_EINVAL(&logger, __FILE__, "dl21_proof_copy", __LINE__, LOGERROR);
+    return IERROR;    
+  }
+
+  dl21_dst = dst->proof;
+  dl21_src = src->proof;
+  
+  if (spk_dlog_copy(dl21_dst, dl21_src) == IERROR) {
+    spk_dlog_free(dl21_dst); dl21_dst = NULL;
+    return IERROR;
+  }
+
+  return IOK;
+  
 }
 
 int dl21_proof_export(byte_t **bytes, uint32_t *size, groupsig_proof_t *proof) {
@@ -178,6 +199,9 @@ groupsig_proof_t* dl21_proof_import(byte_t *source, uint32_t size) {
 		      EDQUOT, "Unexpected proof scheme.", LOGERROR);
     GOTOENDRC(IERROR, dl21_proof_import);
   }
+
+  if (!(proof->proof = spk_dlog_init()))
+    GOTOENDRC(IERROR, dl21_proof_import);
 
   if (!(proof->proof = spk_dlog_import(&source[1], &proof_len)))
     GOTOENDRC(IERROR, dl21_proof_import);

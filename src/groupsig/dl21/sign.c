@@ -41,6 +41,7 @@
 #include "groupsig/dl21/mem_key.h"
 #include "groupsig/dl21/signature.h"
 #include "shim/hash.h"
+#include "sys/mem.h"
 
 int dl21_sign(groupsig_signature_t *sig, message_t *msg, groupsig_key_t *memkey, 
 	      groupsig_key_t *grpkey, unsigned int seed) {
@@ -80,7 +81,8 @@ int dl21_sign(groupsig_signature_t *sig, message_t *msg, groupsig_key_t *memkey,
   r1 = r2 = r3 = ss = negy = aux_Zr = NULL;
   aux = aux_h2negr2 = A_d = NULL;
   msg_msg = NULL; msg_scp = NULL;
-
+  hc = NULL;
+  
   /* Parse message and scope values from msg */
   if(message_json_get_key(&msg_msg, msg, "$.message") == IERROR)
     GOTOENDRC(IERROR, dl21_sign);
@@ -223,6 +225,9 @@ int dl21_sign(groupsig_signature_t *sig, message_t *msg, groupsig_key_t *memkey,
   if(negy) { pbcext_element_Fr_free(negy); negy = NULL; }
   if(A_d) { pbcext_element_G1_free(A_d); A_d = NULL; }
   if(hscp) { pbcext_element_G1_free(hscp); hscp = NULL; }
+  if(hc) { hash_free(hc); hc = NULL; }
+  if(msg_scp) { mem_free(msg_scp); msg_scp = NULL; }
+  if(msg_msg) { mem_free(msg_msg); msg_msg = NULL; }
   
   if (rc == IERROR) {
     

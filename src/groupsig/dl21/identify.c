@@ -109,6 +109,7 @@ int dl21_identify(uint8_t *ok,
 
   if(hscp) { pbcext_element_G1_free(hscp); hscp = NULL; }
   if(hc) { hash_free(hc); hc = NULL; }
+  if(msg_scp) { mem_free(msg_scp); msg_scp = NULL; }
   
   return rc;
 

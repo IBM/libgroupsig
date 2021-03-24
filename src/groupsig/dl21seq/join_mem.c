@@ -46,10 +46,10 @@
 #include "shim/pbc_ext.h"
 
 int dl21seq_join_mem(message_t **mout,
-		  groupsig_key_t *memkey,
-		  int seq,
-		  message_t *min,
-		  groupsig_key_t *grpkey) {
+		     groupsig_key_t *memkey,
+		     int seq,
+		     message_t *min,
+		     groupsig_key_t *grpkey) {
 
   pbcext_element_G1_t *n, *H, *aux;
   pbcext_element_Fr_t *y;
@@ -76,6 +76,7 @@ int dl21seq_join_mem(message_t **mout,
   n = NULL; H = NULL; aux = NULL;
   y = NULL;
   e1 = NULL; e2 = NULL; e3 = NULL;
+  _dl21seq_memkey = NULL;
   
   dl21seq_memkey = (dl21seq_mem_key_t *) memkey->key;
   dl21seq_grpkey = (dl21seq_grp_key_t *) grpkey->key;
@@ -206,12 +207,21 @@ int dl21seq_join_mem(message_t **mout,
  dl21seq_join_mem_end:
   
   if(bn) { mem_free(bn); bn = NULL; }
+  if(bmsg) { mem_free(bmsg); bmsg = NULL; }
+  if(bpi) { mem_free(bpi); bpi = NULL; }
+  if(bH) { mem_free(bH); bH = NULL; }  
   if(H) { pbcext_element_G1_free(H); H = NULL; }
   if(aux) { pbcext_element_G1_free(aux); aux = NULL; }
   if(y) { pbcext_element_Fr_free(y); y = NULL; }
+  if(n) { pbcext_element_G1_free(n); n = NULL; }
   if(e1) { pbcext_element_GT_free(e1); e1 = NULL; }
   if(e2) { pbcext_element_GT_free(e2); e2 = NULL; }
   if(e3) { pbcext_element_GT_free(e3); e3 = NULL; }
+  if(_dl21seq_memkey) {
+    groupsig_mem_key_free(_dl21seq_memkey);
+    _dl21seq_memkey = NULL;
+  }
+  if(pi) { spk_dlog_free(pi); pi = NULL; }
   
   return rc;
 

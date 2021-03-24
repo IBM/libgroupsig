@@ -106,16 +106,16 @@ namespace groupsig {
 	rc = groupsig_join_mem(&m4, memkey[i], 3, m3, grpkey);
 	ASSERT_EQ(rc, IOK);
 
+	if(m0) { message_free(m0); m0 = NULL; }
+	if(m1) { message_free(m1); m1 = NULL; }
+	if(m2) { message_free(m2); m2 = NULL; }
+	if(m3) { message_free(m3); m3 = NULL; }
+	if(m4) { message_free(m4); m4 = NULL; }
+	
       }
       
       this->n = n;
-
-      if(m0) { message_free(m0); m0 = NULL; }
-      if(m1) { message_free(m1); m1 = NULL; }
-      if(m2) { message_free(m2); m2 = NULL; }
-      if(m3) { message_free(m3); m3 = NULL; }
-      if(m4) { message_free(m4); m4 = NULL; }
-
+      
     }
     
     // If the constructor and destructor are not enough for setting up
@@ -348,9 +348,6 @@ namespace groupsig {
     EXPECT_EQ(rc, IOK);    
 
     /* Link the signatures */
-    proof = groupsig_proof_init(grpkey->scheme);
-    EXPECT_NE(proof, nullptr);
-
     msgs = (message_t **) malloc(sizeof(message_t *)*2);
     EXPECT_NE(msgs, nullptr);
 
@@ -426,9 +423,6 @@ namespace groupsig {
     EXPECT_EQ(rc, IOK);    
 
     /* Link the signatures */
-    proof = groupsig_proof_init(grpkey->scheme);
-    EXPECT_NE(proof, nullptr);
-
     msgs = (message_t **) malloc(sizeof(message_t *)*2);
     EXPECT_NE(msgs, nullptr);
 
@@ -440,7 +434,8 @@ namespace groupsig {
     
     sigs[0] = sig1;
     sigs[1] = sig2;
-    
+
+    proof = NULL;
     rc = groupsig_link(&proof, grpkey, memkey[0], msg, sigs, msgs, 2);
     EXPECT_EQ(rc, IFAIL);
     
@@ -499,9 +494,6 @@ namespace groupsig {
     EXPECT_EQ(rc, IOK);    
 
     /* Link the signatures */
-    proof = groupsig_proof_init(grpkey->scheme);
-    EXPECT_NE(proof, nullptr);
-
     msgs = (message_t **) malloc(sizeof(message_t *)*2);
     EXPECT_NE(msgs, nullptr);
 
@@ -583,9 +575,6 @@ namespace groupsig {
     EXPECT_EQ(rc, IOK);    
 
     /* Link the signatures */
-    proof = groupsig_proof_init(grpkey->scheme);
-    EXPECT_NE(proof, nullptr);
-
     msgs = (message_t **) malloc(sizeof(message_t *)*2);
     EXPECT_NE(msgs, nullptr);
 
@@ -613,6 +602,9 @@ namespace groupsig {
     rc = groupsig_signature_free(sig2);
     EXPECT_EQ(rc, IOK);
 
+    rc = groupsig_signature_free(sig3);
+    EXPECT_EQ(rc, IOK);    
+    
     rc = groupsig_proof_free(proof);
     EXPECT_EQ(rc, IOK);    
 

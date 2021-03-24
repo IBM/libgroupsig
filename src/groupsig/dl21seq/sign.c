@@ -168,6 +168,7 @@ int dl21seq_sign(groupsig_signature_t *sig,
   aux = aux_h2negr2 = A_d = NULL;
   msg_msg = NULL; msg_scp = NULL;
   seq = NULL;
+  hc = NULL;
 
   /* Parse message and scope values from msg */
   if(message_json_get_key(&msg_msg, msg, "$.message") == IERROR)
@@ -320,7 +321,10 @@ int dl21seq_sign(groupsig_signature_t *sig,
   if(negy) { pbcext_element_Fr_free(negy); negy = NULL; }
   if(A_d) { pbcext_element_G1_free(A_d); A_d = NULL; }
   if(hscp) { pbcext_element_G1_free(hscp); hscp = NULL; }
-  
+  if(hc) { hash_free(hc); hc = NULL; }
+  if(msg_msg) { mem_free(msg_msg); msg_msg = NULL; }
+  if(msg_scp) { mem_free(msg_scp); msg_scp = NULL; }
+
   if (rc == IERROR) {
     
     if(dl21seq_sig->nym) {

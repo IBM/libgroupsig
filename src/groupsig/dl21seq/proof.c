@@ -73,7 +73,6 @@ groupsig_proof_t* dl21seq_proof_init() {
   }
 
   dl21seq_proof->n = 0;
-
   proof->proof = dl21seq_proof;
 
   return proof;
@@ -117,10 +116,67 @@ int dl21seq_proof_free(groupsig_proof_t *proof) {
 
   }
   
+  mem_free(proof->proof);
+  proof->proof = NULL;
   mem_free(proof);
 
   return IOK;
 
+}
+
+int dl21seq_proof_copy(groupsig_proof_t *dst, groupsig_proof_t *src) {
+
+  dl21seq_proof_t *dl21seq_dst, *dl21seq_src;
+  uint64_t i;
+  int rc;
+  
+  if (!dst || !src) {
+    LOG_EINVAL(&logger, __FILE__, "dl21seq_proof_copy", __LINE__, LOGERROR);
+    return IERROR;    
+  }
+
+  rc = IOK;
+  dl21seq_dst = dst->proof;
+  dl21seq_src = src->proof;
+  
+  dl21seq_dst->xlen = mem_malloc(sizeof(uint64_t)*dl21seq_src->n);
+  if (!dl21seq_dst->xlen) GOTOENDRC(IERROR, dl21seq_proof_copy);
+  dl21seq_dst->x = mem_malloc(sizeof(byte_t *)*dl21seq_src->n);
+  if (!dl21seq_dst->x) GOTOENDRC(IERROR, dl21seq_proof_copy);
+
+  for (i=0; i<dl21seq_src->n; i++) {
+    dl21seq_dst->x[i] = mem_malloc(sizeof(byte_t)*dl21seq_src->xlen[i]);
+    if (!dl21seq_dst->x[i]) GOTOENDRC(IERROR, dl21seq_proof_copy);
+    memcpy(dl21seq_dst->x[i], dl21seq_src->x[i], dl21seq_src->xlen[i]);
+    dl21seq_dst->xlen[i] = dl21seq_src->xlen[i];
+  }
+  dl21seq_dst->n = dl21seq_src->n;
+
+  if (spk_dlog_copy(dl21seq_dst->spk, dl21seq_src->spk) == IERROR)
+    GOTOENDRC(IERROR, dl21seq_proof_copy);
+
+ dl21seq_proof_copy_end:
+
+  if (rc == IERROR) {
+    if (dl21seq_dst->xlen) {
+      mem_free(dl21seq_dst->xlen);
+      dl21seq_dst->xlen = NULL;
+    }
+    for (i=0; i<dl21seq_src->n; i++) {
+      if (dl21seq_dst->x[i]) {
+	mem_free(dl21seq_dst->x[i]);
+	dl21seq_dst->x[i] = NULL;
+      }
+    }
+    mem_free(dl21seq_dst->x);
+    if (dl21seq_dst->spk) {
+      spk_dlog_free(dl21seq_dst->spk);
+      dl21seq_dst->spk = NULL;
+    }
+  }
+  
+  return rc;
+  
 }
 
 int dl21seq_proof_export(byte_t **bytes,

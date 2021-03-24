@@ -86,9 +86,11 @@ int dl21_join_mgr(message_t **mout,
   }
 
   rc = IOK;
-  bn = NULL;
-  n = NULL; h2s = NULL;
-  aux = NULL; 
+  bn = bkey = NULL;
+  n = H = h2s = NULL;
+  aux = NULL;
+  spk = NULL;
+  memkey = NULL;
   
   dl21_grpkey = (dl21_grp_key_t *) grpkey->key;
   dl21_mgrkey = (dl21_mgr_key_t *) mgrkey->key;
@@ -199,14 +201,14 @@ int dl21_join_mgr(message_t **mout,
   
  dl21_join_mgr_end:
 
-  if(rc == IERROR) {
-    if (n) { pbcext_element_G1_free(n); n = NULL; }
-    if (bn) { mem_free(bn); bn = NULL; }    
-    if (aux) { pbcext_element_Fr_free(aux); aux = NULL; }
-    if (h2s) { pbcext_element_G1_free(h2s); h2s = NULL; }
-    if (memkey) { dl21_mem_key_free(memkey); memkey = NULL; }
-    if (bkey) { mem_free(bkey); bkey = NULL; }
-  }
+  if (n) { pbcext_element_G1_free(n); n = NULL; }
+  if (H) { pbcext_element_G1_free(H); H = NULL; }
+  if (bn) { mem_free(bn); bn = NULL; }    
+  if (aux) { pbcext_element_Fr_free(aux); aux = NULL; }
+  if (h2s) { pbcext_element_G1_free(h2s); h2s = NULL; }
+  if (memkey) { dl21_mem_key_free(memkey); memkey = NULL; }
+  if (bkey) { mem_free(bkey); bkey = NULL; }
+  if (spk) { spk_dlog_free(spk); spk = NULL; }
   
   return rc;
 

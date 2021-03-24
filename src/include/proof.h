@@ -60,6 +60,20 @@ typedef groupsig_proof_t* (*groupsig_proof_init_f)(void);
 typedef int (*groupsig_proof_free_f)(groupsig_proof_t *proof);
 
 /** 
+ * @typedef int (*groupsig_proof_copy_f)(groupsig_proof_t *dst,
+ *                                           groupsig_proof_t *src);
+ * @brief Type of functions for copying group proofs.
+ *
+ * @param[in,out] dst The destination group proof. Must have been initialized
+ *  by the caller.
+ * @param[in] src The source group proof.
+ * 
+ * @return IOK or IERROR.
+ */
+typedef int (*groupsig_proof_copy_f)(groupsig_proof_t *dst,
+				     groupsig_proof_t *src);
+
+/** 
  * @typedef int (*groupsig_proof_get_size_f)(groupsig_proof_t *proof);
  * @brief Type of functions for getting the size in bytes of the <i>proof</i>.
  * 
@@ -122,6 +136,7 @@ typedef struct {
   groupsig_proof_get_size_f get_size; /**< Returns the size in
 					 bytes needed to represent
 					 a proof. */
+  groupsig_proof_copy_f copy; /**< Copies group proofs. */  
   groupsig_proof_export_f gexport; /**< Exports proofs. */
   groupsig_proof_import_f gimport; /**< Imports proofs. */
   groupsig_proof_to_string_f to_string; /**< Produces printable string versions 
@@ -169,6 +184,18 @@ int groupsig_proof_free(groupsig_proof_t *proof);
  *  must be set appropriately.
  */
 int groupsig_proof_get_size(groupsig_proof_t *proof);
+
+/** 
+ * @fn int groupsig_proof_copy(groupsig_proof_t *dst, groupsig_proof_t *src)
+ * @brief Copies the group proof in <i>src</i> into <i>dst</i>.
+ *
+ * @param[in,out] dst The destination group proof. Must have been initialized
+ *  by the caller.
+ * @param[in] src The source group proof.
+ * 
+ * @return IOK or IERROR.
+ */
+int groupsig_proof_copy(groupsig_proof_t *dst, groupsig_proof_t *src);
 
 /** 
  * @fn int groupsig_proof_export(byte_t **bytes,

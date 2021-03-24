@@ -207,8 +207,13 @@ int dl21seq_seqlink(groupsig_proof_t **proof,
 			       sigs) == IERROR)
     GOTOENDRC(IERROR, dl21seq_link);
 
-  // @TODO This may be creating a lost pointer
-  *proof = _proof;
+  if (!*proof) {
+    *proof = _proof;
+  } else {
+    if (dl21seq_proof_copy(*proof, _proof) == IERROR)
+      GOTOENDRC(IERROR, dl21seq_link);
+    dl21seq_proof_free(_proof); _proof = NULL;
+  }
   
  dl21seq_link_end:
 

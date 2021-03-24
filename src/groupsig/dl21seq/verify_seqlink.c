@@ -126,10 +126,8 @@ static int _dl21seq_verify_sequence(uint8_t *ok,
   
  _dl21seq_verify_sequence_end:
 
-  if (rc == IERROR) {
-    if (hc) { hash_free(hc); hc = NULL; }
-    if (aux) { mem_free(aux); aux = NULL; }
-  }
+  if (hc) { hash_free(hc); hc = NULL; }
+  if (aux) { mem_free(aux); aux = NULL; }
 
   return rc;
   

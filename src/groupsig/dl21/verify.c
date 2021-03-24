@@ -122,6 +122,7 @@ int dl21_verify(uint8_t *ok,
   e1 = NULL; e2 = NULL;
   msg_msg = NULL; msg_scp = NULL;
   hc = NULL;
+  hscp = NULL;
   
   dl21_sig = sig->sig;
   dl21_grpkey = grpkey->key;
@@ -171,7 +172,10 @@ int dl21_verify(uint8_t *ok,
   if(e1) { pbcext_element_GT_free(e1); e1 = NULL; }
   if(e2) { pbcext_element_GT_free(e2); e2 = NULL; }
   if(hc) { hash_free(hc); hc = NULL; }
-  
+  if(hscp) { pbcext_element_G1_free(hscp); hscp = NULL; }
+  if(msg_scp) { mem_free(msg_scp); msg_scp = NULL; }
+  if(msg_msg) { mem_free(msg_msg); msg_msg = NULL; }
+    
   return rc;
 
 }
