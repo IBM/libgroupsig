@@ -38,7 +38,6 @@ jobs:
 #        if: "contains( matrix.os, 'ubuntu')"
         shell: bash
         working-directory: ${{ github.workspace }}/build
-        # Memcheck fails on Github Actions due to some Illegal instruction error I have not been able to debug...
         run: ctest -VV --output-on-failure . --overwrite MemoryCheckCommandOptions="--leak-check=full" -T memcheck .
       - name: Process coverage
         working-directory: ${{ github.workspace }}/build
