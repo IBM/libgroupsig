@@ -55,7 +55,7 @@ __inline__ uint64_t rdtsc() {
 double _profile_timeval_to_double(struct timeval *tv){
   double wtime = 0;
   char walltime[21] = {0};
-  sprintf(walltime, "%lu.%06d", tv->tv_sec, tv->tv_usec);
+  sprintf(walltime, "%lu.%06ld", tv->tv_sec, tv->tv_usec);
   sscanf(walltime, "%lf", &wtime);
   return wtime;
 }
@@ -242,6 +242,73 @@ int profile_dump_data(profile_t *prof) {
   }
   fclose(fd); fd = NULL;
 
+  return IOK;
+  
+}
+
+int profile_process_and_dump(profile_t *prof, int code, char *operation) {
+
+  double tv_avg, tv_std, clck_avg, clck_std, cycle_avg, cycle_std, delta;
+  uint64_t i;
+  FILE *fd;
+  
+  if (!prof || !operation) {
+    LOG_EINVAL(&logger, __FILE__, "profile_process_and_dump",
+		  __LINE__, LOGERROR);
+    return IERROR;
+  }
+
+  tv_avg = tv_std = 0.f;
+  clck_avg = clck_std = 0.f;
+  cycle_avg = cycle_std = 0.f;
+
+  /* Compute average */
+  for (i=0; i<prof->n; i++) {
+    tv_avg += (
+	       (prof->entries[i].tvend.tv_sec*1000000+prof->entries[i].tvend.tv_usec)
+	       -
+	       (prof->entries[i].tvbegin.tv_sec*1000000+prof->entries[i].tvbegin.tv_usec)
+	       );
+    clck_avg += (prof->entries[i].clckend - prof->entries[i].clckbegin);
+    cycle_avg += (prof->entries[i].cycleend - prof->entries[i].cyclebegin);
+  }
+  tv_avg = tv_avg / prof->n;
+  clck_avg = clck_avg / prof->n;
+  cycle_avg = cycle_avg / prof->n;
+
+  /* Compute standard deviation */
+  for (i=0; i<prof->n; i++) {
+    delta = (prof->entries[i].tvend.tv_sec*1000000+prof->entries[i].tvend.tv_usec) -
+      (prof->entries[i].tvbegin.tv_sec*1000000+prof->entries[i].tvbegin.tv_usec);
+    tv_std += (delta - tv_avg)*(delta - tv_avg);
+    delta = prof->entries[i].clckend - prof->entries[i].clckbegin;
+    clck_std += (delta - clck_avg)*(delta - clck_avg);
+    delta = prof->entries[i].clckend - prof->entries[i].clckbegin;
+    cycle_std += (delta - cycle_avg)*(delta - cycle_avg);
+    
+  }
+  tv_std = sqrt(tv_std / prof->n);
+  clck_std = sqrt(clck_std / prof->n);
+  cycle_std = sqrt(cycle_std / prof->n);
+
+  fd = fopen(prof->filename, "a");
+  if (!fd) {
+    LOG_ERRORCODE(&logger, __FILE__, "profile_process_and_dump",
+		  errno, __LINE__, LOGERROR);    
+    return IERROR;
+  }
+  
+  fprintf(fd,
+	  "%u\t%s\t%.6f\t%.6f\t%.6f\t%.6f\n",
+	  code,
+	  operation,
+	  tv_avg,
+	  tv_std,
+	  clck_avg,
+	  clck_std);
+
+  fclose(fd); fd = NULL;
+  
   return IOK;
   
 }

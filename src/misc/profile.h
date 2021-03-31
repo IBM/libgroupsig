@@ -52,6 +52,14 @@ int profile_dump_entry(profile_t *profile, struct timeval *tvbegin, struct timev
 		       clock_t clckbegin, clock_t clckend, uint64_t cyclebegin, uint64_t cycleend);
 int profile_dump_data(profile_t *prof);
 
+/*
+  Utility function: given the entries in prof, computes their average and 
+  standard deviation, and appends to the file specified in prof, a line with 
+  format: 
+  <code>\t<operation>\t<avg of user time>\t<std dev of user time>\t<avg of cpu time>\t<std dev of cpu time>\n
+*/
+int profile_process_and_dump(profile_t *prof, int code, char *operation);
+
 #endif
 
 /* profile.h ends here */
