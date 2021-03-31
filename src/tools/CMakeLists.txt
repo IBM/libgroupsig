@@ -142,6 +142,7 @@ target_include_directories (benchmarks
                                 	${OPENSSL_INCLUDE_DIR})
 target_link_libraries (benchmarks
 			groupsig
+			base64
 		      	       	${OPENSSL_LIBRARIES}
 			       	${MCL_LIBRARY}
 				${MCL384_256_LIBRARY})

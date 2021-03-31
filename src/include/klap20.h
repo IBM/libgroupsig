@@ -90,13 +90,13 @@ int klap20_clear();
 
 /** 
  * @fn int klap20_setup(groupsig_key_t *grpkey, 
- *                    groupsig_key_t *mgrkey, 
- *                    gml_t *gml)
+ *                      groupsig_key_t *mgrkey, 
+ *                      gml_t *gml)
  * @brief The setup function for the KLAP20 scheme. Used to generate group public
  *  key and the managers keys.
  * 
  *  In KLAP20, we have two central entities (managers in libgroupsig jargon): the 
- *  Issuer, and the Converter. Both managers have public-private keypairs, their
+ *  Issuer, and the Opener. Both managers have public-private keypairs, their
  *  public parts being a part of the overall group public key. In order to 
  *  properly create the group public key and the manager's keys, we need to call
  *  setup twice. The first time it is called, a partial group public key will be
@@ -104,12 +104,12 @@ int klap20_clear();
  *  to initiate this process.) The second call must receive as input the partial
  *  group public key obtained in the first call, and a new manager key. As a
  *  result of the second call, the group public key is completely set up, and the
- *  Converter's private key is also generated. Therefore, this second call is 
- *  expected to be made by the Converter.
+ *  Opener's private key is also generated. Therefore, this second call is 
+ *  expected to be made by the Opener.
  *
  *  To be precise, whenever an empty group public key (i.e., an initialized KLAP20
  *  groupsig_key_t struct, with all fields in the key sub-struct set to NULL), 
- *  with is assumed, the function assumes that this is a first call.
+ *  is received, the function assumes that this is a first call.
  *
  * @param[in,out] grpkey An initialized group key. In the first call, a partial
  *  group public key will be returned.
@@ -121,8 +121,8 @@ int klap20_clear();
  * @return IOK or IERROR.
  */
 int klap20_setup(groupsig_key_t *grpkey,
-	       groupsig_key_t *mgrkey,
-	       gml_t *gml);
+		 groupsig_key_t *mgrkey,
+		 gml_t *gml);
 
 /**
  * @fn int klap20_get_joinseq(uint8_t *seq)
