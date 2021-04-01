@@ -45,8 +45,8 @@ int ps16_clear() {
 }
 
 int ps16_setup(groupsig_key_t *grpkey,
-		groupsig_key_t *mgrkey,
-		gml_t *gml) {
+	       groupsig_key_t *mgrkey,
+	       gml_t *gml) {
 
   ps16_grp_key_t *gkey;
   ps16_mgr_key_t *mkey;

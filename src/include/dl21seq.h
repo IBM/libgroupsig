@@ -80,12 +80,14 @@ extern "C" {
    * @brief DL21's description.
    */
   static const groupsig_description_t dl21seq_description = {
-    GROUPSIG_DL21SEQ_CODE, /**< DL21's scheme code. */
-    GROUPSIG_DL21SEQ_NAME, /**< DL21's scheme name. */
-    0, /**< DL21 does not have a GML. */
-    0, /**< DL21 does not have a CRL. */
-    1, /**< DL21 uses PBC. */
-    0 /**< DL21 does not have verifiable openings. */  
+    GROUPSIG_DL21SEQ_CODE, /**< DL21SEQ's scheme code. */
+    GROUPSIG_DL21SEQ_NAME, /**< DL21SEQ's scheme name. */
+    0, /**< DL21SEQ does not have a GML. */
+    0, /**< DL21SEQ does not have a CRL. */
+    1, /**< DL21SEQ uses PBC. */
+    0, /**< DL21SEQ does not have verifiable openings. */
+    1, /**< DL21SEQ's issuer key is the first manager key. */
+    0 /**< DL21SEQ's does not have inspector key. */    
   };
   
   /** 

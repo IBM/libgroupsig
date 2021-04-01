@@ -60,8 +60,8 @@ int dl21seq_verify_link(uint8_t *ok,
   
   pbcext_element_G1_t *hscp, *hscp_, *nym_;
   dl21seq_signature_t *dl21seq_sig;
-  /* dl21seq_sysenv_t *dl21seq_sysenv; */
   groupsig_proof_t *_proof;
+  spk_dlog_t *spk;  
   hash_t *hc;
   char *msg_scp, *msg_msg;
   int rc;
@@ -127,7 +127,8 @@ int dl21seq_verify_link(uint8_t *ok,
   if(message_json_get_key(&msg_msg, msg, "$.message") == IERROR)
     GOTOENDRC(IERROR, dl21seq_verify_link);
 
-  if(spk_dlog_G1_verify(&_ok, nym_, hscp_, proof->proof, (byte_t *) msg_msg,
+  spk = ((dl21seq_proof_t *) proof->proof)->spk;
+  if(spk_dlog_G1_verify(&_ok, nym_, hscp_, spk, (byte_t *) msg_msg,
 			strlen(msg_msg)) == IERROR)
     GOTOENDRC(IERROR, dl21seq_verify_link);
  

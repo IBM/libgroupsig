@@ -134,6 +134,19 @@ target_link_libraries (unblind
 			       	${MCL_LIBRARY}
 				${MCL384_256_LIBRARY})
 
+# benchmarks
+add_executable (benchmarks benchmarks.c)
+target_include_directories (benchmarks
+				PRIVATE
+					${MCL_INCLUDE_DIRS}
+                                	${OPENSSL_INCLUDE_DIR})
+target_link_libraries (benchmarks
+			groupsig
+			base64
+		      	       	${OPENSSL_LIBRARIES}
+			       	${MCL_LIBRARY}
+				${MCL384_256_LIBRARY})
+
 # print_key
 #add_executable (print_key print_key.c)
 #target_include_directories (print_key

@@ -21,6 +21,7 @@
 #include "types.h"
 #include "logger.h"
 #include "sys/mem.h"
+#include "groupsig.h"
 
 #include <stdio.h>
 #include <sys/time.h>
@@ -51,14 +52,6 @@ __inline__ uint64_t rdtsc() {
   return (d<<32) | a;
 }
 #endif
-
-double _profile_timeval_to_double(struct timeval *tv){
-  double wtime = 0;
-  char walltime[21] = {0};
-  sprintf(walltime, "%lu.%06d", tv->tv_sec, tv->tv_usec);
-  sscanf(walltime, "%lf", &wtime);
-  return wtime;
-}
 
 profile_t* profile_begin(char *filename) {
 
@@ -166,82 +159,69 @@ int profile_add_entry(profile_t *profile, struct timeval *tvbegin, struct timeva
 
 }
 
-int profile_dump_entry(profile_t *prof,
-		       struct timeval *tvbegin, struct timeval *tvend,
-		       clock_t clckbegin, clock_t clckend,
-		       uint64_t cyclebegin, uint64_t cycleend) {
+int profile_process_and_dump(profile_t *prof, int code, char *operation) {
 
-  FILE *fd;
-  double cpustart = (double) clckbegin / (double) CLOCKS_PER_SEC;
-  double cpuend = (double) clckend / (double) CLOCKS_PER_SEC;
-  double wallstart = _profile_timeval_to_double(tvbegin);
-  double wallend = _profile_timeval_to_double(tvend);
-
-  if(!prof) {
-    LOG_EINVAL(&logger, __FILE__, "profile_dump_entry", __LINE__, LOGERROR);
-    return IERROR;
-  }
-
-  /* Dump the new entry to the file */
-  if(!(fd = fopen(prof->filename, "a"))) {
-    LOG_ERRORCODE(&logger, __FILE__, "profile_dump_entry", __LINE__, errno, LOGERROR);
-    return IERROR;
-  }
-
-  fprintf(fd, entry_fmt_string,
-      tvbegin->tv_sec, tvbegin->tv_usec,
-      tvend->tv_sec, tvend->tv_usec,
-      wallend - wallstart,
-      cpustart, cpuend, cpuend - cpustart,
-      cyclebegin, cycleend, cycleend - cyclebegin);
-
-  fclose(fd); fd = NULL;
-
-  /* Add the new entry to the file (errors ignored) */
-  profile_add_entry(prof, tvbegin, tvend, clckbegin, clckend, cyclebegin, cycleend);
-  prof->printed++;
-
-  return IOK;
-  
-}
-
-int profile_dump_data(profile_t *prof) {
-
-  FILE *fd;
+  double tv_avg, tv_std, clck_avg, clck_std, cycle_avg, cycle_std, delta;
   uint64_t i;
-  double cpustart;
-  double cpuend;
-  double wallstart;
-  double wallend;
+  FILE *fd;
+  
+  if (!prof || !operation) {
+    LOG_EINVAL(&logger, __FILE__, "profile_process_and_dump",
+		  __LINE__, LOGERROR);
+    return IERROR;
+  }
 
-  if(!prof) {
-    LOG_EINVAL(&logger, __FILE__, "profile_dump_data", __LINE__, LOGERROR);
+  tv_avg = tv_std = 0.f;
+  clck_avg = clck_std = 0.f;
+  cycle_avg = cycle_std = 0.f;
+
+  /* Compute average */
+  for (i=0; i<prof->n; i++) {
+    tv_avg += (
+	       (prof->entries[i].tvend.tv_sec*1000000+prof->entries[i].tvend.tv_usec)
+	       -
+	       (prof->entries[i].tvbegin.tv_sec*1000000+prof->entries[i].tvbegin.tv_usec)
+	       );
+    clck_avg += (prof->entries[i].clckend - prof->entries[i].clckbegin);
+    cycle_avg += (prof->entries[i].cycleend - prof->entries[i].cyclebegin);
+  }
+  tv_avg = tv_avg / prof->n;
+  clck_avg = clck_avg / prof->n;
+  cycle_avg = cycle_avg / prof->n;
+
+  /* Compute standard deviation */
+  for (i=0; i<prof->n; i++) {
+    delta = (prof->entries[i].tvend.tv_sec*1000000+prof->entries[i].tvend.tv_usec) -
+      (prof->entries[i].tvbegin.tv_sec*1000000+prof->entries[i].tvbegin.tv_usec);
+    tv_std += (delta - tv_avg)*(delta - tv_avg);
+    delta = prof->entries[i].clckend - prof->entries[i].clckbegin;
+    clck_std += (delta - clck_avg)*(delta - clck_avg);
+    delta = prof->entries[i].clckend - prof->entries[i].clckbegin;
+    cycle_std += (delta - cycle_avg)*(delta - cycle_avg);
+    
+  }
+  tv_std = sqrt(tv_std / prof->n);
+  clck_std = sqrt(clck_std / prof->n);
+  cycle_std = sqrt(cycle_std / prof->n);
+
+  fd = fopen(prof->filename, "a");
+  if (!fd) {
+    LOG_ERRORCODE(&logger, __FILE__, "profile_process_and_dump",
+		  errno, __LINE__, LOGERROR);    
     return IERROR;
   }
   
-  if(!(fd = fopen(prof->filename, "a"))) {
-    LOG_ERRORCODE(&logger, __FILE__, "profile_dump_data", __LINE__, errno, LOGERROR);
-    return IERROR;
-  }
+  fprintf(fd,
+	  "%s\t%s\t%.6f\t%.6f\t%.6f\t%.6f\n",
+	  groupsig_get_name_from_code(code),
+	  operation,
+	  tv_avg,
+	  tv_std,
+	  clck_avg,
+	  clck_std);
 
-  for(i=0; i<prof->n; i++) {
-    cpustart = (double) prof->entries[i].clckbegin / (double) CLOCKS_PER_SEC;
-    cpuend = (double) prof->entries[i].clckend / (double) CLOCKS_PER_SEC;
-    wallstart = _profile_timeval_to_double(&prof->entries[i].tvbegin);
-    wallend = _profile_timeval_to_double(&prof->entries[i].tvend);
-    fprintf(fd, entry_fmt_string,
-	    prof->entries[i].tvbegin.tv_sec,
-	    prof->entries[i].tvbegin.tv_usec,
-	    prof->entries[i].tvend.tv_sec,
-	    prof->entries[i].tvend.tv_usec,
-	    prof->entries[i].cyclebegin,
-	    prof->entries[i].cycleend,
-	    wallend - wallstart,
-	    cpustart, cpuend, cpuend - cpustart);
-    prof->printed++;
-  }
   fclose(fd); fd = NULL;
-
+  
   return IOK;
   
 }

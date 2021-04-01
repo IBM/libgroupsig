@@ -77,7 +77,9 @@ static const groupsig_description_t dl21_description = {
   0, /**< DL21 does not have a GML. */
   0, /**< DL21 does not have a CRL. */
   1, /**< DL21 uses PBC. */
-  0 /**< DL21 does not have verifiable openings. */  
+  0, /**< DL21 does not have verifiable openings. */
+  1, /**< DL21's issuer key is the first manager key. */
+  0 /**< DL21's does not have inspector key. */
 };
 
 
