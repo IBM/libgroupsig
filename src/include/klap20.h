@@ -59,7 +59,9 @@ static const groupsig_description_t klap20_description = {
   1, /**< KLAP20 has a GML. */
   0, /**< KLAP20 does not have a CRL. */
   1, /**< KLAP20 uses PBC. */
-  1  /**< KLAP20 has verifiable openings. */  
+  1,  /**< KLAP20 has verifiable openings. */
+  1, /**< KLAP20's issuer key is the first manager key. */
+  2 /**< KLAP20's inspector (opener) key is the second manager key. */
 };
 
 /* Metadata for the join protocol */

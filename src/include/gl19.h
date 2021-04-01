@@ -59,7 +59,9 @@ static const groupsig_description_t gl19_description = {
   0, /**< GL19 does not have a GML. */
   0, /**< GL19 does not have a CRL. */
   1, /**< GL19 uses PBC. */
-  0 /**< GL19 does not have verifiable openings. */  
+  0, /**< GL19 does not have verifiable openings. */
+  1, /**< GL19's issuer key is the first manager key. */
+  2 /**< GL19's inspector (converter) key is the first manager key. */  
 };
 
 /* Metadata for the join protocol */

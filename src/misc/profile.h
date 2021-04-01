@@ -46,11 +46,6 @@ int profile_free(profile_t *profile);
 int profile_get_time(struct timeval *tv, clock_t *clck, uint64_t *cycle);
 int profile_add_entry(profile_t *profile, struct timeval *tvbegin, struct timeval *tvend, 
 		      clock_t clckbegin, clock_t clckend, uint64_t cyclebegin, uint64_t cycleend);
-/* Same as profile_add_entry, but directly prints the new entry to the file
-   (useful for long experiments that may fail before running all iterations) */
-int profile_dump_entry(profile_t *profile, struct timeval *tvbegin, struct timeval *tvend, 
-		       clock_t clckbegin, clock_t clckend, uint64_t cyclebegin, uint64_t cycleend);
-int profile_dump_data(profile_t *prof);
 
 /*
   Utility function: given the entries in prof, computes their average and 

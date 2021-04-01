@@ -43,7 +43,8 @@ extern "C" {
 
   /**
    * @struct groupsig_description_t
-   * @brief Stores the basic description of a group signature scheme.
+   * @brief Stores the basic description of a group signature scheme. Useful
+   *  metadata for simplifying internal processes. 
    */
   typedef struct {
     uint8_t code; /**< The scheme's code. Each code uniquely identifies a group
@@ -55,7 +56,9 @@ extern "C" {
     uint8_t has_gml; /**< Whether the scheme requires a GML (1) or not (0). */
     uint8_t has_crl; /**< Whether the scheme requires a CRL (1) or not (0). */
     uint8_t has_pbc; /**< Whether the scheme requires PBC (1) or not (0). */
-    uint8_t has_open_proof; /**< Whether the scheme supports verifiable openings. */    
+    uint8_t has_open_proof; /**< Whether the scheme supports verifiable openings. */
+    uint8_t issuer_key; /**< "Index" of the issuer key. Starts in 1, 0 means no key. */
+    uint8_t inspector_key; /**< "Index" of the opener key. Starts in 1, 0 means no key. */
   } groupsig_description_t;
 
   /**
@@ -729,6 +732,16 @@ extern "C" {
    */
   const groupsig_t* groupsig_get_groupsig_from_code(uint8_t code);
 
+  /*
+   * @fn const char* groupsig_get_name_from_code(uint8_t code)
+   * @brief Returns the name associated to the given scheme code.
+   *
+   * @param[in] code The groupsig code.
+   * 
+   * @return The associated groupsig bundle or NULL.
+   */
+  const char* groupsig_get_name_from_code(uint8_t code); 
+
   /** 
    * @fn int groupsig_init(uint8_t code, unsigned int seed)
    * @brief Initializes the group signature environment (random number generators, 
@@ -999,8 +1012,8 @@ extern "C" {
    * @brief Determines whether or not the issuer of the specified signature has
    *  been revoked according to the given CRL.
    *
-   * @param[in,out] ok Will be set to 1 if the issuer of <i>sig</i> is revoked, to
-   *  0 otherwise.
+   * @param[in,out] ok Will be set to 1 if the signer of <i>sig</i> is revoked,
+   *  to 0 otherwise.
    * @param[in] sig The group signature to trace.
    * @param[in] grpkey The group key.
    * @param[in] crl The CRL.
@@ -1130,7 +1143,7 @@ extern "C" {
   /** 
    * @fn int groupsig_convert(groupsig_blindsig_t **csig,
    *                          groupsig_blindsig_t **bsig, uint32_t n_bsigs,
-   *			    groupsig_key_t *grpkey, groupsig_key_t *mgrkey,
+   *			      groupsig_key_t *grpkey, groupsig_key_t *mgrkey,
    *                          groupsig_key_t *bldkey, message_t *msg)
    * @brief Converts blinded group signatures.
    *

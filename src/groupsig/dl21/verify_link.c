@@ -60,7 +60,6 @@ int dl21_verify_link(uint8_t *ok,
   
   pbcext_element_G1_t *hscp, *hscp_, *nym_;
   dl21_signature_t *dl21_sig;
-  /* dl21_sysenv_t *dl21_sysenv; */
   groupsig_proof_t *_proof;
   hash_t *hc;
   char *msg_scp, *msg_msg;

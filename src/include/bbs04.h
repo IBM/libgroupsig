@@ -56,7 +56,9 @@ static const groupsig_description_t bbs04_description = {
   1, /**< BBS04 has a GML. */
   0, /**< BBS04 does not have a CRL. */
   1, /**< BBS04 uses PBC. */
-  0 /**< BBS04 does not have verifiable openings. */
+  0, /**< BBS04 does not have verifiable openings. */
+  1, /**< BBS04's issuer key is the first manager key. */
+  1 /**< BBS04's inspector (opener) key is the first manager key. */  
 };
 
 /* Metadata for the join protocol */

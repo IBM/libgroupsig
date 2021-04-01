@@ -61,7 +61,6 @@ int dl21_link(groupsig_proof_t **proof,
   pbcext_element_G1_t *hscp, *hscp_, *nym_;
   dl21_signature_t *dl21_sig;
   dl21_mem_key_t *dl21_memkey;
-  /* dl21_sysenv_t *dl21_sysenv; */
   groupsig_proof_t *_proof;
   spk_dlog_t *spk;
   hash_t *hc;

@@ -341,6 +341,156 @@ namespace groupsig {
     EXPECT_NE(msg, nullptr);
 
     /* Sign */
+    rc = groupsig_sign(sig1, msg, memkey[0], grpkey, UINT_MAX);
+    EXPECT_EQ(rc, IOK);
+
+    rc = groupsig_sign(sig2, msg, memkey[0], grpkey, UINT_MAX);
+    EXPECT_EQ(rc, IOK);    
+
+    /* Link the signatures */
+    proof = groupsig_proof_init(grpkey->scheme);
+    EXPECT_NE(proof, nullptr);
+
+    msgs = (message_t **) malloc(sizeof(message_t *)*2);
+    EXPECT_NE(msgs, nullptr);
+
+    msgs[0] = msg;
+    msgs[1] = msg;
+
+    sigs = (groupsig_signature_t **) malloc(sizeof(groupsig_signature_t *)*2);
+    EXPECT_NE(sigs, nullptr);    
+    
+    sigs[0] = sig1;
+    sigs[1] = sig2;
+    
+    rc = groupsig_link(&proof, grpkey, memkey[0], msg, sigs, msgs, 2);
+    EXPECT_EQ(rc, IOK);
+
+    rc = groupsig_verify_link(&b, grpkey, proof, msg, sigs, msgs, 2);
+    EXPECT_EQ(rc, IOK);
+    EXPECT_EQ(b, 1);
+    
+    /* Free stuff */
+    rc = groupsig_signature_free(sig1);
+    EXPECT_EQ(rc, IOK);
+
+    rc = groupsig_signature_free(sig2);
+    EXPECT_EQ(rc, IOK);
+
+    rc = groupsig_proof_free(proof);
+    EXPECT_EQ(rc, IOK);    
+
+    rc = message_free(msg);
+    EXPECT_EQ(rc, IOK);
+
+    free(msgs);
+    free(sigs);
+
+  }
+
+    /* Fails to link 2 signatures by different users */
+  TEST_F(DL21SEQTest, FailsLinkSigsDifferentUsers) {
+
+    groupsig_signature_t *sig1, *sig2, **sigs;
+    groupsig_proof_t *proof;
+    message_t *msg, **msgs;
+    int rc;
+    uint8_t b;
+
+    rc = groupsig_setup(GROUPSIG_DL21SEQ_CODE, grpkey, isskey, NULL);
+    EXPECT_EQ(rc, IOK);
+
+    /* Initialize the group signature objects */
+    sig1 = groupsig_signature_init(grpkey->scheme);
+    EXPECT_NE(sig1, nullptr);
+
+    sig2 = groupsig_signature_init(grpkey->scheme);
+    EXPECT_NE(sig2, nullptr);
+
+    /* Add one member */
+    addMembers(2);
+
+    /* 
+       Initialize a message with a test string 
+       (DL21SEQ messages are JSON objects with scope and message) 
+    */
+    msg = message_from_string((char *) "{ \"scope\": \"scp\", \"message\": \"Hello, World!\" }");
+    EXPECT_NE(msg, nullptr);
+
+    /* Sign */
+    rc = groupsig_sign(sig1, msg, memkey[0], grpkey, UINT_MAX);
+    EXPECT_EQ(rc, IOK);
+
+    rc = groupsig_sign(sig2, msg, memkey[1], grpkey, UINT_MAX);
+    EXPECT_EQ(rc, IOK);    
+
+    /* Link the signatures */
+    proof = groupsig_proof_init(grpkey->scheme);
+    EXPECT_NE(proof, nullptr);
+
+    msgs = (message_t **) malloc(sizeof(message_t *)*2);
+    EXPECT_NE(msgs, nullptr);
+
+    msgs[0] = msg;
+    msgs[1] = msg;
+
+    sigs = (groupsig_signature_t **) malloc(sizeof(groupsig_signature_t *)*2);
+    EXPECT_NE(sigs, nullptr);    
+    
+    sigs[0] = sig1;
+    sigs[1] = sig2;
+    
+    rc = groupsig_link(&proof, grpkey, memkey[0], msg, sigs, msgs, 2);
+    EXPECT_EQ(rc, IFAIL);
+    
+    /* Free stuff */
+    rc = groupsig_signature_free(sig1);
+    EXPECT_EQ(rc, IOK);
+
+    rc = groupsig_signature_free(sig2);
+    EXPECT_EQ(rc, IOK);
+
+    rc = groupsig_proof_free(proof);
+    EXPECT_EQ(rc, IOK);    
+
+    rc = message_free(msg);
+    EXPECT_EQ(rc, IOK);
+
+    free(msgs);
+    free(sigs);
+
+  }    
+
+  /* Successfully seqlinks 2 signatures by the same user */
+  TEST_F(DL21SEQTest, SuccessfullySeqLinkSigsSameUser) {
+
+    groupsig_signature_t *sig1, *sig2, **sigs;
+    groupsig_proof_t *proof;
+    message_t *msg, **msgs;
+    int rc;
+    uint8_t b;
+
+    rc = groupsig_setup(GROUPSIG_DL21SEQ_CODE, grpkey, isskey, NULL);
+    EXPECT_EQ(rc, IOK);
+
+    /* Initialize the group signature objects */
+    sig1 = groupsig_signature_init(grpkey->scheme);
+    EXPECT_NE(sig1, nullptr);
+
+    sig2 = groupsig_signature_init(grpkey->scheme);
+    EXPECT_NE(sig2, nullptr);
+
+    /* Add one member */
+    addMembers(1);
+
+    /* 
+       Initialize a message with a test string 
+       (DL21SEQ messages are JSON objects with scope and message) 
+    */
+    msg = message_from_string((char *) "{ \"scope\": \"scp\", \"message\": \"Hello, World!\" }");
+    EXPECT_NE(msg, nullptr);
+
+    /* Sign */
     rc = groupsig_sign(sig1, msg, memkey[0], grpkey, 1);
     EXPECT_EQ(rc, IOK);
     
@@ -387,7 +537,7 @@ namespace groupsig {
   }
 
     /* Fails to link 2 signatures by different users */
-  TEST_F(DL21SEQTest, FailsLinkSigsDifferentUsers) {
+  TEST_F(DL21SEQTest, FailsSeqLinkSigsDifferentUsers) {
 
     groupsig_signature_t *sig1, *sig2, **sigs;
     groupsig_proof_t *proof;
@@ -457,7 +607,7 @@ namespace groupsig {
 
   }
 
-  /* Rejects link proof by same user but with wrong order (swap) */
+  /* Rejects seqlink proof by same user but with wrong order (swap) */
   TEST_F(DL21SEQTest, RejectsSeqLinkProofWrongOrderSwap) {
 
     groupsig_signature_t *sig1, *sig2, **sigs;
@@ -532,7 +682,7 @@ namespace groupsig {
 
   }
 
-  /* Rejects link proof by same user but with wrong order (skip) */
+  /* Rejects seqlink proof by same user but with wrong order (skip) */
   TEST_F(DL21SEQTest, RejectsSeqLinkProofWrongOrderSkip) {
 
     groupsig_signature_t *sig1, *sig2, *sig3, **sigs;
