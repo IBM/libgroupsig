@@ -145,6 +145,7 @@ _run_benchmark
   crl_t *crl;
   trapdoor_t *trap;
   identity_t *ids[500];
+  FILE *fd;
   profile_t *prof_setup, *prof_join, *prof_sign, *prof_verify;
   profile_t *prof_open, *prof_open_verify, *prof_reveal, *prof_trace;
   profile_t *prof_claim, *prof_claim_verify;
@@ -171,6 +172,7 @@ _run_benchmark
   crl = NULL;
   proof = NULL;
   trap = NULL;
+  fd = NULL;
   prof_setup = prof_join = prof_sign = prof_verify = NULL;
   prof_open = prof_open_verify = prof_reveal = prof_trace = NULL;
   prof_claim = prof_claim_verify = NULL;
@@ -784,62 +786,132 @@ _run_benchmark
   if (profile_process_and_dump(prof_verify, code, "verify") == IERROR)
     GOTOENDRC(IERROR, _run_benchmark);
 
-  if (gh->open)
+  if (gh->open) {
     if (profile_process_and_dump(prof_open, code, "open") == IERROR)
       GOTOENDRC(IERROR, _run_benchmark);  
-
-  if (gh->open_verify)
+  } else {
+    if (!(fd = fopen(filename, "a"))) GOTOENDRC(IERROR, _run_benchmark);
+    fprintf(fd, "%s\topen\t0\t0\t0\t0\n", groupsig_get_name_from_code(code));
+    fclose(fd); fd = NULL;
+  }
+  
+  if (gh->open_verify) {
     if (profile_process_and_dump(prof_open_verify, code, "open_verify") == IERROR)
       GOTOENDRC(IERROR, _run_benchmark);
-
-  if (gh->reveal)
+  } else {
+    if (!(fd = fopen(filename, "a"))) GOTOENDRC(IERROR, _run_benchmark);
+    fprintf(fd, "%s\topen_verify\t0\t0\t0\t0\n", groupsig_get_name_from_code(code));
+    fclose(fd); fd = NULL;
+  }
+  
+  if (gh->reveal) {
     if (profile_process_and_dump(prof_reveal, code, "reveal") == IERROR)
       GOTOENDRC(IERROR, _run_benchmark);
-
-  if (gh->trace)
+  } else {
+    if (!(fd = fopen(filename, "a"))) GOTOENDRC(IERROR, _run_benchmark);
+    fprintf(fd, "%s\treveal\t0\t0\t0\t0\n", groupsig_get_name_from_code(code));
+    fclose(fd); fd = NULL;
+  }
+  
+  if (gh->trace) {
     if (profile_process_and_dump(prof_trace, code, "trace") == IERROR)
       GOTOENDRC(IERROR, _run_benchmark);
-
-  if (gh->claim)
+  } else {
+    if (!(fd = fopen(filename, "a"))) GOTOENDRC(IERROR, _run_benchmark);
+    fprintf(fd, "%s\ttrace\t0\t0\t0\t0\n", groupsig_get_name_from_code(code));
+    fclose(fd); fd = NULL;
+  }
+  
+  if (gh->claim) {
     if (profile_process_and_dump(prof_claim, code, "claim") == IERROR)
       GOTOENDRC(IERROR, _run_benchmark);
-
-  if (gh->claim_verify)
+  } else {
+    if (!(fd = fopen(filename, "a"))) GOTOENDRC(IERROR, _run_benchmark);
+    fprintf(fd, "%s\tclaim\t0\t0\t0\t0\n", groupsig_get_name_from_code(code));
+    fclose(fd); fd = NULL;
+  }
+  
+  if (gh->claim_verify) {
     if (profile_process_and_dump(prof_claim_verify, code, "claim_verify") == IERROR)
       GOTOENDRC(IERROR, _run_benchmark);
-
-  if (gh->blind)
+  } else {
+    if (!(fd = fopen(filename, "a"))) GOTOENDRC(IERROR, _run_benchmark);
+    fprintf(fd, "%s\tclaim_verify\t0\t0\t0\t0\n", groupsig_get_name_from_code(code));
+    fclose(fd); fd = NULL;
+  }
+  
+  if (gh->blind) {
     if (profile_process_and_dump(prof_blind, code, "blind") == IERROR)
       GOTOENDRC(IERROR, _run_benchmark);
-
-  if (gh->convert)
+  } else {
+    if (!(fd = fopen(filename, "a"))) GOTOENDRC(IERROR, _run_benchmark);
+    fprintf(fd, "%s\tblind\t0\t0\t0\t0\n", groupsig_get_name_from_code(code));
+    fclose(fd); fd = NULL;
+  }
+  
+  if (gh->convert) {
     if (profile_process_and_dump(prof_convert, code, "convert") == IERROR)
       GOTOENDRC(IERROR, _run_benchmark);
-
-  if (gh->unblind)
+  } else {
+    if (!(fd = fopen(filename, "a"))) GOTOENDRC(IERROR, _run_benchmark);
+    fprintf(fd, "%s\tconvert\t0\t0\t0\t0\n", groupsig_get_name_from_code(code));
+    fclose(fd); fd = NULL;
+  }
+  
+  if (gh->unblind) {
     if (profile_process_and_dump(prof_unblind, code, "unblind") == IERROR)
       GOTOENDRC(IERROR, _run_benchmark);
-
-  if (gh->identify)
+  } else {
+    if (!(fd = fopen(filename, "a"))) GOTOENDRC(IERROR, _run_benchmark);
+    fprintf(fd, "%s\tunblind\t0\t0\t0\t0\n", groupsig_get_name_from_code(code));
+    fclose(fd); fd = NULL;
+  }
+ 
+  if (gh->identify) {
     if (profile_process_and_dump(prof_identify, code, "identify") == IERROR)
       GOTOENDRC(IERROR, _run_benchmark);  
+  } else {
+    if (!(fd = fopen(filename, "a"))) GOTOENDRC(IERROR, _run_benchmark);
+    fprintf(fd, "%s\tidentify\t0\t0\t0\t0\n", groupsig_get_name_from_code(code));
+    fclose(fd); fd = NULL;
+  }
   
-  if (gh->link)
+  if (gh->link) {
     if (profile_process_and_dump(prof_link, code, "link") == IERROR)
       GOTOENDRC(IERROR, _run_benchmark);
-
-  if (gh->verify_link)
+  } else {
+    if (!(fd = fopen(filename, "a"))) GOTOENDRC(IERROR, _run_benchmark);
+    fprintf(fd, "%s\tlink\t0\t0\t0\t0\n", groupsig_get_name_from_code(code));
+    fclose(fd); fd = NULL;
+  }
+  
+  if (gh->verify_link) {
     if (profile_process_and_dump(prof_verify_link, code, "verify_link") == IERROR)
       GOTOENDRC(IERROR, _run_benchmark);
+  } else {
+    if (!(fd = fopen(filename, "a"))) GOTOENDRC(IERROR, _run_benchmark);
+    fprintf(fd, "%s\tverify_link\t0\t0\t0\t0\n", groupsig_get_name_from_code(code));
+    fclose(fd); fd = NULL;
+  }
 
-  if (gh->seqlink)
+  if (gh->seqlink) {
     if (profile_process_and_dump(prof_link, code, "seqlink") == IERROR)
       GOTOENDRC(IERROR, _run_benchmark);
-
-  if (gh->verify_seqlink)
+  } else {
+    if (!(fd = fopen(filename, "a"))) GOTOENDRC(IERROR, _run_benchmark);
+    fprintf(fd, "%s\tseqlink\t0\t0\t0\t0\n", groupsig_get_name_from_code(code));
+    fclose(fd); fd = NULL;
+  }
+  
+  if (gh->verify_seqlink) {
     if (profile_process_and_dump(prof_verify_link, code, "verify_seqlink") == IERROR)
       GOTOENDRC(IERROR, _run_benchmark);  
-    
+  } else {
+    if (!(fd = fopen(filename, "a"))) GOTOENDRC(IERROR, _run_benchmark);
+    fprintf(fd, "%s\tverify_seqlink\t0\t0\t0\t0\n", groupsig_get_name_from_code(code));
+    fclose(fd); fd = NULL;
+  }
+  
  _run_benchmark_end:
 
   for (j=0; j<batch; j++) {
