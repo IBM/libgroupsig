@@ -102,3 +102,15 @@ target_link_libraries(PBCTest
   gtest
   pthread)
 add_test(NAME PBCTest COMMAND PBCTest)
+
+# Tests for Hash
+add_executable(HashTest test_hash.cpp)
+target_link_libraries(HashTest
+  PUBLIC
+  hash
+  sys
+  logger
+  gtest_main
+  gtest
+  pthread)
+add_test(NAME HashTest COMMAND HashTest)
