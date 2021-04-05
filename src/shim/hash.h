@@ -23,6 +23,10 @@
 #include <openssl/sha.h>
 #include <stdint.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+  
 #include "types.h"
 
 #define HASH_SUPPORTED_HASHES_N 2
@@ -121,6 +125,14 @@ int hash_free(hash_t *hash);
  * @return IOK or IERROR.
  */
 int hash_get_hex(char **s, hash_t *hash);
+
+#ifdef __cplusplus
+}
+#endif
+
+#ifdef __cplusplus
+/* Write any cplusplus specific code here */
+#endif
 
 #endif /* _GS_HASH_H */
 

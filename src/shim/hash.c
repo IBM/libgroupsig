@@ -24,8 +24,6 @@
 #include "sys/mem.h"
 #include "misc/misc.h"
 
-/** @todo Everywhere! Use EVP_* instead of SHA1_* */
-
 static uint8_t _is_supported_hash(uint8_t type) {
 
   int i;
