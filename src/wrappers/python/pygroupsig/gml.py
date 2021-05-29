@@ -43,6 +43,7 @@ def gml_export(gml):
     if lib.gml_export(bgml, size, gml) == constants.IERROR:
         raise Exception('Error exporting GML.')
     b64gml = base64.b64encode(ffi.buffer(bgml[0],size[0]))
+    b64gml = b64gml.decode('utf-8').replace('\n', '')    
 #    lib.free(bgml[0])
     return b64gml    
 

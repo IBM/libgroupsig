@@ -300,9 +300,9 @@ int ps16_gml_entry_get_size(gml_entry_t *entry) {
   if (pbcext_element_G2_byte_size(&sG2) == -1)
     return -1;
 
-  if (sG1 + sG2 > INT_MAX) return -1;
+  if (sG1 + sG2 + sizeof(int)*2 + sizeof(uint64_t) > INT_MAX) return -1;
 
-  return (int) sG1 + sG2 + sizeof(int)*2;
+  return (int) sG1 + sG2 + sizeof(int)*2 + sizeof(uint64_t);
   
 }
 
@@ -312,38 +312,52 @@ int ps16_gml_entry_export(byte_t **bytes,
 
   byte_t *_bytes, *__bytes;
   uint64_t _size, len;
+  int ctr;
   
   if (!bytes || !size || !entry) {
     LOG_EINVAL(&logger, __FILE__, "ps16_gml_entry_export", __LINE__, LOGERROR);
     return IERROR;    
   }
 
+  ctr = 0;
+
   /* Calculate size */
   if ((_size = ps16_gml_entry_get_size(entry)) == -1) return IERROR;
-  _size += sizeof(int) + sizeof(uint64_t);
+  //  _size += sizeof(int) + sizeof(uint64_t);
   
   if (!(_bytes = mem_malloc(sizeof(byte_t)*_size))) return IERROR;
 
   /* First, dump the identity */
   memcpy(_bytes, &entry->id, sizeof(uint64_t));
+  ctr += sizeof(uint64_t);
 
   /* Next, dump the data, which for PS16 is tau (G1 element) and 
      ttau (G2 element) */
-  __bytes = &_bytes[sizeof(uint64_t)];
+  __bytes = &_bytes[ctr];
   if (pbcext_dump_element_G1_bytes(&__bytes,
 				   &len,
 				   ((ps16_gml_entry_data_t *) entry->data)->tau) == IERROR) {
     mem_free(_bytes); _bytes = NULL;
     return IERROR;
   }
+  ctr += len;  
 
-  __bytes = &_bytes[sizeof(uint64_t)+len];  
+  __bytes = &_bytes[ctr];  
   if (pbcext_dump_element_G2_bytes(&__bytes,
 				   &len,
 				   ((ps16_gml_entry_data_t *) entry->data)->ttau) == IERROR) {
     mem_free(_bytes); _bytes = NULL;
     return IERROR;
-  }  
+  }
+  ctr += len;
+
+  /* Sanity check */
+  if (ctr != _size) {
+    LOG_ERRORCODE_MSG(&logger, __FILE__, "ps16_gml_entry_export", __LINE__, 
+		      EDQUOT, "Unexpected size.", LOGERROR);
+    mem_free(_bytes); _bytes = NULL;
+    return IERROR;
+  }
 
   /* Prepare exit */
   if (!*bytes) {
