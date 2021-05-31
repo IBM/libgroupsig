@@ -26,3 +26,30 @@
   - Python: 0.1.1
   - NodeJS: 0.1.3
   - Java: 0.1.0
+
+20200112: 
+
+  Summary: Added PS16 and KLAP20 schemes, as well as many important
+  improvements and bugfixes. 
+
+  Versions:
+  - Core: 1.0.0
+  - Python: 1.0.0
+  - NodeJS: 1.0.0
+  - Java: 1.0.0
+
+20210531: DL21 and bugfixing
+
+  Summary:
+
+  Added DL21 and DL21SEQ schemes (only in Core).
+
+  There was a bug in PS16 GML management, making export an import unsuccessful. 
+  Since the bug was in the Core library, it affects all wrappers too. It has
+  been fixed, and a new unit test has been added that detects it.
+
+  Versions:
+  - Core: 1.1.0
+  - Python: 1.1.0
+  - NodeJS: 1.1.0
+  - Java: 1.1.0
