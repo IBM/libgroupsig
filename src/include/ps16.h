@@ -55,7 +55,9 @@ static const groupsig_description_t ps16_description = {
   1, /**< PS16 has a GML. */
   0, /**< PS16 does not have a CRL. */
   1, /**< PS16 uses PBC. */
-  1 /**< PS16 has verifiable openings. */
+  1, /**< PS16 has verifiable openings. */
+  1, /**< PS16's issuer key is the first manager key. */
+  0 /**< PS16 relies only on GML for opening. */
 };
 
 /* Metadata for the join protocol */

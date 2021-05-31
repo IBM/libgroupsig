@@ -6,7 +6,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name="pygroupsig",
-    version="1.0.2",
+    version="1.1.0",
     author="Jesus Diaz Vico",
     author_email="jdv@zurich.ibm.com",
     description="A Python wrapper for libgroupsig",

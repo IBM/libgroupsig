@@ -4,4 +4,4 @@ add_library (misc
   profile.c 
   profile.h)
 
-target_link_libraries (misc PUBLIC base64)
+target_link_libraries (misc PUBLIC base64 m)

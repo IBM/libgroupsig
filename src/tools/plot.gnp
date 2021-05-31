@@ -1,0 +1,19 @@
+set terminal png size 1024,1024
+set output 'measurements.png'
+set style data histograms
+set style fill solid 1 border lt -1
+set boxwidth 0.9
+set xlabel "Operation" font ", 20" rotate by 0 offset 0,-0.5,0
+set xtics noenhanced rotate by 30 right font ", 15" offset 0,-0.1,0
+set yrange [0:*]
+set ylabel "Time (ms)" font ", 20" offset -0.1,0,0
+set ytics font ", 15"
+set key left font ", 12"
+set style histogram errorbars lw 1
+plot  'BBS04.log' using ($2/1000):($3/1000):xtic(1) title "BBS04", \
+     'GL19.log'  using ($2/1000):($3/1000):xtic(1) title "GL19", \
+     'PS16.log'  using ($2/1000):($3/1000):xtic(1) title "PS16", \
+     'KLAP20.log' using ($2/1000):($3/1000):xtic(1) title "KLAP20", \
+     'DL21.log' using ($2/1000):($3/1000):xtic(1) title "DL21", \
+     'DL21SEQ.log' using ($2/1000):($3/1000):xtic(1) title "DL21SEQ"
+

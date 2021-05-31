@@ -799,6 +799,77 @@ namespace groupsig {
 
     free(bytes); bytes = NULL;
     
+  }
+
+
+  /* Opens a signature and produces a valid open proof after reimporting a GML*/
+  TEST_F(PS16Test, OpenSignatureValidProofAfterGMLExportImport) {
+
+    groupsig_signature_t *sig;
+    groupsig_proof_t *proof;
+    gml_t *imported;    
+    message_t *msg;
+    byte_t *bytes;    
+    uint64_t index;
+    int rc;
+    uint32_t size;    
+    uint8_t b;
+
+    rc = groupsig_setup(GROUPSIG_PS16_CODE, grpkey, mgrkey, gml);
+    EXPECT_EQ(rc, IOK);
+
+    /* Initialize the group signature object */
+    sig = groupsig_signature_init(grpkey->scheme);
+    EXPECT_NE(sig, nullptr);
+
+    /* Add one member */
+    addMembers(2);
+
+    /* Export GML */
+    bytes = NULL;
+    rc = gml_export(&bytes, &size, gml);
+    EXPECT_EQ(rc, IOK);
+
+    /* Import GML */
+    imported = gml_import(GROUPSIG_PS16_CODE, bytes, size);
+    EXPECT_NE(imported, nullptr);    
+
+    /* Import the message from the external file into the initialized message object */
+    msg = message_from_string((char *) "Hello, World!");
+    EXPECT_NE(msg, nullptr);
+
+    /* Sign */
+    rc = groupsig_sign(sig, msg, memkey[1], grpkey, UINT_MAX);
+    EXPECT_EQ(rc, IOK);
+
+    /* Open */
+    proof = groupsig_proof_init(GROUPSIG_PS16_CODE);
+    EXPECT_NE(proof, nullptr);
+    
+    rc = groupsig_open(&index, proof, nullptr, sig, grpkey, mgrkey, imported);
+    EXPECT_EQ(rc, IOK);
+
+    /* index must be 1 */
+    EXPECT_EQ(index, 1);
+
+    /* Verify the open proof. */
+    rc = groupsig_open_verify(&b, proof, sig, grpkey);
+    EXPECT_EQ(rc, IOK);
+    EXPECT_EQ(b, 1);
+
+    /* Free stuff */
+    rc = message_free(msg);
+    EXPECT_EQ(rc, IOK);
+    
+    rc = groupsig_signature_free(sig);
+    EXPECT_EQ(rc, IOK);
+
+    rc = groupsig_proof_free(proof);
+    EXPECT_EQ(rc, IOK);
+
+    gml_free(imported);
+    imported = nullptr;
+    
   }  
   
 

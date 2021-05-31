@@ -1,40 +1,20 @@
-/*                               -*- Mode: C -*- 
+/* 
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *	libgroupsig Group Signatures library
- *	Copyright (C) 2012-2013 Jesus Diaz Vico
+ *  http://www.apache.org/licenses/LICENSE-2.0
  *
- *		
- *
- *	This file is part of the libgroupsig Group Signatures library.
- *
- *
- *  The libgroupsig library is free software: you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License as 
- *  defined by the Free Software Foundation, either version 3 of the License, 
- *  or any later version.
- *
- *  The libroupsig library is distributed WITHOUT ANY WARRANTY; without even 
- *  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
- *  See the GNU Lesser General Public License for more details.
- *
- *
- *  You should have received a copy of the GNU Lesser General Public License 
- *  along with Group Signature Crypto Library.  If not, see <http://www.gnu.org/
- *  licenses/>
- *
- * @file: dl21seq.h
- * @brief: Main definitions for the DL21SEQ group signature scheme.
- *
- * The DL21SEQ scheme is an implementation of the scheme XXX
- *
- * @author: jesus
- * Maintainer: jesus
- * @date: vie jul  6 11:59:40 2012 (+0200)
- * @version: 0.1
- * Last-Updated: lun ago  5 15:31:12 2013 (+0200)
- *           By: jesus
- *     Update #: 129
- * URL: bitbucket.org/jdiazvico/libgroupsig
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 #ifndef _DL21SEQ_H
@@ -80,12 +60,14 @@ extern "C" {
    * @brief DL21's description.
    */
   static const groupsig_description_t dl21seq_description = {
-    GROUPSIG_DL21SEQ_CODE, /**< DL21's scheme code. */
-    GROUPSIG_DL21SEQ_NAME, /**< DL21's scheme name. */
-    0, /**< DL21 does not have a GML. */
-    0, /**< DL21 does not have a CRL. */
-    1, /**< DL21 uses PBC. */
-    0 /**< DL21 does not have verifiable openings. */  
+    GROUPSIG_DL21SEQ_CODE, /**< DL21SEQ's scheme code. */
+    GROUPSIG_DL21SEQ_NAME, /**< DL21SEQ's scheme name. */
+    0, /**< DL21SEQ does not have a GML. */
+    0, /**< DL21SEQ does not have a CRL. */
+    1, /**< DL21SEQ uses PBC. */
+    0, /**< DL21SEQ does not have verifiable openings. */
+    1, /**< DL21SEQ's issuer key is the first manager key. */
+    0 /**< DL21SEQ's does not have inspector key. */    
   };
   
   /** 

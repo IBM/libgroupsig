@@ -72,7 +72,7 @@ int ps16_gml_entry_get_size(gml_entry_t *entry);
  *
  * The used format is:
  * 
- * | code (uint8_t) | identity (uint64_t) | size_tau | tau | size_ttau | ttau |
+ * | identity (uint64_t) | size_tau | tau | size_ttau | ttau |
  *
  * @param[in,out] bytes Will be updated with the exported entry. If *entry is 
  *  NULL,  memory will be internally allocated. Otherwise, it must be big enough

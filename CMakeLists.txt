@@ -4,8 +4,8 @@ set (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}")
 
 # Generic library information
 project (libgroupsig)
-set (libgroupsig_VERSION_MAJOR 0)
-set (libgroupsig_VERSION_MINOR 1)
+set (libgroupsig_VERSION_MAJOR 1)
+set (libgroupsig_VERSION_MINOR 0)
 set (libgroupsig_VERSION_PATCH 0)
 
 # Set the paths for produced libraries and runtime binaries

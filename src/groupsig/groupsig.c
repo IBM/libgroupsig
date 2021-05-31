@@ -90,6 +90,20 @@ const groupsig_t* groupsig_get_groupsig_from_code(uint8_t code) {
 
 }
 
+const char* groupsig_get_name_from_code(uint8_t code) {
+
+  uint8_t i;
+
+  for(i=0; i<GROUPSIG_REGISTERED_GROUPSIGS_N; i++) {
+    if(code == GROUPSIG_REGISTERED_GROUPSIGS[i]->desc->code) {
+      return GROUPSIG_REGISTERED_GROUPSIGS[i]->desc->name;
+    }
+  }
+
+  return NULL;
+  
+}
+
 int groupsig_init(uint8_t code,
 		  unsigned int seed) {
 

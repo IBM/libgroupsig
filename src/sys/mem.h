@@ -20,6 +20,10 @@
 #ifndef _MEM_H
 #define _MEM_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdio.h>
 
 /** 
@@ -53,6 +57,14 @@ void* mem_realloc(void* ptr, size_t size);
  * @return IOK.
  */
 int mem_free(void *p);
+
+#ifdef __cplusplus
+}
+#endif
+
+#ifdef __cplusplus
+/* Write any cplusplus specific code here */
+#endif
 
 #endif /* _MEM_H */
 
